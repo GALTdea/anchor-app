@@ -47,7 +47,7 @@ gem "thruster", require: false
 gem "pundit", "~> 2.2"
 
 # Pagination
-gem "pagy", "~> 9.0"
+gem "pagy", "~> 43.4"
 
 # SEO meta tags
 gem "meta-tags", "~> 2.2"
