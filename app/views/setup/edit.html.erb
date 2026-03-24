@@ -1,0 +1,46 @@
+<div class="max-w-2xl mx-auto">
+  <%= render "shared/page_header",
+    title: "App Settings",
+    subtitle: "Configure application behaviour" %>
+
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <%= form_with(model: @app_setting,
+          url: setup_path, method: :patch) do |form| %>
+        <%= form.fields_for :settings do |sf| %>
+
+          <div class="space-y-4">
+            <% Rails.application.config.app_settings
+                .each do |key, schema| %>
+              <fieldset class="fieldset">
+                <%= form.label key,
+                  class: "label" do %>
+                  <span class="label font-medium capitalize">
+                    <%= key.to_s.humanize %>
+                  </span>
+                <% end %>
+                <%= sf.select key,
+                  app_settings_values(key)
+                    .map { |v| [v, v] },
+                  { selected:
+                      @app_setting.settings[key] ||
+                      schema['default'] },
+                  { class: "select w-full" } %>
+              </fieldset>
+            <% end %>
+          </div>
+
+        <% end %>
+
+        <div class="flex justify-end gap-3 mt-6
+                    pt-6 border-t border-base-300">
+          <%= link_to "Cancel", root_path,
+            class: "btn btn-ghost" %>
+          <%= form.submit "Save settings",
+            class: "btn btn-primary" %>
+        </div>
+
+      <% end %>
+    </div>
+  </div>
+</div>

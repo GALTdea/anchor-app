@@ -1,0 +1,10 @@
+{
+  "name": "app",
+  "private": "true",
+  "browserslist": [
+    "defaults"
+  ],
+  "dependencies": {
+    "daisyui": "^5.5.19"
+  }
+}

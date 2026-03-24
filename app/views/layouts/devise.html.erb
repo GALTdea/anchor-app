@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="starter_light">
+  <head>
+    <%= display_meta_tags(
+  site: "My Rails Starter",
+  title: "Sign in",
+  separator: "·"
+) %>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= javascript_importmap_tags %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  </head>
+  <body class="min-h-screen bg-base-200 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <!-- Logo / App name -->
+      <div class="text-center mb-8">
+        <%= link_to root_path, class: "text-2xl font-bold text-primary" do %>
+          My Rails Starter
+        <% end %>
+      </div>
+
+      <%= render "shared/flash" %>
+
+      <!-- Auth card -->
+      <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+          <%= yield %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

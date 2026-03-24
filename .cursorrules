@@ -1,0 +1,29 @@
+## Cursor Rules (Condensed)
+
+# Template build history: docs/template/DECISIONS.md
+# App dev docs: docs/AGENTS.md, docs/CONVENTIONS.md
+
+- **Docs entry point**
+  - Start at `docs/AGENTS.md` to find architecture, conventions, setup, and decisions.
+  - Module-specific docs live in `docs/modules/` (multitenancy, billing, file_uploads, api).
+
+- **Architecture & stack**
+  - Rails 8, Ruby 4.0.1, Devise, Pundit, Hotwire (Turbo), Tailwind CSS 4 + daisyUI 5 (config in app/assets/tailwind/application.css; daisyUI loaded via npm as @plugin), Solid Queue / Active Job.
+  - Multi-tenancy is modeled via a space/tenant concept; always respect tenant scoping when editing or adding features.
+
+- **Coding conventions**
+  - Follow Ruby style guide and Rails conventions.
+  - Use `snake_case` for methods/variables/files, `CamelCase` for classes/modules.
+  - Keep controllers thin; move business logic into models/services.
+  - Use RESTful routes and strong parameters; use Pundit (`authorize`, `policy_scope`) in controllers.
+
+- **UI conventions**
+  - Prefer server-rendered HTML with Turbo frames/streams.
+  - Use Tailwind CSS 4 + daisyUI 5 for layout/components; keep views DRY with partials. See docs/CONVENTIONS.md for daisyUI 5 class migration reference.
+
+- **Background jobs**
+  - Use Active Job with Solid Queue for async work; keep jobs small and idempotent.
+
+- **When editing/adding features**
+  - Prefer Rails generators (model, controller, scaffold, migration, component) to create new artifacts.
+  - Update or create relevant docs under `docs/` when making significant architectural or behavioral changes.

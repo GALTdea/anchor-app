@@ -1,0 +1,47 @@
+<body>
+  <div class="page">
+    <header class="navbar navbar-expand-md navbar-overlap d-print-none">
+      <div class="container-xl">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+          <a href="/">
+            <%= inline_svg "logo.svg", width: "110", height: "32", alt: "Portal", class: "navbar-brand-image" %>
+          </a>
+        </h1>
+        <div class="navbar-nav flex-row order-md-last">
+          <div class="d-none d-md-flex">
+          </div>
+          <%= render 'common/profile_dropdown' %>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+          <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
+            <%= render 'common/nav_items' %>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="page-wrapper">
+      <!-- Page title -->
+      <div class="page-header d-print-none ">
+        <div class="container-xl">
+          <div class="row g-2 align-items-center">
+            <!-- Page title actions -->
+            <%= render 'common/section_title' %>
+            <div class="col-12 col-md-auto ms-auto d-print-none">
+              <%= render 'common/space_selector' %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="container-xl">
+          <%= render 'common/flash' %>
+          <%= yield %>
+        </div>
+      </div>
+      <%= render 'common/footer' %>
+    </div>
+  </div>
+</body>

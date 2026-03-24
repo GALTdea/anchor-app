@@ -1,0 +1,83 @@
+---
+interface_layout:
+  type: string
+  available:
+  - HORIZONTAL
+  - VERTICAL
+  - VERTICAL-TRANSPARENT
+  - VERTICAL-RIGHT
+  - FLUID-VERTICAL
+  - COMBO
+  - FLUID
+  - STICKY
+  - OVERLAP
+  - CONDENSED
+  default: HORIZONTAL
+login_layout:
+  type: string
+  available:
+  - DEFAULT
+  - ILLUSTRATION
+  - COVER
+  default: DEFAULT
+multi_tenant_mode:
+  type: boolean
+  available:
+  - true
+  - false
+  default: 'true'
+show_landing_page:
+  type: boolean
+  available:
+  - true
+  - false
+  default: 'true'
+color_mode:
+  type: string
+  available:
+  - LIGHT
+  - DARK
+  default: LIGHT
+color_scheme:
+  type: string
+  available:
+  - BLUE
+  - AZURE
+  - INDIGO
+  - PURPLE
+  - PINK
+  - RED
+  - ORANGE
+  - YELLOW
+  - LIME
+  - GREEN
+  - TEAL
+  - CYAN
+  default: BLUE
+theme_base:
+  type: string
+  available:
+  - NEUTRAL
+  - SLATE
+  - ZINC
+  - GRAY
+  - STONE
+  - PINK
+  default: NEUTRAL
+font_family:
+  type: string
+  available:
+  - SANS-SERIF
+  - SERIF
+  - MONOSPACE
+  - COMIC
+  default: MONOSPACE
+corner_radius:
+  type: string
+  available:
+  - 0
+  - 0.5
+  - 1
+  - 1.5
+  - 2
+  default: 1

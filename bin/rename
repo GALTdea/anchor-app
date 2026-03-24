@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -e
+
+# Usage: bin/rename NewAppName
+# Renames the app from MyRailsStarter to the given name.
+# Run this once after cloning from the template.
+
+if [ -z "$1" ]; then
+  echo "Usage: bin/rename NewAppName"
+  echo "Example: bin/rename MyBlogApp"
+  exit 1
+fi
+
+NEW_NAME="$1"
+OLD_NAME="MyRailsStarter"
+
+# Derive formats
+NEW_SNAKE=$(echo "$NEW_NAME" | sed 's/\([A-Z]\)/_\1/g' | sed 's/^_//' | tr '[:upper:]' '[:lower:]')
+NEW_KEBAB=$(echo "$NEW_SNAKE" | tr '_' '-')
+OLD_SNAKE="my_rails_starter"
+OLD_KEBAB="my-rails-starter"
+
+echo "== Renaming app from $OLD_NAME to $NEW_NAME =="
+
+FILES=(
+  "config/application.rb"
+  "config/deploy.yml"
+  "app/views/pwa/manifest.json.erb"
+  "Dockerfile"
+  "README.md"
+  "docs/AGENTS.md"
+)
+
+for FILE in "${FILES[@]}"; do
+  if [ -f "$FILE" ]; then
+    sed -i '' \
+      -e "s/$OLD_NAME/$NEW_NAME/g" \
+      -e "s/$OLD_SNAKE/$NEW_SNAKE/g" \
+      -e "s/$OLD_KEBAB/$NEW_KEBAB/g" \
+      "$FILE"
+    echo "  updated: $FILE"
+  else
+    echo "  skipped (not found): $FILE"
+  fi
+done
+
+echo "\n== Done! =="
+echo "Next steps:"
+echo "  1. Review the changes above"
+echo "  2. Run bin/setup"
+echo "  3. Run bin/dev to start the server"

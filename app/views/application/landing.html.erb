@@ -1,0 +1,513 @@
+<% set_meta_tags(
+  title: "Home",
+  description: "A clean, modern Ruby on Rails 8 starter template built with Hotwire, Tailwind CSS, and daisyUI."
+) %>
+<div class="flex min-h-screen flex-col">
+  <header class="navbar fixed inset-x-0 top-0 z-40 border-b border-base-200 bg-base-100/80 backdrop-blur">
+    <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-4">
+      <div class="flex items-center gap-2">
+        <%= link_to root_path, class: "flex items-center gap-2" do %>
+          <%= image_tag "logo.svg",
+                        width: 110,
+                        height: 32,
+                        alt: "My Rails Starter",
+                        class: "h-8 w-auto" %>
+          <span class="hidden text-lg font-semibold tracking-tight sm:inline">
+            My Rails Starter
+          </span>
+        <% end %>
+      </div>
+
+      <nav class="hidden items-center gap-2 md:flex">
+        <a href="#features" class="btn btn-ghost btn-sm rounded-full text-sm font-medium">
+          Features
+        </a>
+        <a href="#pricing" class="btn btn-ghost btn-sm rounded-full text-sm font-medium">
+          Pricing
+        </a>
+        <a href="#docs" class="btn btn-ghost btn-sm rounded-full text-sm font-medium">
+          Docs
+        </a>
+        <a href="#blog" class="btn btn-ghost btn-sm rounded-full text-sm font-medium">
+          Blog
+        </a>
+      </nav>
+
+      <div class="hidden items-center gap-2 md:flex">
+        <%= link_to "Login",
+                    new_user_session_path,
+                    data: { turbo: false },
+                    class: "btn btn-ghost btn-sm rounded-full px-4 text-sm font-medium" %>
+        <%= link_to "Sign Up",
+                    new_user_registration_path,
+                    data: { turbo: false },
+                    class: "btn btn-primary btn-sm rounded-full px-4 text-sm font-semibold" %>
+      </div>
+
+      <div class="md:hidden">
+        <details class="dropdown dropdown-end">
+          <summary class="btn btn-ghost btn-circle">
+            <span class="sr-only">Toggle navigation</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 class="h-6 w-6" stroke="currentColor" fill="none" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="17" x2="20" y2="17" />
+            </svg>
+          </summary>
+          <ul class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 p-2 shadow-lg">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#docs">Docs</a></li>
+            <li><a href="#blog">Blog</a></li>
+            <li class="mt-2 border-t border-base-200"></li>
+            <li>
+              <%= link_to "Login",
+                          new_user_session_path,
+                          data: { turbo: false } %>
+            </li>
+            <li>
+              <%= link_to "Sign Up",
+                          new_user_registration_path,
+                          data: { turbo: false },
+                          class: "btn btn-primary btn-sm mt-1" %>
+            </li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 pt-24">
+    <section class="hero bg-base-100">
+      <div class="hero-content mx-auto max-w-6xl flex-col gap-12 px-4 py-16 lg:flex-row-reverse lg:py-24">
+        <div class="w-full lg:w-1/2">
+          <img src="/undraw_innovative_re_rr5i.svg"
+               alt="Rails starter illustration"
+               width="700"
+               height="500"
+               loading="lazy"
+               class="mx-auto max-h-[380px] w-full max-w-xl object-contain drop-shadow-xl" />
+        </div>
+
+        <div class="w-full space-y-6 lg:w-1/2">
+          <h1 class="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl">
+            Sample landing page
+            <span class="block bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              for your next Rails app
+            </span>
+          </h1>
+          <p class="text-base-content/70 text-lg">
+            Free and open source Ruby on Rails starter kit, styled with Tailwind CSS
+            and daisyUI, so you can ship dashboards and SaaS products fast.
+          </p>
+          <div class="flex flex-wrap items-center gap-3">
+            <%= link_to "Get started",
+                        new_user_session_path,
+                        data: { turbo: false },
+                        class: "btn btn-primary btn-lg rounded-full px-8 text-base font-semibold" %>
+            <%= link_to "Create an account",
+                        new_user_registration_path,
+                        data: { turbo: false },
+                        class: "btn btn-outline btn-lg rounded-full px-8 text-base font-semibold" %>
+          </div>
+          <p class="text-sm text-base-content/60">
+            No scaffolding lock‑in. Keep the parts you like, change the rest.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="border-t border-base-200 bg-base-100/60">
+      <div class="mx-auto max-w-6xl px-4 py-16">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+            Batteries included
+          </h2>
+          <p class="mt-3 text-base text-base-content/70">
+            Auth, roles, multitenancy, and modern UI primitives ready from day one.
+          </p>
+        </div>
+
+        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body space-y-3">
+              <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                     stroke-width="1.8" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3" />
+                  <path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3" />
+                  <circle cx="15" cy="9" r="1" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold">
+                Authentication & authorization
+              </h3>
+              <p class="text-sm text-base-content/70">
+                Devise + Pundit prewired with sensible defaults and patterns that
+                scale to real products.
+              </p>
+            </div>
+          </div>
+
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body space-y-3">
+              <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                     stroke-width="1.8" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold">
+                Role management
+              </h3>
+              <p class="text-sm text-base-content/70">
+                Keep roles in policy objects where they belong, with clear patterns
+                for admins, owners, and members.
+              </p>
+            </div>
+          </div>
+
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body space-y-3">
+              <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                     stroke-width="1.8" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                  <line x1="7" y1="4" x2="17" y2="4" />
+                  <path d="M17 4v8a5 5 0 0 1 -10 0v-8" />
+                  <circle cx="5" cy="9" r="2" />
+                  <circle cx="19" cy="9" r="2" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold">
+                Multi‑tenant ready
+              </h3>
+              <p class="text-sm text-base-content/70">
+                Spaces/tenants baked into the domain model so you can onboard
+                teams, not just users.
+              </p>
+            </div>
+          </div>
+
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body space-y-3">
+              <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                     stroke-width="1.8" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <circle cx="6" cy="10" r="2" />
+                  <line x1="6" y1="4" x2="6" y2="8" />
+                  <line x1="6" y1="12" x2="6" y2="20" />
+                  <circle cx="12" cy="16" r="2" />
+                  <line x1="12" y1="4" x2="12" y2="14" />
+                  <line x1="12" y1="18" x2="12" y2="20" />
+                  <circle cx="18" cy="7" r="2" />
+                  <line x1="18" y1="4" x2="18" y2="5" />
+                  <line x1="18" y1="9" x2="18" y2="20" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold">
+                Flexible UI layouts
+              </h3>
+              <p class="text-sm text-base-content/70">
+                Opinionated defaults for app shells and navigation, using daisyUI
+                components and Tailwind utilities only.
+              </p>
+            </div>
+          </div>
+
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body space-y-3">
+              <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                     stroke-width="1.8" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <polyline points="12 4 4 8 12 12 20 8 12 4" />
+                  <polyline points="4 12 12 16 20 12" />
+                  <polyline points="4 16 12 20 20 16" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold">
+                Developer‑focused
+              </h3>
+              <p class="text-sm text-base-content/70">
+                Lean, documented patterns that stay out of your way and make it
+                easy to extend per‑project.
+              </p>
+            </div>
+          </div>
+
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body space-y-3">
+              <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                     stroke-width="1.8" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <polyline points="7 8 3 12 7 16" />
+                  <polyline points="17 8 21 12 17 16" />
+                  <line x1="14" y1="4" x2="10" y2="20" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold">
+                Free & open source
+              </h3>
+              <p class="text-sm text-base-content/70">
+                MIT‑licensed starter designed to be reused, forked, and adapted
+                across many apps.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t border-base-200 bg-base-100/80">
+      <div class="mx-auto max-w-6xl px-4 py-16 lg:py-20">
+        <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
+          <div class="order-2 space-y-5 lg:order-1 lg:col-span-7">
+            <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+              About this starter
+            </h2>
+            <p class="text-base text-base-content/70">
+              This Rails 8 starter is built to streamline real‑world app
+              development: authentication, authorization, multi‑tenant structure,
+              background jobs, and modern frontend defaults are already wired up.
+            </p>
+            <p class="text-base text-base-content/70">
+              Instead of a generic UI kit, it focuses on conventions and patterns
+              that you can safely reuse for many products, while keeping every
+              decision visible and documented.
+            </p>
+            <div class="mt-4">
+              <button type="button" class="btn btn-outline rounded-full px-6">
+                Learn more in the docs
+              </button>
+            </div>
+          </div>
+
+          <div class="order-1 lg:order-2 lg:col-span-5">
+            <div class="overflow-hidden rounded-2xl border border-base-200 bg-base-100 shadow-xl">
+              <img src="/undraw_team_spirit_re_yl1v.svg"
+                   alt="Team working together"
+                   width="700"
+                   height="500"
+                   loading="lazy"
+                   class="h-full w-full object-cover" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="border-t border-base-200 bg-base-100">
+      <div class="mx-auto max-w-6xl px-4 py-16 lg:py-20">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+            Example pricing
+          </h2>
+          <p class="mt-3 text-base text-base-content/70">
+            Use this section as a starting point for your own SaaS tiers.
+          </p>
+        </div>
+
+        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body items-stretch text-center">
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                Free
+              </p>
+              <p class="mt-3 text-3xl font-bold">$0</p>
+              <ul class="mt-4 space-y-2 text-sm text-base-content/70">
+                <li><span class="font-semibold">3</span> users</li>
+                <li>Basic projects</li>
+                <li>Community support</li>
+              </ul>
+              <div class="mt-6">
+                <button class="btn btn-outline btn-block">
+                  Choose plan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border border-primary bg-base-100 shadow-md ring-1 ring-primary/20">
+            <div class="card-body items-stretch text-center">
+              <div class="badge badge-primary badge-outline mx-auto mb-2">
+                Most popular
+              </div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+                Premium
+              </p>
+              <p class="mt-3 text-3xl font-bold">$49</p>
+              <ul class="mt-4 space-y-2 text-sm text-base-content/70">
+                <li><span class="font-semibold">10</span> users</li>
+                <li>All starter features</li>
+                <li>Email support</li>
+              </ul>
+              <div class="mt-6">
+                <button class="btn btn-primary btn-block">
+                  Choose plan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body items-stretch text-center">
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                Enterprise
+              </p>
+              <p class="mt-3 text-3xl font-bold">$99</p>
+              <ul class="mt-4 space-y-2 text-sm text-base-content/70">
+                <li><span class="font-semibold">100</span> users</li>
+                <li>Priority support</li>
+                <li>Onboarding help</li>
+              </ul>
+              <div class="mt-6">
+                <button class="btn btn-outline btn-block">
+                  Choose plan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border border-base-200 bg-base-100/80 shadow-sm">
+            <div class="card-body items-stretch text-center">
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                Unlimited
+              </p>
+              <p class="mt-3 text-3xl font-bold">$139</p>
+              <ul class="mt-4 space-y-2 text-sm text-base-content/70">
+                <li><span class="font-semibold">Unlimited</span> users</li>
+                <li>Everything included</li>
+                <li>White‑glove support</li>
+              </ul>
+              <div class="mt-6">
+                <button class="btn btn-outline btn-block">
+                  Choose plan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t border-base-200 bg-base-100/80">
+      <div class="mx-auto max-w-6xl px-4 py-16 lg:py-20">
+        <div class="text-center">
+          <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+            Get started in minutes
+          </h2>
+          <div class="mx-auto mt-4 max-w-2xl">
+            <p class="text-base text-base-content/70">
+              Use this starter to go from idea to a working Rails SaaS prototype
+              in days instead of weeks. Swap in your branding, models, and flows,
+              keep the infrastructure and patterns.
+            </p>
+          </div>
+
+          <div class="mt-10 flex flex-col items-center gap-8 lg:flex-row lg:justify-center">
+            <div class="max-w-sm">
+              <img src="/undraw_maker_launch_re_rq81.svg"
+                   alt="Product launch illustration"
+                   width="350"
+                   height="250"
+                   loading="lazy"
+                   class="mx-auto w-full max-w-xs object-contain" />
+            </div>
+
+            <div class="space-y-4 text-left lg:max-w-md">
+              <ol class="space-y-2 text-sm text-base-content/80">
+                <li><span class="font-semibold">1.</span> Clone the repo and update the module name.</li>
+                <li><span class="font-semibold">2.</span> Wire up your domain models and policies.</li>
+                <li><span class="font-semibold">3.</span> Customize the landing page and app shell.</li>
+              </ol>
+              <div class="mt-4 flex flex-wrap gap-3">
+                <%= link_to "Sign up",
+                            new_user_registration_path,
+                            data: { turbo: false },
+                            class: "btn btn-primary rounded-full px-6" %>
+                <%= link_to "Login",
+                            new_user_session_path,
+                            data: { turbo: false },
+                            class: "btn btn-outline rounded-full px-6" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-base-200 bg-base-100/90">
+    <div class="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 md:flex-row md:items-start md:justify-between">
+      <div>
+        <div class="flex items-center gap-2">
+          <%= link_to root_path, class: "flex items-center gap-2" do %>
+            <%= image_tag "logo.svg",
+                          width: 110,
+                          height: 32,
+                          alt: "My Rails Starter",
+                          class: "h-7 w-auto" %>
+          <% end %>
+        </div>
+        <p class="mt-3 max-w-sm text-sm text-base-content/70">
+          Opinionated Rails starter template focused on shipping production‑ready
+          apps, not demos.
+        </p>
+        <p class="mt-3 text-xs text-base-content/60">
+          &copy; <%= Time.current.year %> My Rails Starter. All rights reserved.
+        </p>
+      </div>
+
+      <div class="grid flex-1 grid-cols-2 gap-6 sm:grid-cols-3">
+        <div>
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            Product
+          </h3>
+          <ul class="mt-3 space-y-2 text-sm text-base-content/70">
+            <li><a href="#features" class="link-hover link">Why choose us?</a></li>
+            <li><a href="#pricing" class="link-hover link">Pricing</a></li>
+            <li><a href="#features" class="link-hover link">Features</a></li>
+            <li><a href="#blog" class="link-hover link">Releases</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-base-content/70" id="docs">
+            Docs
+          </h3>
+          <ul class="mt-3 space-y-2 text-sm text-base-content/70">
+            <li><a href="#docs" class="link-hover link">Getting started</a></li>
+            <li><a href="#docs" class="link-hover link">User guides</a></li>
+            <li><a href="#docs" class="link-hover link">Admin guide</a></li>
+            <li><a href="#docs" class="link-hover link">Developers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            Company
+          </h3>
+          <ul class="mt-3 space-y-2 text-sm text-base-content/70">
+            <li><a href="#about" class="link-hover link">About</a></li>
+            <li><a href="#blog" class="link-hover link">Blog</a></li>
+            <li><a href="#contact" class="link-hover link">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
