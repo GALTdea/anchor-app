@@ -25,6 +25,28 @@ Reference these when building features.
 
 ---
 
+## AI development process
+
+Repeatable workflow for building features with AI assistance.
+
+| File | Contents |
+|------|----------|
+| [process/ai-dev-flow.md](process/ai-dev-flow.md) | Five-phase dev flow: Brief → Review → Build → Audit → Document |
+
+## Feature briefs
+
+Planning artifacts for each feature stage. Read the current brief
+at the start of every AI coding session.
+
+| File | Contents |
+|------|----------|
+| [features/_template-full.md](features/_template-full.md) | Full brief template (new models, controllers, migrations) |
+| [features/_template-light.md](features/_template-light.md) | Light brief template (config, seeds, docs, UI copy) |
+| [features/_constraints.md](features/_constraints.md) | Shared app invariants reference |
+| [features/stage-0-foundation.md](features/stage-0-foundation.md) | Stage 0 — Foundation cleanup (roles, permissions, UI labels) |
+
+---
+
 ## Optional modules
 
 Pre-researched patterns for common features.
