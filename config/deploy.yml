@@ -1,8 +1,8 @@
 # Name of your application. Used to uniquely configure containers.
-service: my_rails_starter
+service: anchor_app
 
 # Name of the container image.
-image: your-user/my_rails_starter
+image: your-user/anchor_app
 
 # Deploy to these servers.
 servers:
@@ -48,7 +48,7 @@ env:
 
     # PostgreSQL connection (required). Use one URL for all DB roles or set
     # CACHE_DATABASE_URL / QUEUE_DATABASE_URL / CABLE_DATABASE_URL separately.
-    # DATABASE_URL: postgres://postgres:password@my_rails_starter-db:5432/my_rails_starter_production
+    # DATABASE_URL: postgres://postgres:password@anchor_app-db:5432/anchor_app_production
 
     # Log everything from Rails
     # RAILS_LOG_LEVEL: debug
@@ -66,7 +66,7 @@ aliases:
 # PostgreSQL data should live in a managed database service or dedicated DB accessory.
 # Recommended to change this to a mounted volume path that is backed up off server.
 volumes:
-  - "my_rails_starter_storage:/rails/storage"
+  - "anchor_app_storage:/rails/storage"
 
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid

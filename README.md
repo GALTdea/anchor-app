@@ -81,7 +81,7 @@ bin/rails db:seed            # reload seed data
 3. Run `bin/rename YourAppName`
 4. Run `bin/setup`
 5. Run `bin/dev`
-6. Commit: `git commit -m "Initialize from my-rails-starter"`
+6. Commit: `git commit -m "Initialize from anchor-app"`
 
 ---
 
