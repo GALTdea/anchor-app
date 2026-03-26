@@ -142,3 +142,86 @@ MyJob.set(wait: 5.minutes).perform_later(arg1)
 ```
 
 Define job classes that inherit from `ApplicationJob`; they run via Solid Queue in production when the queue adapter is `:solid_queue`.
+
+---
+
+## Section 6 — Anchor app domain model (planned)
+
+Anchor is an autism care-circle app. The domain extends the template's
+User/Space/Role foundation with child-centered models.
+
+### Domain concepts
+
+- **Space** = a family or care-circle workspace (UI label: "Family").
+- **User** = any authenticated adult (parent, therapist, teacher, admin).
+- **ChildProfile** = the child or supported person being cared for.
+- **ChildAccess** = per-user, per-child relationship and permissions.
+- **Assessment** = a structured evaluation assigned to a child.
+- **AssessmentResponse** = a submitted answer set with respondent provenance.
+- **Observation** = a log entry (behavior, milestone, note) about a child.
+
+### Three-tier role system
+
+1. **System role** — `users.admin` boolean. Platform administration only (super admin).
+2. **Workspace role** — `UserRole` join with `Role`. Controls what a user can do in a family workspace. Seeded common roles: `owner`, `caregiver`, `collaborator`.
+3. **Child access role** (future, Stage 5) — `ChildAccess` join between User and ChildProfile. Controls per-child relationship and permissions. Values: `primary_guardian`, `guardian`, `therapist`, `teacher`, `aba_staff`, `observer`.
+
+### Seeded workspace roles
+
+| Role | value | Permissions |
+|------|-------|-------------|
+| **Owner** | `owner` | All permissions `true` |
+| **Caregiver** | `caregiver` | All except `create_space`, `update_space`, `delete_space`, `manage_collaborators` |
+| **Collaborator** | `collaborator` | Read child data, create observations/assessments. No user/space management, no child profile edit/delete |
+
+### Planned models (not yet built)
+
+| Model | Stage | Key columns | Belongs to |
+|-------|-------|-------------|-----------|
+| **ChildProfile** | 1 | `space_id`, `first_name`, `last_name`, `date_of_birth`, `status` | Space |
+| **Observation** | 3 | `child_profile_id`, `author_id`, `category`, `body`, `observed_on`, `visibility` | ChildProfile, User |
+| **AssessmentTemplate** | 4 | `title`, `category`, `schema` (jsonb), `respondent_types`, `status` | — |
+| **Assessment** | 4 | `child_profile_id`, `assessment_template_id`, `status`, `assigned_to_user_id` | ChildProfile, AssessmentTemplate |
+| **AssessmentResponse** | 4 | `assessment_id`, `actor_id`, `respondent_kind`, `answers` (jsonb) | Assessment, User |
+| **ChildAccess** | 5 | `user_id`, `child_profile_id`, `relationship`, `granted_by_user_id`, `status` | User, ChildProfile |
+| **ConsentRecord** | 6 | `child_profile_id`, `granted_by_user_id`, `granted_to_user_id`, `scope`, `status` | ChildProfile, User |
+
+### Planned relationship diagram
+
+```
+    User ──────< UserRole >────── Space (Family)
+      │              │                │
+      │              ▼                │ has_many
+      │           Role                ▼
+      │                          ChildProfile
+      │                               │
+      ├──────< ChildAccess >──────────┤  (Stage 5)
+      │                               │
+      ├──────< Observation >──────────┤  (Stage 3)
+      │                               │
+      │                          Assessment ──► AssessmentTemplate
+      │                               │
+      └──────< AssessmentResponse >───┘  (Stage 4)
+```
+
+### Respondent provenance (assessments)
+
+Each `AssessmentResponse` records:
+- **actor** — which authenticated user submitted it
+- **respondent_kind** — who the answers represent (`parent_proxy`, `self_report`, `therapist_report`, `teacher_report`)
+- **subject** — implied via the assessment's child profile
+
+### Feature stages
+
+See `docs/features/` for detailed briefs per stage.
+
+| Stage | Feature | Key models |
+|-------|---------|-----------|
+| 0 | Foundation cleanup (roles, permissions, UI labels) | — |
+| 1 | Child profile + single-guardian flow | ChildProfile |
+| 2 | Invite a second caregiver | — |
+| 3 | Observations | Observation |
+| 4 | Assessments | AssessmentTemplate, Assessment, AssessmentResponse |
+| 5 | External collaborators + child access | ChildAccess |
+| 6 | Consent tracking + audit trail | ConsentRecord, AuditLog |
+| 7 | Goals and progress tracking | TBD |

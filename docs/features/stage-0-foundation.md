@@ -44,25 +44,39 @@ Add three common roles (global, `space_id: nil`) with appropriate
 permissions. These replace the template's generic setup:
 
 - **owner** — full access. All permissions set to `"true"`.
+  `value: "owner"` for machine-readable lookup.
 - **caregiver** — same as owner except `create_space`, `update_space`,
   `delete_space`, and `manage_collaborators` are `"false"`.
+  `value: "caregiver"`.
 - **collaborator** — read-only for child data, can create observations
   and assessments. No user/space management.
+  `value: "collaborator"`.
+
+Use `Roles::Common.find_or_create_by!(name: "owner")` (and similar) to
+keep seeds idempotent. Store the machine-readable identifier in the
+`value` column so display names can change later without breaking lookups.
 
 Also update the default Space seed to use the name "Demo Family" instead
 of "Default Space", and wire the admin user into that space with the
 `owner` role.
 
+**Ordering matters:** Create roles first, then the Space, then the
+UserRole that links the admin user to the space with the owner role.
+
 ### 3. Rename "Space" to "Family" in user-facing UI text
 
-Files to change (labels only, not code identifiers):
+Only change the one view that is already rebuilt in daisyUI 5:
 
 - `app/views/shared/_user_menu.html.erb` — "Spaces" link text → "Families"
-- `app/views/spaces/index.html.erb` — page heading
-- `app/views/spaces/new.html.erb` — page heading, form labels
-- `app/views/spaces/show.html.erb` — page heading
-- `app/views/spaces/edit.html.erb` — page heading, form labels
-- `app/views/spaces/_form.html.erb` — field labels
+
+**Do NOT touch** the `app/views/spaces/` directory. Those 11 files are
+still Bootstrap/Tabler (see `docs/AGENTS.md` "Deferred views") and need
+a full rebuild in daisyUI 5 before any label work makes sense. The
+`show.html.erb` alone is ~1,870 lines of Tabler demo content that will
+be entirely replaced when we build the family dashboard.
+
+Relabeling the spaces views is deferred to a separate "rebuild spaces
+views in daisyUI 5" step (not part of this stage).
 
 Do NOT rename the `Space` model, `spaces` table, routes, controllers,
 or any Ruby identifiers. This is a UI-text-only change.
@@ -89,6 +103,7 @@ sessions have the full picture.
 - No new controllers or routes
 - No changes to authentication flow
 - No billing changes
+- No rebuild of `app/views/spaces/` (still Bootstrap/Tabler — deferred)
 
 ## Open questions
 
@@ -106,22 +121,28 @@ Update `spec/models/role_spec.rb` if it tests the permissions list.
 
 ### Step 2 — Seed domain roles and update default space
 
-Update `db/seeds.rb` to create three common roles (owner, caregiver,
-collaborator) with permissions, rename "Default Space" to "Demo Family",
-and assign admin user the owner role in that space.
+Update `db/seeds.rb` to:
+1. Create three common roles (owner, caregiver, collaborator) using
+   `Roles::Common.find_or_create_by!(name: ...)` with `value` set for
+   machine-readable lookup.
+2. Rename "Default Space" to "Demo Family".
+3. Wire the admin user into that space with the owner role via UserRole.
+
+Order: roles → space → user role.
 
 **Verify:** `bin/rails db:seed` runs without error; verify in console:
-`Roles::Common.pluck(:name)` returns `["owner", "caregiver", "collaborator"]`
+`Roles::Common.pluck(:name, :value)` returns the three roles.
 **Revert:** `git checkout -- db/seeds.rb` then re-seed
 
-### Step 3 — Rename "Space" → "Family" in UI labels
+### Step 3 — Rename "Spaces" → "Families" in user menu
 
-Change user-facing text in the view files listed above.
+Change only the link text in `app/views/shared/_user_menu.html.erb`.
+Do not touch any `app/views/spaces/` files (Bootstrap/Tabler, deferred).
 Do not change any Ruby identifiers, routes, or class names.
 
-**Verify:** `bundle exec rspec spec/` (full suite — view specs may reference text);
-visual check in browser.
-**Revert:** `git checkout -- app/views/`
+**Verify:** `bundle exec rspec spec/` (full suite — no specs assert on
+menu link text, but run to confirm nothing broke); visual check in browser.
+**Revert:** `git checkout -- app/views/shared/_user_menu.html.erb`
 
 ### Step 4 — Update `docs/ARCHITECTURE.md`
 
@@ -135,11 +156,12 @@ associations, and role structure designed in this planning session.
 
 ## Status
 
-- [ ] Step 1 — Expand permissions
-- [ ] Step 2 — Seed domain roles
-- [ ] Step 3 — UI label rename
-- [ ] Step 4 — Update architecture docs
+- [x] Step 1 — Expand permissions
+- [x] Step 2 — Seed domain roles
+- [x] Step 3 — User menu label rename
+- [x] Step 4 — Update architecture docs
 
 **Last updated:** 2026-03-24
-**Handoff note:** Brief created. Ready for Phase 2 (design review) then
-Phase 3 (build).
+**Handoff note:** Stage 0 complete. All 4 steps done. RSpec 102/0,
+RuboCop 0 offenses. Seed needs `bin/rails db:seed` run manually to
+verify in dev. Next: Stage 1 (ChildProfile + single-guardian flow).

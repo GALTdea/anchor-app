@@ -41,6 +41,19 @@ class Role < ApplicationRecord
     read_space
     update_space
     delete_space
+    create_child_profile
+    read_child_profile
+    update_child_profile
+    delete_child_profile
+    create_observation
+    read_observation
+    update_observation
+    delete_observation
+    create_assessment
+    read_assessment
+    update_assessment
+    delete_assessment
+    manage_collaborators
   ].freeze
 
   validates_inclusion_of :type, in: AVAILABLE_TYPES
