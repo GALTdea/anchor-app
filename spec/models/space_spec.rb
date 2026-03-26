@@ -27,6 +27,16 @@ RSpec.describe Space, type: :model do
     it 'has many plans through subscriptions' do
       expect(Space.reflect_on_association(:plans).macro).to eq(:has_many)
     end
+
+    it 'has many child_profiles' do
+      expect(Space.reflect_on_association(:child_profiles).macro).to eq(:has_many)
+    end
+
+    it 'restricts deletion when child profiles exist' do
+      space = create(:space)
+      create(:child_profile, space: space)
+      expect { space.destroy! }.to raise_error(ActiveRecord::RecordNotDestroyed)
+    end
   end
 
   describe 'validations' do

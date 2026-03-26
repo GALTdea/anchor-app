@@ -1,3 +1,9 @@
+# Space represents a family or care-circle workspace (tenant) in the multi-tenant
+# architecture. It owns child profiles, user memberships (via UserRole), and subscriptions.
+# Authorization is space-scoped: users can only access resources within spaces where they
+# have an assigned role (owner, caregiver, collaborator). The space acts as the primary
+# tenant boundary, ensuring families' data remains isolated from each other.
+
 # frozen_string_literal: true
 
 # == Schema Information
@@ -16,6 +22,8 @@ class Space < ApplicationRecord
 
   has_many :subscriptions, -> { includes(:plan) }
   has_many :plans, through: :subscriptions
+
+  has_many :child_profiles, dependent: :restrict_with_error
 
   validates :name, presence: true
 

@@ -10,12 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_13_004232) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_26_003545) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "app_settings", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.jsonb "settings", default: {}, null: false
     t.datetime "updated_at", null: false
     t.index ["settings"], name: "index_app_settings_on_settings", using: :gin
+  end
+
+  create_table "child_profiles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "date_of_birth", null: false
+    t.string "first_name", null: false
+    t.string "last_name", null: false
+    t.text "notes"
+    t.string "slug"
+    t.bigint "space_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_child_profiles_on_slug", unique: true
+    t.index ["space_id"], name: "index_child_profiles_on_space_id"
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|
@@ -105,5 +122,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_004232) do
     t.index ["slug"], name: "index_users_on_slug", unique: true
   end
 
+  add_foreign_key "child_profiles", "spaces"
   add_foreign_key "roles", "spaces"
 end

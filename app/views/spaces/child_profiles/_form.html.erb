@@ -1,0 +1,50 @@
+<%= form_with(model: [@space, @child_profile], class: "space-y-4") do |form| %>
+  <% if @child_profile.errors.any? %>
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <h3 class="font-bold"><%= pluralize(@child_profile.errors.count, "error") %> prohibited this profile from being saved:</h3>
+        <ul class="list-disc list-inside">
+          <% @child_profile.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="form-control">
+    <%= form.label :first_name, class: "label" do %>
+      <span class="label-text">First Name</span>
+    <% end %>
+    <%= form.text_field :first_name, class: "input input-bordered w-full", required: true %>
+  </div>
+
+  <div class="form-control">
+    <%= form.label :last_name, class: "label" do %>
+      <span class="label-text">Last Name</span>
+    <% end %>
+    <%= form.text_field :last_name, class: "input input-bordered w-full", required: true %>
+  </div>
+
+  <div class="form-control">
+    <%= form.label :date_of_birth, class: "label" do %>
+      <span class="label-text">Date of Birth</span>
+    <% end %>
+    <%= form.date_field :date_of_birth, class: "input input-bordered w-full", required: true %>
+  </div>
+
+  <div class="form-control">
+    <%= form.label :notes, class: "label" do %>
+      <span class="label-text">Notes</span>
+    <% end %>
+    <%= form.text_area :notes, rows: 4, class: "textarea textarea-bordered w-full", placeholder: "Optional notes about the child..." %>
+  </div>
+
+  <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-base-300">
+    <%= link_to "Cancel", @child_profile.persisted? ? space_child_profile_path(@space, @child_profile) : space_child_profiles_path(@space), class: "btn btn-ghost" %>
+    <%= form.submit @child_profile.persisted? ? "Update Profile" : "Create Profile", class: "btn btn-primary" %>
+  </div>
+<% end %>

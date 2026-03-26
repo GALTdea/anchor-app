@@ -14,10 +14,10 @@ RSpec.describe "/spaces", type: :request do
   end
 
   describe "GET /show" do
-    it "renders a successful response" do
+    it "redirects to child profiles" do
       space = Space.create!(name: "Test Space")
       get space_url(space)
-      expect(response).to be_successful
+      expect(response).to redirect_to(space_child_profiles_path(space))
     end
   end
 

@@ -1,0 +1,55 @@
+<div class="max-w-4xl mx-auto">
+  <%= render "shared/page_header",
+    title: @child_profile.name,
+    subtitle: "Child profile details" %>
+
+  <div class="space-y-6">
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="text-sm font-medium text-base-content/60">First Name</h4>
+            <p class="text-base-content"><%= @child_profile.first_name %></p>
+          </div>
+          <div>
+            <h4 class="text-sm font-medium text-base-content/60">Last Name</h4>
+            <p class="text-base-content"><%= @child_profile.last_name %></p>
+          </div>
+          <div>
+            <h4 class="text-sm font-medium text-base-content/60">Date of Birth</h4>
+            <p class="text-base-content"><%= @child_profile.date_of_birth.strftime("%B %d, %Y") %></p>
+          </div>
+          <div>
+            <h4 class="text-sm font-medium text-base-content/60">Age</h4>
+            <p class="text-base-content"><%= @child_profile.age %> years</p>
+          </div>
+          <div class="md:col-span-2">
+            <h4 class="text-sm font-medium text-base-content/60">Notes</h4>
+            <p class="text-base-content whitespace-pre-wrap"><%= @child_profile.notes || "No notes" %></p>
+          </div>
+          <div>
+            <h4 class="text-sm font-medium text-base-content/60">Status</h4>
+            <span class="badge <%= @child_profile.active? ? 'badge-success' : 'badge-ghost' %>">
+              <%= @child_profile.status.capitalize %>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-between">
+      <%= link_to "Back to Profiles", space_child_profiles_path(@space), class: "btn btn-ghost" %>
+      <div class="flex gap-2">
+        <% if policy(@child_profile).update? %>
+          <%= link_to "Edit", edit_space_child_profile_path(@space, @child_profile), class: "btn btn-primary" %>
+        <% end %>
+        <% if policy(@child_profile).destroy? && @child_profile.active? %>
+          <%= button_to "Archive", space_child_profile_path(@space, @child_profile),
+            method: :delete,
+            form: { data: { turbo_confirm: "Archive #{@child_profile.name}? This can be undone later." } },
+            class: "btn btn-error" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

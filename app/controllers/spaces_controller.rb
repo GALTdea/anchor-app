@@ -10,7 +10,9 @@ class SpacesController < ApplicationController
   end
 
   # GET /spaces/1
-  def show; end
+  def show
+    redirect_to space_child_profiles_path(@space)
+  end
 
   # GET /spaces/new
   def new
