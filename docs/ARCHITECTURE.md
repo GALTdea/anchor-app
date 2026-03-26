@@ -145,7 +145,7 @@ Define job classes that inherit from `ApplicationJob`; they run via Solid Queue 
 
 ---
 
-## Section 6 — Anchor app domain model (planned)
+## Section 6 — Anchor app domain model
 
 Anchor is an autism care-circle app. The domain extends the template's
 User/Space/Role foundation with child-centered models.
@@ -174,11 +174,16 @@ User/Space/Role foundation with child-centered models.
 | **Caregiver** | `caregiver` | All except `create_space`, `update_space`, `delete_space`, `manage_collaborators` |
 | **Collaborator** | `collaborator` | Read child data, create observations/assessments. No user/space management, no child profile edit/delete |
 
+### Built models
+
+| Model | Stage | Key columns | Belongs to |
+|-------|-------|-------------|-----------|
+| **ChildProfile** | 1 ✅ | `space_id`, `first_name`, `last_name`, `date_of_birth`, `status`, `slug` | Space |
+
 ### Planned models (not yet built)
 
 | Model | Stage | Key columns | Belongs to |
 |-------|-------|-------------|-----------|
-| **ChildProfile** | 1 | `space_id`, `first_name`, `last_name`, `date_of_birth`, `status` | Space |
 | **Observation** | 3 | `child_profile_id`, `author_id`, `category`, `body`, `observed_on`, `visibility` | ChildProfile, User |
 | **AssessmentTemplate** | 4 | `title`, `category`, `schema` (jsonb), `respondent_types`, `status` | — |
 | **Assessment** | 4 | `child_profile_id`, `assessment_template_id`, `status`, `assigned_to_user_id` | ChildProfile, AssessmentTemplate |

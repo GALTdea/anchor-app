@@ -369,7 +369,13 @@ Test the complete flow:
 - [x] Step 8 — Manual QA
 
 **Last updated:** 2026-03-26
-**Handoff note:** Stage 1 complete. All specs green (161 examples, 0 failures), rubocop clean. ChildProfile CRUD with authorization fully implemented. Space#show now redirects to child_profiles#index. Ready for production use or Stage 2 (invite second caregiver).
+**Handoff note:** Stage 1 complete including Phase 4 audit. All specs green (161 examples, 0 failures), rubocop clean. ChildProfile CRUD with authorization fully implemented. Space#show now redirects to child_profiles#index.
+
+**Phase 4 audit findings (resolved):**
+- Fixed: `index.html.erb` was calling `policy(@space)` instead of `policy(@child_profile)` — would have raised `NoMethodError` in production since `ChildProfilePolicy#initialize` calls `record.space` and `Space` has no `.space` method. Fixed in both the header button (line 10) and the empty-state button (line 64).
+- Note: `created_by_id` column was omitted from the migration — no `belongs_to :created_by` on the model. Not a blocker; deferred to Stage 6 audit trail work.
+
+Ready for Stage 2 (invite second caregiver).
 
 ### Manual QA checklist for user
 
