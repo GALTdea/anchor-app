@@ -7,7 +7,7 @@
     <div class="card-body">
       <div class="flex justify-between items-center mb-4">
         <h3 class="card-title">Active Profiles</h3>
-        <% if policy(@space).create? %>
+        <% if policy(@child_profile).create? %>
           <%= link_to new_space_child_profile_path(@space), class: "btn btn-primary" do %>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -61,7 +61,7 @@
       <% else %>
         <div class="text-center py-12">
           <p class="text-base-content/60 mb-4">No child profiles yet.</p>
-          <% if policy(@space).create? %>
+          <% if policy(@child_profile).create? %>
             <%= link_to "Add your first child profile", new_space_child_profile_path(@space), class: "btn btn-primary" %>
           <% end %>
         </div>
