@@ -2,8 +2,9 @@
 
 > **Status: DEFERRED — Post-MVP**
 > This feature is documented for future implementation. It will not be built until
-> the MVP (Stages 1–4: child profiles, observations, assessments) is complete.
-> Do not start Phase 3 (Build) until the MVP deferral is lifted.
+> after the MVP is complete. The current MVP target is **Stage 1 (child profiles) +
+> Stage 4 (assessments)**; Stages 2 and 3 are deferred. Do not start Phase 3 (Build)
+> until this deferral is lifted.
 
 > Full brief. No new models or migrations. Fixes authorization gaps in an existing
 > controller, adds missing policy actions, rebuilds Bootstrap/Tabler views to

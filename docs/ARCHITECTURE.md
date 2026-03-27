@@ -220,12 +220,16 @@ Each `AssessmentResponse` records:
 
 See `docs/features/` for detailed briefs per stage.
 
+**MVP scope (current):** Stage 1 (child profiles) + Stage 4 (assessments). Stages 2
+(invite caregiver) and 3 (observations) are deferred to post-MVP; briefs remain in
+`docs/features/` for when you pick them up.
+
 | Stage | Feature | Key models |
 |-------|---------|-----------|
 | 0 | Foundation cleanup (roles, permissions, UI labels) | — |
 | 1 | Child profile + single-guardian flow | ChildProfile |
 | 2 | Invite a second caregiver *(deferred — post-MVP)* | — |
-| 3 | Observations | Observation |
+| 3 | Observations *(deferred — post-MVP)* | Observation |
 | 4 | Assessments | AssessmentTemplate, Assessment, AssessmentResponse |
 | 5 | External collaborators + child access | ChildAccess |
 | 6 | Consent tracking + audit trail | ConsentRecord, AuditLog |
