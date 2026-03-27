@@ -224,7 +224,7 @@ See `docs/features/` for detailed briefs per stage.
 |-------|---------|-----------|
 | 0 | Foundation cleanup (roles, permissions, UI labels) | — |
 | 1 | Child profile + single-guardian flow | ChildProfile |
-| 2 | Invite a second caregiver | — |
+| 2 | Invite a second caregiver *(deferred — post-MVP)* | — |
 | 3 | Observations | Observation |
 | 4 | Assessments | AssessmentTemplate, Assessment, AssessmentResponse |
 | 5 | External collaborators + child access | ChildAccess |
