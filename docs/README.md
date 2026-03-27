@@ -44,6 +44,10 @@ at the start of every AI coding session.
 | [features/_template-light.md](features/_template-light.md) | Light brief template (config, seeds, docs, UI copy) |
 | [features/_constraints.md](features/_constraints.md) | Shared app invariants reference |
 | [features/stage-0-foundation.md](features/stage-0-foundation.md) | Stage 0 — Foundation cleanup (roles, permissions, UI labels) |
+| [features/stage-1-child-profile.md](features/stage-1-child-profile.md) | Stage 1 — Child profile + single-guardian flow |
+| [features/stage-2-invite-caregiver.md](features/stage-2-invite-caregiver.md) | Stage 2 — Invite caregiver *(deferred post-MVP)* |
+| [features/stage-3-observations.md](features/stage-3-observations.md) | Stage 3 — Observations *(deferred post-MVP)* |
+| [features/stage-4-assessments.md](features/stage-4-assessments.md) | Stage 4 — Assessments *(MVP with Stage 1)* |
 
 ---
 
