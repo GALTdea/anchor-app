@@ -9,8 +9,9 @@
 # == Schema Information
 #
 # Table name: spaces
+# Database name: primary
 #
-#  id         :integer          not null, primary key
+#  id         :bigint           not null, primary key
 #  name       :string
 #  status     :integer          default("active")
 #  created_at :datetime         not null

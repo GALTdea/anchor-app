@@ -1,0 +1,33 @@
+<div class="max-w-2xl mx-auto">
+  <%= render "shared/page_header",
+    title: "New assessment",
+    subtitle: @child_profile.name %>
+
+  <% if @templates.blank? %>
+    <div class="alert alert-warning">
+      <span>No published assessment templates are available. Ask an administrator to publish templates or run seeds.</span>
+    </div>
+    <%= link_to "Back", space_child_profile_path(@space, @child_profile), class: "btn btn-ghost mt-4" %>
+  <% else %>
+    <%= form_with model: @assessment, url: space_child_profile_assessments_path(@space, @child_profile), class: "space-y-6" do |f| %>
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body space-y-4">
+          <div class="form-control w-full">
+            <%= f.label :assessment_template_id, "Assessment template", class: "label" %>
+            <%= f.collection_select :assessment_template_id,
+              @templates,
+              :id,
+              :title,
+              { prompt: "Select a template" },
+              class: "select select-bordered w-full" %>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <%= f.submit "Start assessment", class: "btn btn-primary" %>
+        <%= link_to "Cancel", space_child_profile_assessments_path(@space, @child_profile), class: "btn btn-ghost" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

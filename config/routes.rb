@@ -8,7 +8,13 @@ Rails.application.routes.draw do
     resources :users, only: %i[index new create edit update destroy], controller: "spaces/users"
     resources :roles, controller: "spaces/roles"
     resources :subscriptions, controller: "spaces/subscriptions"
-    resources :child_profiles, controller: "spaces/child_profiles"
+    resources :child_profiles, controller: "spaces/child_profiles" do
+      resources :assessments, only: %i[index new create show destroy], controller: "child_profiles/assessments" do
+        resource :response, only: %i[show edit update],
+          controller: "child_profiles/assessment_responses",
+          as: :assessment_response
+      end
+    end
   end
 
   resource :setup, only: %i[edit update]

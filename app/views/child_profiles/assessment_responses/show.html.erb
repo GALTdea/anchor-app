@@ -1,0 +1,46 @@
+<div class="max-w-3xl mx-auto">
+  <%= render "shared/page_header",
+    title: @assessment.assessment_template.title,
+    subtitle: "Submitted · #{@child_profile.name}" %>
+
+  <div class="card bg-base-100 shadow-sm mb-6">
+    <div class="card-body">
+      <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <dt class="text-sm font-medium text-base-content/60">Respondent</dt>
+          <dd><%= respondent_kind_label(@assessment_response.respondent_kind) %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-base-content/60">Submitted</dt>
+          <dd>
+            <% if @assessment_response.submitted_at %>
+              <%= l(@assessment_response.submitted_at, format: :long) %>
+            <% else %>
+              —
+            <% end %>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body space-y-6">
+      <% questions = Array(@assessment.assessment_template.schema&.dig("questions")) %>
+      <% answers = (@assessment_response.answers || {}).stringify_keys %>
+      <% questions.each do |q| %>
+        <% q = q.stringify_keys %>
+        <% qid = q["id"].to_s %>
+        <% next if qid.blank? %>
+        <div>
+          <h4 class="text-sm font-medium text-base-content/60"><%= q["label"] %></h4>
+          <p class="text-base-content mt-1 whitespace-pre-wrap"><%= answers[qid].presence || "—" %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "Back to assessment", space_child_profile_assessment_path(@space, @child_profile, @assessment), class: "btn btn-ghost" %>
+  </div>
+</div>

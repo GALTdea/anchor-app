@@ -1,8 +1,9 @@
 # == Schema Information
 #
 # Table name: plans
+# Database name: primary
 #
-#  id          :integer          not null, primary key
+#  id          :bigint           not null, primary key
 #  currency    :string           not null
 #  description :string
 #  duration    :string           not null

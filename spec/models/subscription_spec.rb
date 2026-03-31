@@ -1,8 +1,9 @@
 # == Schema Information
 #
 # Table name: subscriptions
+# Database name: primary
 #
-#  id         :integer          not null, primary key
+#  id         :bigint           not null, primary key
 #  end_date   :datetime
 #  seats      :integer
 #  start_date :datetime         not null

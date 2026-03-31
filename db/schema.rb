@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_26_003545) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_31_004551) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -19,6 +19,40 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_003545) do
     t.jsonb "settings", default: {}, null: false
     t.datetime "updated_at", null: false
     t.index ["settings"], name: "index_app_settings_on_settings", using: :gin
+  end
+
+  create_table "assessment_responses", force: :cascade do |t|
+    t.integer "actor_id", null: false
+    t.jsonb "answers", default: {}, null: false
+    t.bigint "assessment_id", null: false
+    t.datetime "created_at", null: false
+    t.string "respondent_kind", null: false
+    t.datetime "submitted_at"
+    t.datetime "updated_at", null: false
+    t.index ["assessment_id"], name: "index_assessment_responses_on_assessment_id", unique: true
+  end
+
+  create_table "assessment_templates", force: :cascade do |t|
+    t.string "category"
+    t.datetime "created_at", null: false
+    t.jsonb "respondent_types", default: [], null: false
+    t.jsonb "schema", default: {}, null: false
+    t.string "slug", null: false
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_assessment_templates_on_slug", unique: true
+  end
+
+  create_table "assessments", force: :cascade do |t|
+    t.bigint "assessment_template_id", null: false
+    t.integer "assigned_to_user_id"
+    t.bigint "child_profile_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["assessment_template_id"], name: "index_assessments_on_assessment_template_id"
+    t.index ["child_profile_id"], name: "index_assessments_on_child_profile_id"
   end
 
   create_table "child_profiles", force: :cascade do |t|
@@ -122,6 +156,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_003545) do
     t.index ["slug"], name: "index_users_on_slug", unique: true
   end
 
+  add_foreign_key "assessment_responses", "assessments"
+  add_foreign_key "assessment_responses", "users", column: "actor_id"
+  add_foreign_key "assessments", "assessment_templates"
+  add_foreign_key "assessments", "child_profiles"
+  add_foreign_key "assessments", "users", column: "assigned_to_user_id"
   add_foreign_key "child_profiles", "spaces"
   add_foreign_key "roles", "spaces"
 end

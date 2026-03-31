@@ -37,6 +37,20 @@
       </div>
     </div>
 
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title">Assessments</h3>
+        <p class="text-base-content/70 mb-4">
+          Structured questionnaires and screeners for this child.
+        </p>
+        <% if policy(Assessment.new(child_profile: @child_profile)).index? %>
+          <%= link_to "View assessments",
+            space_child_profile_assessments_path(@space, @child_profile),
+            class: "btn btn-outline btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+
     <div class="flex justify-between">
       <%= link_to "Back to Profiles", space_child_profiles_path(@space), class: "btn btn-ghost" %>
       <div class="flex gap-2">

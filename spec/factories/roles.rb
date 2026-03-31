@@ -1,8 +1,9 @@
 # == Schema Information
 #
 # Table name: roles
+# Database name: primary
 #
-#  id          :integer          not null, primary key
+#  id          :bigint           not null, primary key
 #  name        :string
 #  permissions :json             not null
 #  type        :string
@@ -17,7 +18,7 @@
 #
 # Foreign Keys
 #
-#  space_id  (space_id => spaces.id)
+#  fk_rails_...  (space_id => spaces.id)
 #
 FactoryBot.define do
   factory :role do

@@ -72,6 +72,100 @@ UserRole.find_or_create_by!(user: admin, space: space) do |ur|
 end
 puts "  admin assigned owner role in #{space.name}"
 
+# --- Assessment templates (Stage 4) ---
+
+# Upserts so re-running seeds refreshes schema (handy when adding test questions).
+developmental = AssessmentTemplate.find_or_initialize_by(slug: "developmental-snapshot")
+developmental.assign_attributes(
+  title: "Developmental snapshot",
+  category: "screening",
+  status: :published,
+  respondent_types: [ "parent_proxy" ],
+  schema: {
+    "version" => 1,
+    "questions" => [
+      {
+        "id" => "concern_level",
+        "label" => "Overall level of concern",
+        "type" => "scale",
+        "min" => 1,
+        "max" => 5,
+        "required" => true
+      },
+      {
+        "id" => "notes",
+        "label" => "Notes",
+        "type" => "textarea",
+        "required" => false
+      },
+      # Extra fields for local UI / validation testing (all optional unless noted)
+      {
+        "id" => "sandbox_nickname",
+        "label" => "[Test] Preferred nickname (text)",
+        "type" => "text",
+        "required" => false
+      },
+      {
+        "id" => "sandbox_energy",
+        "label" => "[Test] Energy level today (scale)",
+        "type" => "scale",
+        "min" => 1,
+        "max" => 5,
+        "required" => false
+      },
+      {
+        "id" => "sandbox_focus",
+        "label" => "[Test] Current focus (select)",
+        "type" => "select",
+        "options" => [ "Sleep", "Communication", "Routine", "Social" ],
+        "required" => false
+      },
+      {
+        "id" => "sandbox_context",
+        "label" => "[Test] Extra context (textarea)",
+        "type" => "textarea",
+        "required" => false
+      },
+      {
+        "id" => "sandbox_readiness",
+        "label" => "[Test] Readiness for next steps (scale)",
+        "type" => "scale",
+        "min" => 1,
+        "max" => 3,
+        "required" => false
+      }
+    ]
+  }
+)
+developmental.save!
+
+AssessmentTemplate.find_or_create_by!(slug: "care-intake") do |t|
+  t.title = "Care intake"
+  t.category = "intake"
+  t.status = :published
+  t.respondent_types = %w[parent_proxy therapist_report]
+  t.schema = {
+    "version" => 1,
+    "questions" => [
+      {
+        "id" => "primary_need",
+        "label" => "Primary area of focus",
+        "type" => "select",
+        "options" => [ "Development", "Behavior", "Social", "Other" ],
+        "required" => true
+      },
+      {
+        "id" => "context",
+        "label" => "Additional context",
+        "type" => "textarea",
+        "required" => false
+      }
+    ]
+  }
+end
+
+puts "  assessment templates: #{AssessmentTemplate.published.pluck(:slug).join(', ')}"
+
 puts ""
 puts "Done! Seed data loaded."
 puts ""

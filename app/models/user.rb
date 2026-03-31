@@ -3,8 +3,9 @@
 # == Schema Information
 #
 # Table name: users
+# Database name: primary
 #
-#  id                     :integer          not null, primary key
+#  id                     :bigint           not null, primary key
 #  admin                  :boolean          default(FALSE)
 #  email                  :string           default(""), not null
 #  encrypted_password     :string           default(""), not null

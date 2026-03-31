@@ -1,0 +1,87 @@
+<div class="max-w-3xl mx-auto">
+  <%= render "shared/page_header",
+    title: @assessment.assessment_template.title,
+    subtitle: "Draft · #{@child_profile.name}" %>
+
+  <%= form_with model: @assessment_response,
+    url: space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
+    method: :patch,
+    class: "space-y-6" do |f| %>
+    <% if @assessment_response.errors.any? %>
+      <div class="alert alert-error">
+        <ul class="list-disc list-inside">
+          <% @assessment_response.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body space-y-4">
+        <div class="form-control w-full max-w-md">
+          <%= f.label :respondent_kind, "Respondent", class: "label" %>
+          <%= f.select :respondent_kind,
+            Array(@assessment.assessment_template.respondent_types).map { |k| [respondent_kind_label(k), k] },
+            {},
+            class: "select select-bordered w-full" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body space-y-6">
+        <% questions = Array(@assessment.assessment_template.schema&.dig("questions")) %>
+        <% answers = (@assessment_response.answers || {}).stringify_keys %>
+        <% questions.each do |q| %>
+          <% q = q.stringify_keys %>
+          <% qid = q["id"].to_s %>
+          <% next if qid.blank? %>
+          <div class="form-control w-full">
+            <label class="label" for="answer_<%= qid %>">
+              <span class="label-text font-medium"><%= q["label"] %></span>
+              <% if q["required"] %>
+                <span class="label-text-alt text-error">Required</span>
+              <% end %>
+            </label>
+            <% case q["type"].to_s %>
+            <% when "scale" %>
+              <%= number_field_tag "assessment_response[answers][#{qid}]",
+                answers[qid],
+                id: "answer_#{qid}",
+                min: q["min"],
+                max: q["max"],
+                class: "input input-bordered w-full max-w-xs" %>
+            <% when "textarea" %>
+              <%= text_area_tag "assessment_response[answers][#{qid}]",
+                answers[qid],
+                id: "answer_#{qid}",
+                rows: 4,
+                class: "textarea textarea-bordered w-full" %>
+            <% when "text" %>
+              <%= text_field_tag "assessment_response[answers][#{qid}]",
+                answers[qid],
+                id: "answer_#{qid}",
+                class: "input input-bordered w-full" %>
+            <% when "select" %>
+              <% opts = Array(q["options"]).map { |o| [o.to_s, o.to_s] } %>
+              <%= select_tag "assessment_response[answers][#{qid}]",
+                options_for_select(opts, answers[qid]),
+                id: "answer_#{qid}",
+                include_blank: "Select…",
+                class: "select select-bordered w-full max-w-md" %>
+            <% else %>
+              <p class="text-sm text-error">Unsupported question type: <%= q["type"] %></p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <%= button_tag "Save draft", type: "submit", name: "submit_action", value: "draft", class: "btn btn-ghost" %>
+      <%= button_tag "Submit assessment", type: "submit", name: "submit_action", value: "submit", class: "btn btn-primary" %>
+      <%= link_to "Cancel", space_child_profile_assessment_path(@space, @child_profile, @assessment), class: "btn btn-ghost" %>
+    </div>
+  <% end %>
+</div>

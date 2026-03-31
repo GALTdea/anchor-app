@@ -3,8 +3,9 @@
 # == Schema Information
 #
 # Table name: user_roles
+# Database name: primary
 #
-#  id       :integer          not null, primary key
+#  id       :bigint           not null, primary key
 #  role_id  :integer          not null
 #  space_id :integer          not null
 #  user_id  :integer          not null

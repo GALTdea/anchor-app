@@ -1,0 +1,58 @@
+<div class="max-w-6xl mx-auto">
+  <%= render "shared/page_header",
+    title: "Assessments",
+    subtitle: @child_profile.name %>
+
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="card-title">Assessments</h3>
+        <% if policy(Assessment.new(child_profile: @child_profile)).create? %>
+          <%= link_to "New assessment", new_space_child_profile_assessment_path(@space, @child_profile), class: "btn btn-primary" %>
+        <% end %>
+      </div>
+
+      <% if @assessments.any? %>
+        <div class="overflow-x-auto">
+          <table class="table table-zebra">
+            <thead>
+              <tr>
+                <th>Template</th>
+                <th>Status</th>
+                <th>Last updated</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @assessments.each do |assessment| %>
+                <tr>
+                  <td><%= assessment.assessment_template.title %></td>
+                  <td>
+                    <span class="badge <%= assessment.submitted? ? 'badge-success' : (assessment.draft? ? 'badge-warning' : 'badge-ghost') %>">
+                      <%= assessment.status.capitalize %>
+                    </span>
+                  </td>
+                  <td><%= l(assessment.updated_at, format: :long) %></td>
+                  <td class="text-right">
+                    <%= link_to "Open", space_child_profile_assessment_path(@space, @child_profile, assessment), class: "btn btn-sm btn-ghost" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-base-content/60">No assessments yet.</p>
+        <% if policy(Assessment.new(child_profile: @child_profile)).create? %>
+          <p class="mt-2">
+            <%= link_to "Start an assessment", new_space_child_profile_assessment_path(@space, @child_profile), class: "link link-primary" %>
+          </p>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "Back to child profile", space_child_profile_path(@space, @child_profile), class: "btn btn-ghost" %>
+  </div>
+</div>

@@ -1,15 +1,16 @@
 # == Schema Information
 #
 # Table name: app_settings
+# Database name: primary
 #
-#  id         :integer          not null, primary key
-#  settings   :json             not null
+#  id         :bigint           not null, primary key
+#  settings   :jsonb            not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
 # Indexes
 #
-#  index_app_settings_on_settings  (settings)
+#  index_app_settings_on_settings  (settings) USING gin
 #
 require 'rails_helper'
 

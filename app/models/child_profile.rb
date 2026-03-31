@@ -1,8 +1,35 @@
+# == Schema Information
+#
+# Table name: child_profiles
+# Database name: primary
+#
+#  id            :bigint           not null, primary key
+#  date_of_birth :date             not null
+#  first_name    :string           not null
+#  last_name     :string           not null
+#  notes         :text
+#  slug          :string
+#  status        :integer          default("active"), not null
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  space_id      :bigint           not null
+#
+# Indexes
+#
+#  index_child_profiles_on_slug      (slug) UNIQUE
+#  index_child_profiles_on_space_id  (space_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (space_id => spaces.id)
+#
 class ChildProfile < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
   belongs_to :space
+
+  has_many :assessments, dependent: :destroy
 
   enum :status, { active: 0, archived: 1 }, default: :active
 
