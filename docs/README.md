@@ -48,6 +48,7 @@ at the start of every AI coding session.
 | [features/stage-2-invite-caregiver.md](features/stage-2-invite-caregiver.md) | Stage 2 — Invite caregiver *(deferred post-MVP)* |
 | [features/stage-3-observations.md](features/stage-3-observations.md) | Stage 3 — Observations *(deferred post-MVP)* |
 | [features/stage-4-assessments.md](features/stage-4-assessments.md) | Stage 4 — Assessments *(MVP with Stage 1)* |
+| [features/stage-4.5-adaptive-assessments.md](features/stage-4.5-adaptive-assessments.md) | Stage 4.5 — Onboarding assessment UX + second brain foundation *(draft proposal)* |
 
 ---
 
@@ -75,4 +76,3 @@ Safe to ignore when building an app from this template.
 | [template/MAINTENANCE.md](template/MAINTENANCE.md) | Status checklist, phase history, planned improvements, version history |
 | [template/DECISIONS.md](template/DECISIONS.md) | Architecture and technology decision log |
 | [template/README.md](template/README.md) | Template folder guide |
-
