@@ -25,6 +25,9 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     if submitting
       @assessment_response.actor = current_user
       @assessment_response.submitted_at = Time.current
+      @assessment_response.processing_status = "queued"
+      @assessment_response.last_processed_at = nil
+      @assessment_response.last_processing_error = nil
       ActiveRecord::Base.transaction do
         unless @assessment_response.save
           render :edit, status: :unprocessable_entity

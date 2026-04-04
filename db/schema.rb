@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_04_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_04_000200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,8 +26,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000100) do
     t.jsonb "answers", default: {}, null: false
     t.bigint "assessment_id", null: false
     t.datetime "created_at", null: false
+    t.datetime "last_processed_at"
+    t.text "last_processing_error"
+    t.string "processing_status"
     t.string "respondent_kind", null: false
     t.datetime "submitted_at"
+    t.jsonb "template_schema_snapshot", default: {}, null: false
+    t.string "template_slug_snapshot", null: false
+    t.integer "template_version_snapshot", null: false
     t.datetime "updated_at", null: false
     t.index ["assessment_id"], name: "index_assessment_responses_on_assessment_id", unique: true
   end

@@ -30,9 +30,15 @@ RSpec.describe "Child profile assessments", type: :request do
         .and change(AssessmentResponse, :count).by(1)
 
       assessment = Assessment.last
+      assessment_response = assessment.assessment_response
+
       expect(response).to redirect_to(
         edit_space_child_profile_assessment_assessment_response_path(space, child_profile, assessment)
       )
+      expect(assessment_response.template_slug_snapshot).to eq(template.slug)
+      expect(assessment_response.template_version_snapshot).to eq(template.version)
+      expect(assessment_response.template_schema_snapshot).to eq(template.schema)
+      expect(assessment_response.processing_status).to be_nil
     end
   end
 
@@ -43,6 +49,8 @@ RSpec.describe "Child profile assessments", type: :request do
     end
 
     it "submits and marks assessment submitted" do
+      assessment_response.update!(last_processing_error: "old failure")
+
       patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
         params: {
           submit_action: "submit",
@@ -60,6 +68,10 @@ RSpec.describe "Child profile assessments", type: :request do
       assessment_response.reload
       expect(assessment.status).to eq("submitted")
       expect(assessment_response.submitted_at).to be_present
+      expect(assessment_response.processing_status).to eq("queued")
+      expect(assessment_response.last_processing_error).to be_nil
+      expect(assessment_response.template_slug_snapshot).to eq(template.slug)
+      expect(assessment_response.template_version_snapshot).to eq(template.version)
     end
   end
 

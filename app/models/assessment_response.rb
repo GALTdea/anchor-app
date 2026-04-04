@@ -26,14 +26,27 @@
 class AssessmentResponse < ApplicationRecord
   include AssessmentRespondentKinds
 
+  PROCESSING_STATUSES = %w[queued processing completed failed].freeze
+  SNAPSHOT_ATTRIBUTES = %w[
+    template_slug_snapshot
+    template_version_snapshot
+    template_schema_snapshot
+  ].freeze
+
   belongs_to :assessment
   belongs_to :actor, class_name: "User"
 
   attr_accessor :submitting
 
+  before_validation :capture_template_snapshot, on: :create
+
+  validates :template_slug_snapshot, :template_version_snapshot, :template_schema_snapshot, presence: true
+  validates :processing_status, inclusion: { in: PROCESSING_STATUSES }, allow_nil: true
+
   validate :respondent_kind_must_be_canonical
   validate :respondent_kind_allowed_by_template
   validate :answers_must_match_schema_when_submitting, if: :submitting
+  validate :template_snapshot_must_remain_immutable, on: :update
 
   def draft?
     submitted_at.nil?
@@ -44,6 +57,15 @@ class AssessmentResponse < ApplicationRecord
   end
 
   private
+
+  def capture_template_snapshot
+    template = assessment&.assessment_template
+    return if template.blank?
+
+    self.template_slug_snapshot ||= template.slug
+    self.template_version_snapshot ||= template.version
+    self.template_schema_snapshot = template.schema.deep_dup if template_schema_snapshot.blank?
+  end
 
   def respondent_kind_must_be_canonical
     return if respondent_kind.blank?
@@ -71,5 +93,11 @@ class AssessmentResponse < ApplicationRecord
     return if validator.valid?
 
     validator.error_messages.each { |msg| errors.add(:answers, msg) }
+  end
+
+  def template_snapshot_must_remain_immutable
+    return unless SNAPSHOT_ATTRIBUTES.any? { |attribute| will_save_change_to_attribute?(attribute) }
+
+    errors.add(:base, "template snapshot cannot change once the response is created")
   end
 end

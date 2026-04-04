@@ -355,7 +355,7 @@ implemented domain model differs materially from current planning docs.
 ## Status
 
 - [x] Step 1 — Expand schema contract
-- [ ] Step 2 — Add response snapshots
+- [x] Step 2 — Add response snapshots
 - [ ] Step 3 — Rebuild onboarding runner
 - [ ] Step 4 — Add evidence pipeline
 - [ ] Step 5 — Add current profile + snapshots
@@ -364,10 +364,11 @@ implemented domain model differs materially from current planning docs.
 - [ ] Step 8 — Full verification and doc sync
 
 **Last updated:** 2026-04-04
-**Handoff note:** Draft proposal only. Stage 4 remains the shipped assessment baseline.
-This stage proposes the next evolution: a more polished onboarding assessment UX plus
-the first second-brain foundation layer built on top of submitted assessment data.
-Adaptive assessments are explicitly deferred to a later stage. Step 1 is complete:
-`AssessmentTemplate` now has stronger schema validation plus versioning rules in code,
-and seeds define richer versioned onboarding templates. Full Rails/RSpec verification
-is still blocked in this shell because the app's Bundler/Ruby toolchain is unavailable.
+**Handoff note:** Stage 4 remains the shipped assessment baseline. Stage 4.5 is now
+under active implementation as the next evolution: a more polished onboarding
+assessment UX plus the first second-brain foundation layer built on top of submitted
+assessment data. Adaptive assessments remain deferred to a later stage. Step 1 is
+complete with stronger `AssessmentTemplate` schema/versioning rules and richer seeded
+templates. Step 2 is complete with immutable template snapshot fields and async
+processing-state tracking added to `AssessmentResponse`, and the current draft/submit
+assessment flow remains green under RSpec and RuboCop verification.
