@@ -360,7 +360,7 @@ implemented domain model differs materially from current planning docs.
 - [x] Step 4 — Add evidence pipeline
 - [x] Step 5 — Add current profile + snapshots
 - [x] Step 6 — Add recommendations + surfaces
-- [ ] Step 7 — Document observation integration path
+- [x] Step 7 — Document observation integration path
 - [ ] Step 8 — Full verification and doc sync
 
 **Last updated:** 2026-04-04
@@ -385,4 +385,8 @@ after the rebuild/snapshot chain finishes successfully. Step 6 is now complete:
 recommendations are generated from the latest profile snapshot, child-level read-only
 surfaces for the current profile and recommendations are live under each child, and
 assessment-response processing reaches `completed` only after recommendation
-generation finishes successfully.
+generation finishes successfully. Step 7 is now complete: the deferred observations
+brief and the shared architecture doc both explicitly state that future
+human-authored observations should feed the same `ProfileEvidence` ->
+`CurrentProfile` -> `ProfileSnapshot` -> `Recommendation` pipeline rather than
+creating a separate AI memory path.

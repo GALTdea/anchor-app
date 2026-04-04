@@ -159,6 +159,11 @@ User/Space/Role foundation with child-centered models.
 - **Assessment** = a structured evaluation assigned to a child.
 - **AssessmentResponse** = a submitted answer set with respondent provenance.
 - **Observation** = a log entry (behavior, milestone, note) about a child.
+- **ProfileEvidence** = normalized, cross-source evidence derived from assessments
+  and later observations.
+- **CurrentProfile** = the latest synthesized child portrait built from evidence.
+- **ProfileSnapshot** = a point-in-time saved state of the current profile.
+- **Recommendation** = generated guidance tied to a profile snapshot.
 
 ### Three-tier role system
 
@@ -179,15 +184,19 @@ User/Space/Role foundation with child-centered models.
 | Model | Stage | Key columns | Belongs to |
 |-------|-------|-------------|-----------|
 | **ChildProfile** | 1 ✅ | `space_id`, `first_name`, `last_name`, `date_of_birth`, `status`, `slug` | Space |
+| **AssessmentTemplate** | 4.5 ✅ | `title`, `slug`, `template_key`, `version`, `schema`, `respondent_types`, `status` | — |
+| **Assessment** | 4.5 ✅ | `child_profile_id`, `assessment_template_id`, `status`, `assigned_to_user_id` | ChildProfile, AssessmentTemplate |
+| **AssessmentResponse** | 4.5 ✅ | `assessment_id`, `actor_id`, `respondent_kind`, `answers`, template snapshots, processing fields | Assessment, User |
+| **ProfileEvidence** | 4.5 ✅ | `child_profile_id`, `source_type`, `source_id`, `dimension_key`, `concept_key`, `value`, `value_type`, `confidence` | ChildProfile |
+| **CurrentProfile** | 4.5 ✅ | `child_profile_id`, `summary`, `narrative`, `generated_at`, `profile_version` | ChildProfile |
+| **ProfileSnapshot** | 4.5 ✅ | `child_profile_id`, `summary`, `narrative`, `generated_at`, `trigger_source_type`, `trigger_source_id` | ChildProfile |
+| **Recommendation** | 4.5 ✅ | `child_profile_id`, `status`, `category`, `title`, `body`, `rationale`, `generated_at` | ChildProfile, ProfileSnapshot |
 
 ### Planned models (not yet built)
 
 | Model | Stage | Key columns | Belongs to |
 |-------|-------|-------------|-----------|
 | **Observation** | 3 | `child_profile_id`, `author_id`, `category`, `body`, `observed_on`, `visibility` | ChildProfile, User |
-| **AssessmentTemplate** | 4 | `title`, `category`, `schema` (jsonb), `respondent_types`, `status` | — |
-| **Assessment** | 4 | `child_profile_id`, `assessment_template_id`, `status`, `assigned_to_user_id` | ChildProfile, AssessmentTemplate |
-| **AssessmentResponse** | 4 | `assessment_id`, `actor_id`, `respondent_kind`, `answers` (jsonb) | Assessment, User |
 | **ChildAccess** | 5 | `user_id`, `child_profile_id`, `relationship`, `granted_by_user_id`, `status` | User, ChildProfile |
 | **ConsentRecord** | 6 | `child_profile_id`, `granted_by_user_id`, `granted_to_user_id`, `scope`, `status` | ChildProfile, User |
 
@@ -206,7 +215,19 @@ User/Space/Role foundation with child-centered models.
       │                               │
       │                          Assessment ──► AssessmentTemplate
       │                               │
-      └──────< AssessmentResponse >───┘  (Stage 4)
+      └──────< AssessmentResponse >───┘
+                                      │
+                                      ▼
+                               ProfileEvidence
+                                      │
+                                      ▼
+                                CurrentProfile
+                                      │
+                                      ▼
+                               ProfileSnapshot
+                                      │
+                                      ▼
+                                Recommendation
 ```
 
 ### Respondent provenance (assessments)
@@ -215,6 +236,22 @@ Each `AssessmentResponse` records:
 - **actor** — which authenticated user submitted it
 - **respondent_kind** — who the answers represent (`parent_proxy`, `self_report`, `therapist_report`, `teacher_report`)
 - **subject** — implied via the assessment's child profile
+
+### Second-brain pipeline
+
+The second-brain layer now follows this shared pattern:
+
+```text
+caregiver-authored source record
+-> normalized ProfileEvidence
+-> CurrentProfile rebuild
+-> ProfileSnapshot if profile changed
+-> Recommendation refresh
+```
+
+Today the implemented source record is `AssessmentResponse`.
+When Stage 3 observations are built, `Observation` should feed this same pipeline
+rather than creating a parallel AI memory path.
 
 ### Feature stages
 
@@ -231,6 +268,7 @@ See `docs/features/` for detailed briefs per stage.
 | 2 | Invite a second caregiver *(deferred — post-MVP)* | — |
 | 3 | Observations *(deferred — post-MVP)* | Observation |
 | 4 | Assessments | AssessmentTemplate, Assessment, AssessmentResponse |
+| 4.5 | Second-brain foundation | ProfileEvidence, CurrentProfile, ProfileSnapshot, Recommendation |
 | 5 | External collaborators + child access | ChildAccess |
 | 6 | Consent tracking + audit trail | ConsentRecord, AuditLog |
 | 7 | Goals and progress tracking | TBD |

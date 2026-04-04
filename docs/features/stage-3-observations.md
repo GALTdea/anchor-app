@@ -34,14 +34,16 @@ observations are freeform notes organized by category.
 ## Goal
 
 Enable caregivers to log, view, and manage daily observations about a child, providing
-a chronological care history that feeds into future assessments and reports.
+a chronological care history that feeds into the same second-brain evidence pipeline
+as onboarding assessments.
 
 ## User value
 
 A parent can open a child's profile and quickly log what happened today — a behavior
 event, a milestone, an activity result — with a date, category, and free-text note.
 All observations appear in reverse-chronological order as a care timeline. This is
-the foundation for tracking patterns over time.
+the foundation for tracking patterns over time and for continuously sharpening the
+child's living profile.
 
 ## Constraints / Invariants
 
@@ -97,6 +99,40 @@ Stage 5** when per-child access roles are introduced. Do not add it now.
 |-------|--------|--------|
 | `ChildProfile` | Add `has_many :observations, dependent: :destroy` | A child has many logged observations |
 | `User` | Add `has_many :authored_observations, class_name: 'Observation', foreign_key: :author_id, dependent: :nullify` | A user authors many observations; if user removed, preserve the observation record |
+
+### Second-brain integration
+
+Observations remain the caregiver-authored daily log model. They should **not** be
+collapsed into `ProfileEvidence` directly in the write path.
+
+Instead, the intended future flow is:
+
+```text
+Observation created / updated
+-> raw observation stored as the caregiver-entered record
+-> observation extraction job runs
+-> normalized ProfileEvidence records created
+-> CurrentProfile rebuilt
+-> ProfileSnapshot created only if the profile materially changed
+-> Recommendation generation refreshed from the latest snapshot
+```
+
+This mirrors the assessment pipeline introduced in Stage 4.5:
+
+- `Observation` = human-authored source record
+- `ProfileEvidence` = normalized second-brain evidence
+- `CurrentProfile` = latest synthesized child portrait
+- `ProfileSnapshot` = historical profile state over time
+- `Recommendation` = generated next-step guidance
+
+For observation implementation, that means:
+
+- keep the raw `body`, `category`, `observed_on`, and `author` on `Observation`
+- add extraction jobs/services later rather than overloading the model itself
+- use the same `child_profile_id`, `source_type`, `source_id` evidence pattern that
+  assessments already use
+- preserve observations as editable/archiveable human records even though downstream
+  evidence and recommendations may be regenerated
 
 ### Seed data
 
@@ -246,6 +282,8 @@ end
 - Pagination of the observations index (add Pagy when count grows; defer for now)
 - Attachments (photos, audio) — post-MVP
 - Notifications when a new observation is logged — post-MVP
+- Observation-to-`ProfileEvidence` extraction implementation — handled after the
+  Stage 4.5 second-brain foundation is in place
 
 ## Open questions
 
