@@ -1,0 +1,54 @@
+<div class="mx-auto max-w-5xl space-y-6">
+  <%= render "shared/page_header",
+    title: "#{@child_profile.name}'s recommendations",
+    subtitle: "Actionable ideas generated from the current profile" %>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_20rem]">
+    <div class="space-y-4">
+      <% if @recommendations.any? %>
+        <% @recommendations.each do |recommendation| %>
+          <div class="card bg-base-100 shadow-sm">
+            <div class="card-body gap-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="badge badge-primary badge-outline"><%= recommendation.category.humanize %></span>
+                <span class="badge badge-ghost"><%= l(recommendation.generated_at, format: :long) %></span>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-base-content"><%= recommendation.title %></h3>
+                <p class="mt-2 text-base leading-7 text-base-content/75"><%= recommendation.body %></p>
+              </div>
+              <div class="flex justify-end">
+                <%= link_to "View rationale",
+                  space_child_profile_recommendation_path(@space, @child_profile, recommendation),
+                  class: "btn btn-ghost btn-sm" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h3 class="text-lg font-semibold text-base-content">No recommendations yet</h3>
+            <p class="mt-2 text-sm leading-6 text-base-content/70">
+              Recommendations will appear here after the current profile has enough evidence to generate actionable next steps.
+            </p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-3">
+          <h3 class="text-base font-semibold text-base-content">Current profile</h3>
+          <p class="text-sm leading-6 text-base-content/70">
+            Recommendations are grounded in the latest synthesized profile rather than any single answer.
+          </p>
+          <%= link_to "Open current profile",
+            space_child_profile_current_profile_path(@space, @child_profile),
+            class: "btn btn-primary btn-sm" %>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_04_000500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
     t.index ["space_id"], name: "index_child_profiles_on_space_id"
   end
 
+  create_table "current_profiles", force: :cascade do |t|
+    t.bigint "child_profile_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "generated_at", null: false
+    t.text "narrative"
+    t.integer "profile_version", default: 1, null: false
+    t.jsonb "summary", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.index ["child_profile_id"], name: "index_current_profiles_on_child_profile_id", unique: true
+  end
+
   create_table "friendly_id_slugs", force: :cascade do |t|
     t.datetime "created_at"
     t.string "scope"
@@ -119,6 +130,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
     t.index ["child_profile_id", "dimension_key"], name: "index_profile_evidences_on_child_profile_id_and_dimension_key"
     t.index ["child_profile_id"], name: "index_profile_evidences_on_child_profile_id"
     t.index ["source_type", "source_id"], name: "index_profile_evidences_on_source"
+  end
+
+  create_table "profile_snapshots", force: :cascade do |t|
+    t.bigint "child_profile_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "generated_at", null: false
+    t.text "narrative"
+    t.jsonb "summary", default: {}, null: false
+    t.bigint "trigger_source_id"
+    t.string "trigger_source_type"
+    t.datetime "updated_at", null: false
+    t.index ["child_profile_id", "generated_at"], name: "index_profile_snapshots_on_child_profile_id_and_generated_at"
+    t.index ["child_profile_id"], name: "index_profile_snapshots_on_child_profile_id"
+    t.index ["trigger_source_type", "trigger_source_id"], name: "index_profile_snapshots_on_trigger_source"
+  end
+
+  create_table "recommendations", force: :cascade do |t|
+    t.text "body", null: false
+    t.string "category", null: false
+    t.bigint "child_profile_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "generated_at", null: false
+    t.jsonb "rationale", default: {}, null: false
+    t.bigint "source_profile_snapshot_id", null: false
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["child_profile_id", "category"], name: "index_recommendations_on_child_profile_id_and_category"
+    t.index ["child_profile_id"], name: "index_recommendations_on_child_profile_id"
+    t.index ["source_profile_snapshot_id"], name: "index_recommendations_on_source_profile_snapshot_id"
   end
 
   create_table "roles", force: :cascade do |t|
@@ -192,6 +233,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
   add_foreign_key "assessments", "child_profiles"
   add_foreign_key "assessments", "users", column: "assigned_to_user_id"
   add_foreign_key "child_profiles", "spaces"
+  add_foreign_key "current_profiles", "child_profiles"
   add_foreign_key "profile_evidences", "child_profiles"
+  add_foreign_key "profile_snapshots", "child_profiles"
+  add_foreign_key "recommendations", "child_profiles"
+  add_foreign_key "recommendations", "profile_snapshots", column: "source_profile_snapshot_id"
   add_foreign_key "roles", "spaces"
 end

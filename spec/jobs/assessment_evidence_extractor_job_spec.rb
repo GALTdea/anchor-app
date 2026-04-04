@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe AssessmentEvidenceExtractorJob, type: :job do
+  include ActiveJob::TestHelper
+
   let(:template) do
     create(
       :assessment_template,
@@ -79,10 +81,15 @@ RSpec.describe AssessmentEvidenceExtractorJob, type: :job do
     expect {
       described_class.perform_now(assessment_response.id)
     }.to change(ProfileEvidence, :count).by(3)
+      .and have_enqueued_job(CurrentProfileRebuilderJob).with(
+        assessment.child_profile_id,
+        trigger_source_type: "AssessmentResponse",
+        trigger_source_id: assessment_response.id
+      )
 
     assessment_response.reload
-    expect(assessment_response.processing_status).to eq("completed")
-    expect(assessment_response.last_processed_at).to be_present
+    expect(assessment_response.processing_status).to eq("processing")
+    expect(assessment_response.last_processed_at).to be_nil
 
     select_evidence = ProfileEvidence.find_by!(concept_key: "support_style")
     expect(select_evidence.value_type).to eq("selection")

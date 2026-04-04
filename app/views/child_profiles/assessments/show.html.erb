@@ -53,6 +53,12 @@
             <%= link_to "View responses",
               space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
               class: "btn btn-primary" %>
+            <%= link_to "Current profile",
+              space_child_profile_current_profile_path(@space, @child_profile),
+              class: "btn btn-ghost" %>
+            <%= link_to "Recommendations",
+              space_child_profile_recommendations_path(@space, @child_profile),
+              class: "btn btn-ghost" %>
           <% end %>
         </div>
       <% end %>

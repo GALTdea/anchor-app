@@ -358,8 +358,8 @@ implemented domain model differs materially from current planning docs.
 - [x] Step 2 — Add response snapshots
 - [x] Step 3 — Rebuild onboarding runner
 - [x] Step 4 — Add evidence pipeline
-- [ ] Step 5 — Add current profile + snapshots
-- [ ] Step 6 — Add recommendations + surfaces
+- [x] Step 5 — Add current profile + snapshots
+- [x] Step 6 — Add recommendations + surfaces
 - [ ] Step 7 — Document observation integration path
 - [ ] Step 8 — Full verification and doc sync
 
@@ -378,4 +378,11 @@ surfaces, while keeping the underlying submit mechanics unchanged. Step 4 is now
 complete: submitted responses enqueue an idempotent extraction job that reads the
 snapshotted template schema and writes normalized `ProfileEvidence` records tied back
 to the response, while updating response processing state for success/failure
-visibility. Current-profile rebuild and snapshot generation remain the next step.
+visibility. Step 5 is now complete: normalized evidence deterministically rebuilds a
+single `CurrentProfile` for the child, snapshots are created only when the profile
+materially changes, and assessment-response processing now reaches `completed` only
+after the rebuild/snapshot chain finishes successfully. Step 6 is now complete:
+recommendations are generated from the latest profile snapshot, child-level read-only
+surfaces for the current profile and recommendations are live under each child, and
+assessment-response processing reaches `completed` only after recommendation
+generation finishes successfully.

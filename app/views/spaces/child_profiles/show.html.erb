@@ -51,6 +51,32 @@
       </div>
     </div>
 
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title">Current Profile</h3>
+          <p class="text-base-content/70 mb-4">
+            The living portrait built from onboarding evidence and future child signals.
+          </p>
+          <%= link_to "View current profile",
+            space_child_profile_current_profile_path(@space, @child_profile),
+            class: "btn btn-outline btn-primary" %>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title">Recommendations</h3>
+          <p class="text-base-content/70 mb-4">
+            Evidence-backed next steps generated from the current profile.
+          </p>
+          <%= link_to "View recommendations",
+            space_child_profile_recommendations_path(@space, @child_profile),
+            class: "btn btn-outline btn-primary" %>
+        </div>
+      </div>
+    </div>
+
     <div class="flex justify-between">
       <%= link_to "Back to Profiles", space_child_profiles_path(@space), class: "btn btn-ghost" %>
       <div class="flex gap-2">
