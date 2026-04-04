@@ -20,8 +20,8 @@ class Spaces::SubscriptionsController < ApplicationController
         format.html { redirect_to space_subscriptions_path(@space), notice: "Subscription was successfully created." }
         format.json { render :show, status: :created, location: @space }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @subscription.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @subscription.errors, status: :unprocessable_content }
       end
     end
   end

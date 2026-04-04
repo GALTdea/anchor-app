@@ -26,8 +26,8 @@ class Spaces::ChildProfilesController < ApplicationController
         format.html { redirect_to space_child_profile_path(@space, @child_profile), notice: "Child profile was successfully created." }
         format.json { render :show, status: :created, location: [ @space, @child_profile ] }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @child_profile.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @child_profile.errors, status: :unprocessable_content }
       end
     end
   end
@@ -44,8 +44,8 @@ class Spaces::ChildProfilesController < ApplicationController
         format.html { redirect_to space_child_profile_path(@space, @child_profile), notice: "Child profile was successfully updated." }
         format.json { render :show, status: :ok, location: [ @space, @child_profile ] }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @child_profile.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @child_profile.errors, status: :unprocessable_content }
       end
     end
   end

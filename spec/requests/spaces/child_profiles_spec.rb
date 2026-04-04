@@ -87,9 +87,9 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
         }.not_to change(ChildProfile, :count)
       end
 
-      it "renders the new template with unprocessable_entity status" do
+      it "renders the new template with unprocessable_content status" do
         post space_child_profiles_url(space), params: { child_profile: invalid_attributes }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end
@@ -128,9 +128,9 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
         }
       end
 
-      it "renders the edit template with unprocessable_entity status" do
+      it "renders the edit template with unprocessable_content status" do
         patch space_child_profile_url(space, child_profile), params: { child_profile: invalid_attributes }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end

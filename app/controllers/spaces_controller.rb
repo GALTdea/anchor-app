@@ -31,7 +31,7 @@ class SpacesController < ApplicationController
     if @space.save
       redirect_to space_url(@space), notice: "Space was successfully created."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -40,7 +40,7 @@ class SpacesController < ApplicationController
     if @space.update(space_params)
       flash.now[:notice] = "Space was successfully updated."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

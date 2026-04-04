@@ -12,7 +12,7 @@ class SetupController < ApplicationController
       if @app_setting.update(settings: setup_params)
         format.html { redirect_to edit_setup_path, notice: "Settings were successfully updated." }
       else
-        format.html { render :edit, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
       end
     end
   end

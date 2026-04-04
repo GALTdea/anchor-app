@@ -38,7 +38,7 @@ class ChildProfiles::AssessmentsController < ApplicationController
         notice: "Assessment started. Complete the questions below."
     else
       @templates = AssessmentTemplate.published.order(:title)
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 

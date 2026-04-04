@@ -30,7 +30,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
       @assessment_response.last_processing_error = nil
       ActiveRecord::Base.transaction do
         unless @assessment_response.save
-          render :edit, status: :unprocessable_entity
+          render :edit, status: :unprocessable_content
           return
         end
         @assessment.update!(status: :submitted)
@@ -42,7 +42,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
       redirect_to edit_space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
         notice: "Draft saved."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
