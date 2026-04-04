@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_04_000200) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,6 +100,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000200) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "profile_evidences", force: :cascade do |t|
+    t.bigint "child_profile_id", null: false
+    t.string "concept_key", null: false
+    t.float "confidence", null: false
+    t.datetime "created_at", null: false
+    t.string "dimension_key", null: false
+    t.boolean "inferred", default: false, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "recorded_at", null: false
+    t.string "respondent_kind", null: false
+    t.bigint "source_id", null: false
+    t.string "source_type", null: false
+    t.datetime "updated_at", null: false
+    t.text "value", null: false
+    t.string "value_type", null: false
+    t.index ["child_profile_id", "concept_key"], name: "index_profile_evidences_on_child_profile_id_and_concept_key"
+    t.index ["child_profile_id", "dimension_key"], name: "index_profile_evidences_on_child_profile_id_and_dimension_key"
+    t.index ["child_profile_id"], name: "index_profile_evidences_on_child_profile_id"
+    t.index ["source_type", "source_id"], name: "index_profile_evidences_on_source"
+  end
+
   create_table "roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
@@ -171,5 +192,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000200) do
   add_foreign_key "assessments", "child_profiles"
   add_foreign_key "assessments", "users", column: "assigned_to_user_id"
   add_foreign_key "child_profiles", "spaces"
+  add_foreign_key "profile_evidences", "child_profiles"
   add_foreign_key "roles", "spaces"
 end

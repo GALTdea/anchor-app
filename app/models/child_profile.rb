@@ -30,6 +30,7 @@ class ChildProfile < ApplicationRecord
   belongs_to :space
 
   has_many :assessments, dependent: :destroy
+  has_many :profile_evidences, dependent: :destroy
 
   enum :status, { active: 0, archived: 1 }, default: :active
 

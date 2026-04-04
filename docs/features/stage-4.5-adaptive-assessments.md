@@ -357,7 +357,7 @@ implemented domain model differs materially from current planning docs.
 - [x] Step 1 — Expand schema contract
 - [x] Step 2 — Add response snapshots
 - [x] Step 3 — Rebuild onboarding runner
-- [ ] Step 4 — Add evidence pipeline
+- [x] Step 4 — Add evidence pipeline
 - [ ] Step 5 — Add current profile + snapshots
 - [ ] Step 6 — Add recommendations + surfaces
 - [ ] Step 7 — Document observation integration path
@@ -374,4 +374,8 @@ processing-state tracking added to `AssessmentResponse`, and the current draft/s
 assessment flow remains green under RSpec and RuboCop verification. Step 3 is now
 complete: the onboarding runner has been rebuilt into a more supportive, sectioned
 MVP flow with visible progress, improved framing, and snapshot-aware read-only
-surfaces, while keeping the underlying submit mechanics unchanged.
+surfaces, while keeping the underlying submit mechanics unchanged. Step 4 is now
+complete: submitted responses enqueue an idempotent extraction job that reads the
+snapshotted template schema and writes normalized `ProfileEvidence` records tied back
+to the response, while updating response processing state for success/failure
+visibility. Current-profile rebuild and snapshot generation remain the next step.

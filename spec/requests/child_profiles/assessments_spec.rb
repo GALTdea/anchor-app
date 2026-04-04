@@ -3,6 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "Child profile assessments", type: :request do
+  include ActiveJob::TestHelper
+
   let(:user) { create(:user) }
   let(:space) { create(:space) }
   let(:role) { create(:role, :common, permissions: Role::AVAILABLE_PERMISSIONS.index_with { "true" }) }
@@ -12,6 +14,17 @@ RSpec.describe "Child profile assessments", type: :request do
   before do
     sign_in user
     create(:user_role, user: user, space: space, role: role)
+  end
+
+  around do |example|
+    original_adapter = ActiveJob::Base.queue_adapter
+    ActiveJob::Base.queue_adapter = :test
+    clear_enqueued_jobs
+    clear_performed_jobs
+    example.run
+    clear_enqueued_jobs
+    clear_performed_jobs
+    ActiveJob::Base.queue_adapter = original_adapter
   end
 
   describe "GET /index" do
@@ -51,17 +64,19 @@ RSpec.describe "Child profile assessments", type: :request do
     it "submits and marks assessment submitted" do
       assessment_response.update!(last_processing_error: "old failure")
 
-      patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
-        params: {
-          submit_action: "submit",
-          assessment_response: {
-            respondent_kind: "parent_proxy",
-            answers: {
-              "concern_level" => "3",
-              "notes" => "Done"
+      expect {
+        patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+          params: {
+            submit_action: "submit",
+            assessment_response: {
+              respondent_kind: "parent_proxy",
+              answers: {
+                "concern_level" => "3",
+                "notes" => "Done"
+              }
             }
           }
-        }
+      }.to have_enqueued_job(AssessmentEvidenceExtractorJob).with(assessment_response.id)
 
       expect(response).to redirect_to(space_child_profile_assessment_path(space, child_profile, assessment))
       assessment.reload

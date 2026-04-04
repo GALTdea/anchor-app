@@ -35,6 +35,7 @@ class AssessmentResponse < ApplicationRecord
 
   belongs_to :assessment
   belongs_to :actor, class_name: "User"
+  has_many :profile_evidences, as: :source, dependent: :destroy
 
   attr_accessor :submitting
 
