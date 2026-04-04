@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_31_004551) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_04_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,9 +39,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_004551) do
     t.jsonb "schema", default: {}, null: false
     t.string "slug", null: false
     t.integer "status", default: 0, null: false
+    t.string "template_key", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.integer "version", default: 1, null: false
     t.index ["slug"], name: "index_assessment_templates_on_slug", unique: true
+    t.index ["template_key", "version"], name: "index_assessment_templates_on_template_key_and_version", unique: true
   end
 
   create_table "assessments", force: :cascade do |t|
