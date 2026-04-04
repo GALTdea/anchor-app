@@ -75,6 +75,21 @@ RSpec.describe "Child profile assessments", type: :request do
     end
   end
 
+  describe "GET /response/edit" do
+    let(:assessment) { create(:assessment, child_profile: child_profile, assessment_template: template) }
+    let!(:assessment_response) { create(:assessment_response, assessment: assessment, actor: user) }
+
+    it "renders the onboarding runner with progress and section content" do
+      get edit_space_child_profile_assessment_assessment_response_path(space, child_profile, assessment)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Onboarding draft")
+      expect(response.body).to include("Progress")
+      expect(response.body).to include("Regulation")
+      expect(response.body).to include("What to expect")
+    end
+  end
+
   describe "authorization" do
     let(:other_user) { create(:user) }
     let(:child_profile) { create(:child_profile, space: space) }

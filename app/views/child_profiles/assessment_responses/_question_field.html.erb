@@ -1,0 +1,57 @@
+<% question = question.stringify_keys %>
+<% question_id = question["id"].to_s %>
+<% answer_id = "answer_#{question_id}" %>
+
+<fieldset class="fieldset rounded-box border border-base-300/70 bg-base-100 p-5">
+  <legend class="fieldset-legend text-base font-semibold text-base-content">
+    <%= question["label"] %>
+  </legend>
+
+  <% if question["help_text"].present? || question["required"] %>
+    <div class="mb-3 flex flex-wrap items-center gap-2 text-sm text-base-content/70">
+      <% if question["help_text"].present? %>
+        <span><%= question["help_text"] %></span>
+      <% end %>
+      <% if question["required"] %>
+        <span class="badge badge-error badge-outline">Required</span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% case question["type"].to_s %>
+  <% when "scale" %>
+    <label class="label" for="<%= answer_id %>">
+      Rate from <%= question["min"] %> to <%= question["max"] %>
+    </label>
+    <%= number_field_tag "assessment_response[answers][#{question_id}]",
+      answers[question_id],
+      id: answer_id,
+      min: question["min"],
+      max: question["max"],
+      class: "input w-full max-w-32" %>
+  <% when "textarea" %>
+    <label class="label" for="<%= answer_id %>">Your notes</label>
+    <%= text_area_tag "assessment_response[answers][#{question_id}]",
+      answers[question_id],
+      id: answer_id,
+      rows: 4,
+      class: "textarea w-full",
+      placeholder: question["placeholder"].presence || "Add any details that would help us understand your child better" %>
+  <% when "text" %>
+    <label class="label" for="<%= answer_id %>">Your answer</label>
+    <%= text_field_tag "assessment_response[answers][#{question_id}]",
+      answers[question_id],
+      id: answer_id,
+      class: "input w-full",
+      placeholder: question["placeholder"].presence || "Type your answer" %>
+  <% when "select" %>
+    <label class="label" for="<%= answer_id %>">Choose the best fit</label>
+    <%= select_tag "assessment_response[answers][#{question_id}]",
+      options_for_select(assessment_question_options(question), answers[question_id]),
+      id: answer_id,
+      include_blank: "Select an answer",
+      class: "select w-full" %>
+  <% else %>
+    <p class="text-sm text-error">Unsupported question type: <%= question["type"] %></p>
+  <% end %>
+</fieldset>

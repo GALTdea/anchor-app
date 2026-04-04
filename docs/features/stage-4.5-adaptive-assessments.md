@@ -356,7 +356,7 @@ implemented domain model differs materially from current planning docs.
 
 - [x] Step 1 — Expand schema contract
 - [x] Step 2 — Add response snapshots
-- [ ] Step 3 — Rebuild onboarding runner
+- [x] Step 3 — Rebuild onboarding runner
 - [ ] Step 4 — Add evidence pipeline
 - [ ] Step 5 — Add current profile + snapshots
 - [ ] Step 6 — Add recommendations + surfaces
@@ -371,4 +371,7 @@ assessment data. Adaptive assessments remain deferred to a later stage. Step 1 i
 complete with stronger `AssessmentTemplate` schema/versioning rules and richer seeded
 templates. Step 2 is complete with immutable template snapshot fields and async
 processing-state tracking added to `AssessmentResponse`, and the current draft/submit
-assessment flow remains green under RSpec and RuboCop verification.
+assessment flow remains green under RSpec and RuboCop verification. Step 3 is now
+complete: the onboarding runner has been rebuilt into a more supportive, sectioned
+MVP flow with visible progress, improved framing, and snapshot-aware read-only
+surfaces, while keeping the underlying submit mechanics unchanged.

@@ -1,11 +1,25 @@
-<div class="max-w-3xl mx-auto">
+<% template = @assessment.assessment_template %>
+<% answers = (@assessment_response.answers || {}).stringify_keys %>
+<% sections = assessment_sections(template) %>
+
+<div class="mx-auto max-w-4xl space-y-6">
   <%= render "shared/page_header",
-    title: @assessment.assessment_template.title,
+    title: template.title,
     subtitle: "Submitted · #{@child_profile.name}" %>
 
-  <div class="card bg-base-100 shadow-sm mb-6">
+  <div class="card bg-base-100 shadow-sm">
     <div class="card-body">
-      <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary badge-outline">Read-only snapshot</span>
+        <span class="badge badge-ghost">Template v<%= @assessment_response.template_version_snapshot %></span>
+        <% if (processing_label = assessment_processing_status_label(@assessment_response.processing_status)).present? %>
+          <span class="<%= assessment_processing_badge_class(@assessment_response.processing_status) %>">
+            <%= processing_label %>
+          </span>
+        <% end %>
+      </div>
+
+      <dl class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <dt class="text-sm font-medium text-base-content/60">Respondent</dt>
           <dd><%= respondent_kind_label(@assessment_response.respondent_kind) %></dd>
@@ -20,25 +34,41 @@
             <% end %>
           </dd>
         </div>
+        <div>
+          <dt class="text-sm font-medium text-base-content/60">Template snapshot</dt>
+          <dd><%= @assessment_response.template_slug_snapshot %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-base-content/60">Saved answers</dt>
+          <dd><%= answers.count { |_key, value| assessment_answered?(value) } %> answered</dd>
+        </div>
       </dl>
     </div>
   </div>
 
-  <div class="card bg-base-100 shadow-sm">
-    <div class="card-body space-y-6">
-      <% questions = Array(@assessment.assessment_template.schema&.dig("questions")) %>
-      <% answers = (@assessment_response.answers || {}).stringify_keys %>
-      <% questions.each do |q| %>
-        <% q = q.stringify_keys %>
-        <% qid = q["id"].to_s %>
-        <% next if qid.blank? %>
+  <% sections.each do |section| %>
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body space-y-5">
         <div>
-          <h4 class="text-sm font-medium text-base-content/60"><%= q["label"] %></h4>
-          <p class="text-base-content mt-1 whitespace-pre-wrap"><%= answers[qid].presence || "—" %></p>
+          <h3 class="text-lg font-semibold text-base-content"><%= section["title"] %></h3>
+          <% if section["description"].present? %>
+            <p class="mt-1 text-sm text-base-content/70"><%= section["description"] %></p>
+          <% end %>
         </div>
-      <% end %>
+
+        <% Array(section["questions"]).each do |question| %>
+          <% question = question.stringify_keys %>
+          <% question_id = question["id"].to_s %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <h4 class="text-sm font-medium text-base-content/60"><%= question["label"] %></h4>
+            <p class="mt-2 whitespace-pre-wrap text-base-content">
+              <%= assessment_answer_display(question, answers[question_id]) %>
+            </p>
+          </div>
+        <% end %>
+      </div>
     </div>
-  </div>
+  <% end %>
 
   <div class="mt-6">
     <%= link_to "Back to assessment", space_child_profile_assessment_path(@space, @child_profile, @assessment), class: "btn btn-ghost" %>

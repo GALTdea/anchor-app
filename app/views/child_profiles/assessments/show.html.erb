@@ -5,6 +5,19 @@
 
   <div class="card bg-base-100 shadow-sm">
     <div class="card-body space-y-4">
+      <% response = @assessment.assessment_response %>
+      <% if response.present? && @assessment.submitted? && (processing_label = assessment_processing_status_label(response.processing_status)).present? %>
+        <div class="rounded-box border border-base-300/70 bg-base-200/50 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-medium text-base-content/60">Second-brain status</p>
+              <p class="text-base font-medium text-base-content"><%= processing_label %></p>
+            </div>
+            <span class="<%= assessment_processing_badge_class(response.processing_status) %>"><%= response.processing_status.humanize %></span>
+          </div>
+        </div>
+      <% end %>
+
       <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <dt class="text-sm font-medium text-base-content/60">Template</dt>
@@ -22,9 +35,14 @@
           <dt class="text-sm font-medium text-base-content/60">Last updated</dt>
           <dd><%= l(@assessment.updated_at, format: :long) %></dd>
         </div>
+        <% if response.present? %>
+          <div>
+            <dt class="text-sm font-medium text-base-content/60">Template version</dt>
+            <dd>v<%= response.template_version_snapshot %></dd>
+          </div>
+        <% end %>
       </dl>
 
-      <% response = @assessment.assessment_response %>
       <% if response.present? %>
         <div class="flex flex-wrap gap-2 pt-2">
           <% if @assessment.draft? && policy(response).update? %>
