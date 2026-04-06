@@ -361,7 +361,7 @@ implemented domain model differs materially from current planning docs.
 - [x] Step 5 — Add current profile + snapshots
 - [x] Step 6 — Add recommendations + surfaces
 - [x] Step 7 — Document observation integration path
-- [ ] Step 8 — Full verification and doc sync
+- [x] Step 8 — Full verification and doc sync
 
 **Last updated:** 2026-04-04
 **Handoff note:** Stage 4 remains the shipped assessment baseline. Stage 4.5 is now
@@ -390,3 +390,6 @@ brief and the shared architecture doc both explicitly state that future
 human-authored observations should feed the same `ProfileEvidence` ->
 `CurrentProfile` -> `ProfileSnapshot` -> `Recommendation` pipeline rather than
 creating a separate AI memory path.
+Step 8 is now complete: the full RSpec suite and RuboCop pass are green, and
+`docs/ARCHITECTURE.md` has been synced to reflect the implemented Stage 4.5 domain
+model and shared second-brain pipeline.
