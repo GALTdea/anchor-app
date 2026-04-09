@@ -1,0 +1,46 @@
+<% set_meta_tags(
+  title: "Save your child's profile",
+  description: "Create your account to save your child's profile and see first results."
+) %>
+
+<section class="mx-auto max-w-4xl px-4 py-12">
+  <div class="mb-8 space-y-3">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+      Step 3 of 4
+    </p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      Save your child's profile.
+    </h1>
+    <p class="max-w-3xl text-base text-base-content/70">
+      The assessment draft is now stored in your onboarding session. The next slice will connect this step to account creation and finalization.
+    </p>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+    <div class="card border border-base-200 bg-base-100 shadow-sm">
+      <div class="card-body space-y-4">
+        <h2 class="card-title text-2xl">Current draft</h2>
+        <p class="text-base-content/70">
+          Child: <strong><%= @onboarding_session.child_name %></strong>
+        </p>
+        <p class="text-base-content/70">
+          Questions answered: <strong><%= assessment_progress(@onboarding_session.assessment_template, @onboarding_session.assessment_answers)[:answered] %></strong>
+        </p>
+        <div class="rounded-box bg-base-200/70 p-4 text-sm text-base-content/70">
+          Account creation and durable record finalization are the next implementation slice.
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-200 bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-xl">What’s next</h2>
+        <ul class="mt-2 space-y-2 text-sm text-base-content/70">
+          <li>Create or claim the parent account.</li>
+          <li>Finalize the family, child profile, and assessment records.</li>
+          <li>Show the first profile and recommendations.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

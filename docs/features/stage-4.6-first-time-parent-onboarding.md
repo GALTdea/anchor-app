@@ -21,6 +21,8 @@ records behind the scenes at the right moment.
 - [x] `OnboardingSession` model + migration added
 - [x] Public onboarding foundation added: landing CTA, session start/resume,
       child-basics step, and assessment handoff placeholder
+- [x] Public assessment step now saves draft answers into `OnboardingSession`
+      and advances to an account-step placeholder
 - [x] Dedicated `OnboardingSessionPolicy` added for browser-session access
 - [ ] Finalization into `User` / `Space` / `ChildProfile` / `Assessment` /
       `AssessmentResponse`

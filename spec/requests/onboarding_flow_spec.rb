@@ -63,4 +63,70 @@ RSpec.describe "Onboarding flow", type: :request do
       }.to raise_error(Pundit::NotAuthorizedError)
     end
   end
+
+  describe "PATCH /onboarding/assessment" do
+    before do
+      post onboarding_session_path
+      patch onboarding_child_path, params: {
+        onboarding_session: {
+          child_first_name: "Maya",
+          child_last_name: "Rivera",
+          child_date_of_birth: "2021-04-14"
+        }
+      }
+    end
+
+    it "saves a draft and stays on the assessment step" do
+      patch onboarding_assessment_path, params: {
+        submit_action: "draft",
+        onboarding_assessment: {
+          respondent_kind: "parent_proxy",
+          answers: {
+            concern_level: "4"
+          }
+        }
+      }
+
+      expect(response).to redirect_to(onboarding_assessment_path)
+      follow_redirect!
+      expect(response.body).to include("Draft saved.")
+      expect(OnboardingSession.last.draft_answers).to include(
+        "respondent_kind" => "parent_proxy",
+        "answers" => include("concern_level" => "4")
+      )
+    end
+
+    it "continues to the account step when required answers are present" do
+      patch onboarding_assessment_path, params: {
+        submit_action: "continue",
+        onboarding_assessment: {
+          respondent_kind: "parent_proxy",
+          answers: {
+            concern_level: "3",
+            notes: "Transitions are hardest after school."
+          }
+        }
+      }
+
+      expect(response).to redirect_to(onboarding_account_path)
+      follow_redirect!
+      expect(response.body).to include("Save your child's profile.")
+      expect(response.body).to include("Current draft")
+    end
+
+    it "shows validation errors when continuing without required answers" do
+      patch onboarding_assessment_path, params: {
+        submit_action: "continue",
+        onboarding_assessment: {
+          respondent_kind: "parent_proxy",
+          answers: {
+            notes: "Some context"
+          }
+        }
+      }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Draft answers concern_level is required")
+    end
+  end
 end

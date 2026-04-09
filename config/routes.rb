@@ -7,7 +7,8 @@ Rails.application.routes.draw do
   scope :onboarding, as: :onboarding do
     resource :session, only: %i[new create show], controller: "onboarding/sessions"
     resource :child, only: %i[show update], controller: "onboarding/children"
-    resource :assessment, only: %i[show], controller: "onboarding/assessments"
+    resource :assessment, only: %i[show update], controller: "onboarding/assessments"
+    resource :account, only: %i[show], controller: "onboarding/accounts"
   end
 
   resources :spaces do

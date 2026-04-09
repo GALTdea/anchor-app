@@ -13,7 +13,8 @@ class Onboarding::ChildrenController < ApplicationController
 
     if OnboardingProgressUpdater.new(
       onboarding_session: @onboarding_session,
-      attributes: child_params
+      child_attributes: child_params,
+      validation_context: :child_basics
     ).call
       redirect_to onboarding_assessment_path, notice: "Child details saved."
     else

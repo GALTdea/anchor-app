@@ -7,6 +7,29 @@ class Onboarding::AssessmentsController < ApplicationController
   def show
     authorize_onboarding_session(@onboarding_session)
     @assessment_template = @onboarding_session.assessment_template
+    @answers = @onboarding_session.assessment_answers
+  end
+
+  def update
+    authorize_onboarding_session(@onboarding_session)
+    @assessment_template = @onboarding_session.assessment_template
+
+    validation_context = params[:submit_action] == "continue" ? :assessment : nil
+
+    if OnboardingProgressUpdater.new(
+      onboarding_session: @onboarding_session,
+      assessment_attributes: assessment_params,
+      validation_context: validation_context
+    ).call
+      if params[:submit_action] == "continue"
+        redirect_to onboarding_account_path, notice: "Assessment progress saved."
+      else
+        redirect_to onboarding_assessment_path, notice: "Draft saved."
+      end
+    else
+      @answers = @onboarding_session.assessment_answers
+      render :show, status: :unprocessable_content
+    end
   end
 
   private
@@ -21,5 +44,9 @@ class Onboarding::AssessmentsController < ApplicationController
       query,
       policy_class: OnboardingSessionPolicy
     )
+  end
+
+  def assessment_params
+    params.require(:onboarding_assessment).permit(:respondent_kind, answers: {})
   end
 end
