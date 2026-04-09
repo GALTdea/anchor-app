@@ -23,11 +23,15 @@ records behind the scenes at the right moment.
       child-basics step, and assessment handoff placeholder
 - [x] Public assessment step now saves draft answers into `OnboardingSession`
       and advances to an account-step placeholder
+- [x] Account step now creates or claims a parent account and finalizes durable
+      records
+- [x] Results step now renders the first profile and recommendations from the
+      Stage 4.5 pipeline
 - [x] Dedicated `OnboardingSessionPolicy` added for browser-session access
-- [ ] Finalization into `User` / `Space` / `ChildProfile` / `Assessment` /
+- [x] Finalization into `User` / `Space` / `ChildProfile` / `Assessment` /
       `AssessmentResponse`
-- [ ] Account creation / claim step
-- [ ] Results screen backed by Stage 4.5 profile and recommendation records
+- [x] Account creation / claim step
+- [x] Results screen backed by Stage 4.5 profile and recommendation records
 
 ## User value
 

@@ -8,7 +8,8 @@ Rails.application.routes.draw do
     resource :session, only: %i[new create show], controller: "onboarding/sessions"
     resource :child, only: %i[show update], controller: "onboarding/children"
     resource :assessment, only: %i[show update], controller: "onboarding/assessments"
-    resource :account, only: %i[show], controller: "onboarding/accounts"
+    resource :account, only: %i[show create], controller: "onboarding/accounts"
+    resource :results, only: %i[show], controller: "onboarding/results"
   end
 
   resources :spaces do

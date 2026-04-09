@@ -3,7 +3,7 @@
 class CurrentProfileRebuilderJob < ApplicationJob
   queue_as :default
 
-  def perform(child_profile_id, trigger_source_type: nil, trigger_source_id: nil)
+  def perform(child_profile_id, trigger_source_type: nil, trigger_source_id: nil, run_inline: false)
     child_profile = ChildProfile.find(child_profile_id)
     payload = CurrentProfileBuilder.new(child_profile).call
 
@@ -14,10 +14,12 @@ class CurrentProfileRebuilderJob < ApplicationJob
     current_profile.profile_version = next_profile_version(current_profile)
     current_profile.save!
 
-    ProfileSnapshotBuilderJob.perform_later(
+    enqueue_next_job(
+      ProfileSnapshotBuilderJob,
       current_profile.id,
       trigger_source_type: trigger_source_type,
-      trigger_source_id: trigger_source_id
+      trigger_source_id: trigger_source_id,
+      run_inline: run_inline
     )
   rescue ActiveRecord::RecordNotFound
     nil
@@ -27,6 +29,14 @@ class CurrentProfileRebuilderJob < ApplicationJob
   end
 
   private
+
+  def enqueue_next_job(job_class, *args, run_inline:, **kwargs)
+    if run_inline
+      job_class.perform_now(*args, **kwargs, run_inline: true)
+    else
+      job_class.perform_later(*args, **kwargs)
+    end
+  end
 
   def next_profile_version(current_profile)
     return 1 if current_profile.new_record?

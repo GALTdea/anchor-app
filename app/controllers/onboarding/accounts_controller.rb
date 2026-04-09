@@ -6,6 +6,25 @@ class Onboarding::AccountsController < ApplicationController
 
   def show
     authorize_onboarding_session(@onboarding_session)
+    @account = account_defaults
+  end
+
+  def create
+    authorize_onboarding_session(@onboarding_session)
+    @account = account_params.to_h.symbolize_keys
+
+    finalizer = OnboardingFinalizer.new(
+      onboarding_session: @onboarding_session,
+      account_attributes: @account
+    )
+
+    if finalizer.call
+      sign_in(finalizer.user)
+      redirect_to onboarding_results_path, notice: "Your child's first profile is ready."
+    else
+      finalizer.errors.full_messages.each { |message| @onboarding_session.errors.add(:base, message) }
+      render :show, status: :unprocessable_content
+    end
   end
 
   private
@@ -20,5 +39,20 @@ class Onboarding::AccountsController < ApplicationController
       query,
       policy_class: OnboardingSessionPolicy
     )
+  end
+
+  def account_params
+    params.require(:onboarding_account).permit(:first_name, :last_name, :email, :password, :password_confirmation)
+  end
+
+  def account_defaults
+    parent_name = @onboarding_session.parent_name.to_s
+    first_name, last_name = parent_name.split(" ", 2)
+
+    {
+      first_name: first_name,
+      last_name: last_name,
+      email: @onboarding_session.email
+    }
   end
 end

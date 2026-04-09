@@ -3,7 +3,7 @@
 class AssessmentEvidenceExtractorJob < ApplicationJob
   queue_as :default
 
-  def perform(assessment_response_id)
+  def perform(assessment_response_id, run_inline: false)
     assessment_response = AssessmentResponse.find(assessment_response_id)
     return unless assessment_response.submitted?
 
@@ -14,10 +14,12 @@ class AssessmentEvidenceExtractorJob < ApplicationJob
 
     AssessmentEvidenceExtractor.new(assessment_response).call
 
-    CurrentProfileRebuilderJob.perform_later(
+    enqueue_next_job(
+      CurrentProfileRebuilderJob,
       assessment_response.assessment.child_profile_id,
       trigger_source_type: assessment_response.class.name,
-      trigger_source_id: assessment_response.id
+      trigger_source_id: assessment_response.id,
+      run_inline: run_inline
     )
   rescue ActiveRecord::RecordNotFound
     nil
@@ -27,6 +29,14 @@ class AssessmentEvidenceExtractorJob < ApplicationJob
   end
 
   private
+
+  def enqueue_next_job(job_class, *args, run_inline:, **kwargs)
+    if run_inline
+      job_class.perform_now(*args, **kwargs, run_inline: true)
+    else
+      job_class.perform_later(*args, **kwargs)
+    end
+  end
 
   def update_failure_state(assessment_response_id, error)
     assessment_response = AssessmentResponse.find_by(id: assessment_response_id)

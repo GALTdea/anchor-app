@@ -3,7 +3,7 @@
 class RecommendationGeneratorJob < ApplicationJob
   queue_as :default
 
-  def perform(child_profile_id, source_profile_snapshot_id:, trigger_source_type: nil, trigger_source_id: nil)
+  def perform(child_profile_id, source_profile_snapshot_id:, trigger_source_type: nil, trigger_source_id: nil, run_inline: false)
     child_profile = ChildProfile.find(child_profile_id)
     current_profile = child_profile.current_profile
     source_profile_snapshot = child_profile.profile_snapshots.find(source_profile_snapshot_id)

@@ -111,7 +111,7 @@ RSpec.describe "Onboarding flow", type: :request do
       expect(response).to redirect_to(onboarding_account_path)
       follow_redirect!
       expect(response.body).to include("Save your child's profile.")
-      expect(response.body).to include("Current draft")
+      expect(response.body).to include("Your account")
     end
 
     it "shows validation errors when continuing without required answers" do
@@ -127,6 +127,96 @@ RSpec.describe "Onboarding flow", type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("Draft answers concern_level is required")
+    end
+  end
+
+  describe "POST /onboarding/account" do
+    before do
+      post onboarding_session_path
+      patch onboarding_child_path, params: {
+        onboarding_session: {
+          child_first_name: "Maya",
+          child_last_name: "Rivera",
+          child_date_of_birth: "2021-04-14"
+        }
+      }
+      patch onboarding_assessment_path, params: {
+        submit_action: "continue",
+        onboarding_assessment: {
+          respondent_kind: "parent_proxy",
+          answers: {
+            concern_level: "3",
+            notes: "Transitions are hardest after school."
+          }
+        }
+      }
+    end
+
+    it "creates the durable records and shows results for a new account" do
+      expect {
+        post onboarding_account_path, params: {
+          onboarding_account: {
+            first_name: "Ariana",
+            last_name: "Rivera",
+            email: "ariana@example.com",
+            password: "password123",
+            password_confirmation: "password123"
+          }
+        }
+      }.to change(User, :count).by(1)
+        .and change(Space, :count).by(1)
+        .and change(ChildProfile, :count).by(1)
+        .and change(Assessment, :count).by(1)
+        .and change(AssessmentResponse, :count).by(1)
+        .and change(CurrentProfile, :count).by(1)
+        .and change(Recommendation, :count).by_at_least(1)
+
+      expect(response).to redirect_to(onboarding_results_path)
+      follow_redirect!
+      expect(response.body).to include("Maya Rivera's first support profile")
+
+      onboarding_session = OnboardingSession.last
+      expect(onboarding_session).to be_completed
+      expect(onboarding_session.assessment_response.processing_status).to eq("completed")
+      expect(controller.current_user.email).to eq("ariana@example.com")
+    end
+
+    it "claims an existing account when the password matches" do
+      existing_user = create(:user, email: "ariana@example.com", password: "password123", password_confirmation: "password123")
+
+      expect {
+        post onboarding_account_path, params: {
+          onboarding_account: {
+            first_name: "Ariana",
+            last_name: "Rivera",
+            email: existing_user.email,
+            password: "password123",
+            password_confirmation: "password123"
+          }
+        }
+      }.not_to change(User, :count)
+
+      expect(response).to redirect_to(onboarding_results_path)
+      expect(OnboardingSession.last.user).to eq(existing_user)
+    end
+
+    it "rejects an existing email with the wrong password" do
+      existing_user = create(:user, email: "ariana@example.com", password: "password123", password_confirmation: "password123")
+
+      expect {
+        post onboarding_account_path, params: {
+          onboarding_account: {
+            first_name: "Ariana",
+            last_name: "Rivera",
+            email: existing_user.email,
+            password: "wrongpassword",
+            password_confirmation: "wrongpassword"
+          }
+        }
+      }.not_to change(Space, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Email already exists. Use the correct password to continue with this account.")
     end
   end
 end

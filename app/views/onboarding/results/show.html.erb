@@ -1,0 +1,106 @@
+<% dimensions = @current_profile.summary.fetch("dimensions", {}) %>
+
+<section class="mx-auto max-w-5xl px-4 py-12">
+  <div class="mb-8 space-y-3">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+      Step 4 of 4
+    </p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      <%= @child_profile.name %>'s first support profile
+    </h1>
+    <p class="max-w-3xl text-base text-base-content/70">
+      Your onboarding answers are now part of the app’s main profile and recommendation system.
+    </p>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_20rem]">
+    <div class="space-y-6">
+      <div class="card border border-base-200 bg-base-100 shadow-sm">
+        <div class="card-body gap-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="badge badge-primary badge-outline">Current profile</span>
+            <span class="badge badge-ghost">Version <%= @current_profile.profile_version %></span>
+          </div>
+          <p class="text-base leading-7 text-base-content/80">
+            <%= @current_profile.narrative.presence || "We’re still building the narrative profile." %>
+          </p>
+        </div>
+      </div>
+
+      <div class="card border border-base-200 bg-base-100 shadow-sm">
+        <div class="card-body gap-5">
+          <div>
+            <h2 class="text-lg font-semibold text-base-content">Profile signals</h2>
+            <p class="mt-1 text-sm text-base-content/70">
+              These are the strongest signals from your onboarding answers.
+            </p>
+          </div>
+
+          <% if dimensions.present? %>
+            <div class="space-y-4">
+              <% dimensions.sort.each do |dimension_key, details| %>
+                <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 class="text-base font-semibold text-base-content"><%= dimension_key.to_s.tr(".", " ").humanize %></h3>
+                      <p class="mt-1 text-sm text-base-content/70">
+                        Latest value:
+                        <span class="font-medium text-base-content"><%= details["metadata"].to_h["selected_option_label"].presence || details["latest_value"] %></span>
+                      </p>
+                    </div>
+                    <span class="badge badge-outline"><%= details["evidence_count"] %> evidence</span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="rounded-box border border-dashed border-base-300 p-6 text-sm text-base-content/70">
+              We don’t have enough evidence yet to show profile signals.
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card border border-base-200 bg-base-100 shadow-sm">
+        <div class="card-body gap-4">
+          <h2 class="text-lg font-semibold text-base-content">Recommendations</h2>
+          <% if @recommendations.any? %>
+            <div class="space-y-4">
+              <% @recommendations.each do |recommendation| %>
+                <div class="rounded-box border border-base-300/70 p-4">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="badge badge-primary badge-outline"><%= recommendation.category.humanize %></span>
+                    <span class="badge badge-ghost"><%= l(recommendation.generated_at, format: :long) %></span>
+                  </div>
+                  <h3 class="mt-3 text-base font-semibold text-base-content"><%= recommendation.title %></h3>
+                  <p class="mt-2 text-sm leading-6 text-base-content/75"><%= recommendation.body %></p>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-sm text-base-content/70">
+              Recommendations will appear here as more profile evidence is available.
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
+      <div class="card border border-base-200 bg-base-100 shadow-sm">
+        <div class="card-body gap-3">
+          <h2 class="text-base font-semibold text-base-content">Open the full app</h2>
+          <p class="text-sm leading-6 text-base-content/70">
+            You can now continue inside your family workspace and revisit the full profile at any time.
+          </p>
+          <%= link_to "Open family workspace",
+            space_child_profile_current_profile_path(@space, @child_profile),
+            class: "btn btn-primary btn-sm" %>
+          <%= link_to "View recommendations",
+            space_child_profile_recommendations_path(@space, @child_profile),
+            class: "btn btn-ghost btn-sm" %>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>

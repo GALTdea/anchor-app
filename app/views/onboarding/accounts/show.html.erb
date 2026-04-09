@@ -12,33 +12,71 @@
       Save your child's profile.
     </h1>
     <p class="max-w-3xl text-base text-base-content/70">
-      The assessment draft is now stored in your onboarding session. The next slice will connect this step to account creation and finalization.
+      Create your account now so you can come back anytime and keep building on this first profile.
     </p>
   </div>
 
   <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
     <div class="card border border-base-200 bg-base-100 shadow-sm">
-      <div class="card-body space-y-4">
-        <h2 class="card-title text-2xl">Current draft</h2>
-        <p class="text-base-content/70">
-          Child: <strong><%= @onboarding_session.child_name %></strong>
-        </p>
-        <p class="text-base-content/70">
-          Questions answered: <strong><%= assessment_progress(@onboarding_session.assessment_template, @onboarding_session.assessment_answers)[:answered] %></strong>
-        </p>
-        <div class="rounded-box bg-base-200/70 p-4 text-sm text-base-content/70">
-          Account creation and durable record finalization are the next implementation slice.
-        </div>
+      <div class="card-body">
+        <%= form_with url: onboarding_account_path, method: :post, scope: :onboarding_account do |form| %>
+          <% if @onboarding_session.errors.any? %>
+            <div class="alert alert-error mb-4">
+              <ul class="list-disc list-inside">
+                <% @onboarding_session.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">Your account</legend>
+
+            <label class="label" for="onboarding_account_first_name">First name</label>
+            <%= form.text_field :first_name,
+                                value: @account[:first_name],
+                                class: "input w-full",
+                                id: "onboarding_account_first_name" %>
+
+            <label class="label mt-4" for="onboarding_account_last_name">Last name</label>
+            <%= form.text_field :last_name,
+                                value: @account[:last_name],
+                                class: "input w-full",
+                                id: "onboarding_account_last_name" %>
+
+            <label class="label mt-4" for="onboarding_account_email">Email</label>
+            <%= form.email_field :email,
+                                 value: @account[:email],
+                                 class: "input w-full",
+                                 id: "onboarding_account_email" %>
+
+            <label class="label mt-4" for="onboarding_account_password">Password</label>
+            <%= form.password_field :password,
+                                    class: "input w-full",
+                                    id: "onboarding_account_password" %>
+
+            <label class="label mt-4" for="onboarding_account_password_confirmation">Confirm password</label>
+            <%= form.password_field :password_confirmation,
+                                    class: "input w-full",
+                                    id: "onboarding_account_password_confirmation" %>
+          </fieldset>
+
+          <div class="mt-6 flex flex-wrap gap-2">
+            <%= form.submit "Save and see results", class: "btn btn-primary" %>
+            <%= link_to "Back to questions", onboarding_assessment_path, class: "btn btn-ghost" %>
+          </div>
+        <% end %>
       </div>
     </div>
 
     <div class="card border border-base-200 bg-base-100 shadow-sm">
-      <div class="card-body">
-        <h2 class="card-title text-xl">What’s next</h2>
-        <ul class="mt-2 space-y-2 text-sm text-base-content/70">
-          <li>Create or claim the parent account.</li>
-          <li>Finalize the family, child profile, and assessment records.</li>
-          <li>Show the first profile and recommendations.</li>
+      <div class="card-body gap-4">
+        <h2 class="card-title text-xl">What happens next</h2>
+        <ul class="space-y-2 text-sm text-base-content/70">
+          <li>We’ll save your account and connect it to this onboarding draft.</li>
+          <li>We’ll create your family space and child profile automatically.</li>
+          <li>We’ll generate your child’s first profile and recommendations.</li>
         </ul>
       </div>
     </div>

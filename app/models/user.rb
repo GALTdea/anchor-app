@@ -41,6 +41,7 @@ class User < ApplicationRecord
 
   has_many :user_roles
   has_many :spaces, through: :user_roles
+  has_many :onboarding_sessions
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
