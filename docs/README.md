@@ -49,6 +49,7 @@ at the start of every AI coding session.
 | [features/stage-3-observations.md](features/stage-3-observations.md) | Stage 3 — Observations *(deferred post-MVP)* |
 | [features/stage-4-assessments.md](features/stage-4-assessments.md) | Stage 4 — Assessments *(MVP with Stage 1)* |
 | [features/stage-4.5-adaptive-assessments.md](features/stage-4.5-adaptive-assessments.md) | Stage 4.5 — Onboarding assessment UX + second brain foundation *(draft proposal)* |
+| [features/stage-4.6-first-time-parent-onboarding.md](features/stage-4.6-first-time-parent-onboarding.md) | Stage 4.6 — First-time parent onboarding funnel *(draft proposal)* |
 
 ---
 

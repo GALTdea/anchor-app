@@ -1,0 +1,43 @@
+<% set_meta_tags(
+  title: "Onboarding questions",
+  description: "Answer a few questions to build your child's first support profile."
+) %>
+
+<section class="mx-auto max-w-4xl px-4 py-12">
+  <div class="mb-8 space-y-3">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+      Step 2 of 4
+    </p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      Answer a few questions to build a clearer picture.
+    </h1>
+    <p class="text-base text-base-content/70">
+      This step is wired to the existing onboarding assessment template. We’ll make it fully interactive in the next slice.
+    </p>
+  </div>
+
+  <div class="card border border-base-200 bg-base-100 shadow-sm">
+    <div class="card-body space-y-6">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-base-content/50">
+          Template
+        </p>
+        <h2 class="mt-2 text-2xl font-semibold"><%= @assessment_template.title %></h2>
+      </div>
+
+      <div class="space-y-4">
+        <% Array(@assessment_template.schema["questions"]).each do |question| %>
+          <div class="rounded-box border border-base-200 p-4">
+            <p class="text-sm font-semibold text-base-content/50">
+              <%= question["section"].to_s.humanize.presence || "Question" %>
+            </p>
+            <p class="mt-1 text-lg font-medium"><%= question["label"] %></p>
+            <% if question["help_text"].present? %>
+              <p class="mt-2 text-sm text-base-content/70"><%= question["help_text"] %></p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>

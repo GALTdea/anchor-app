@@ -1,0 +1,43 @@
+<% set_meta_tags(
+  title: "Start your child's profile",
+  description: "Answer a few questions to build your child's first support profile."
+) %>
+
+<section class="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center px-4 py-16">
+  <div class="grid w-full gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+    <div class="space-y-6">
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+        First-time parent onboarding
+      </p>
+      <h1 class="text-balance text-4xl font-bold tracking-tight sm:text-5xl">
+        Start your child's profile with a calmer first step.
+      </h1>
+      <p class="max-w-2xl text-lg text-base-content/70">
+        We’ll guide you through a few basics, then turn your answers into your
+        child’s first support profile and recommendations.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <%= button_to "Start your child's profile",
+                      onboarding_session_path,
+                      method: :post,
+                      class: "btn btn-primary btn-lg" %>
+        <%= link_to "I already have an account",
+                    new_user_session_path,
+                    data: { turbo: false },
+                    class: "btn btn-ghost btn-lg" %>
+      </div>
+    </div>
+
+    <div class="card border border-base-200 bg-base-100 shadow-sm">
+      <div class="card-body space-y-4">
+        <h2 class="card-title text-2xl">What happens next</h2>
+        <div class="space-y-3 text-sm text-base-content/70">
+          <p>1. Tell us a few basics about your child.</p>
+          <p>2. Answer a short onboarding assessment.</p>
+          <p>3. Save your profile so you can come back anytime.</p>
+          <p>4. See your child’s first profile and next-step recommendations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

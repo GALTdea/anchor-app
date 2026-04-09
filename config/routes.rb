@@ -4,6 +4,12 @@ Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :users, only: %i[edit update destroy]
 
+  scope :onboarding, as: :onboarding do
+    resource :session, only: %i[new create show], controller: "onboarding/sessions"
+    resource :child, only: %i[show update], controller: "onboarding/children"
+    resource :assessment, only: %i[show], controller: "onboarding/assessments"
+  end
+
   resources :spaces do
     resources :users, only: %i[index new create edit update destroy], controller: "spaces/users"
     resources :roles, controller: "spaces/roles"

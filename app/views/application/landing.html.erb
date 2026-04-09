@@ -103,10 +103,10 @@
             and daisyUI, so you can ship dashboards and SaaS products fast.
           </p>
           <div class="flex flex-wrap items-center gap-3">
-            <%= link_to "Get started",
-                        new_user_session_path,
-                        data: { turbo: false },
-                        class: "btn btn-primary btn-lg rounded-full px-8 text-base font-semibold" %>
+            <%= button_to "Start your child's profile",
+                          onboarding_session_path,
+                          method: :post,
+                          class: "btn btn-primary btn-lg rounded-full px-8 text-base font-semibold" %>
             <%= link_to "Create an account",
                         new_user_registration_path,
                         data: { turbo: false },

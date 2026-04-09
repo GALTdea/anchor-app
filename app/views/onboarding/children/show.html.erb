@@ -1,0 +1,55 @@
+<% set_meta_tags(
+  title: "Your child's basics",
+  description: "Answer a few questions to build a clearer picture of your child."
+) %>
+
+<section class="mx-auto max-w-3xl px-4 py-12">
+  <div class="mb-8 space-y-3">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+      Step 1 of 4
+    </p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      Tell us a little about your child.
+    </h1>
+    <p class="text-base text-base-content/70">
+      We’ll use this to personalize the assessment and build your child’s first support profile.
+    </p>
+  </div>
+
+  <div class="card border border-base-200 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <%= form_with model: @onboarding_session, url: onboarding_child_path, method: :patch do |form| %>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend">Child basics</legend>
+
+          <label class="label" for="onboarding_session_child_first_name">First name</label>
+          <%= form.text_field :child_first_name,
+                              class: "input w-full",
+                              id: "onboarding_session_child_first_name" %>
+          <% @onboarding_session.errors.full_messages_for(:child_first_name).each do |message| %>
+            <p class="text-sm text-error"><%= message %></p>
+          <% end %>
+
+          <label class="label mt-4" for="onboarding_session_child_last_name">Last name (optional)</label>
+          <%= form.text_field :child_last_name,
+                              class: "input w-full",
+                              id: "onboarding_session_child_last_name" %>
+
+          <label class="label mt-4" for="onboarding_session_child_date_of_birth">Date of birth</label>
+          <%= form.date_field :child_date_of_birth,
+                              class: "input w-full",
+                              id: "onboarding_session_child_date_of_birth",
+                              max: Date.current %>
+          <% @onboarding_session.errors.full_messages_for(:child_date_of_birth).each do |message| %>
+            <p class="text-sm text-error"><%= message %></p>
+          <% end %>
+        </fieldset>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <%= form.submit "Continue to questions", class: "btn btn-primary" %>
+          <%= link_to "Start over", new_onboarding_session_path, class: "btn btn-ghost" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_04_000500) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_08_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -98,6 +98,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000500) do
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
+  end
+
+  create_table "onboarding_sessions", force: :cascade do |t|
+    t.bigint "assessment_id"
+    t.bigint "assessment_response_id"
+    t.bigint "assessment_template_id", null: false
+    t.date "child_date_of_birth"
+    t.string "child_first_name"
+    t.string "child_last_name"
+    t.bigint "child_profile_id"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.jsonb "draft_answers", default: {}, null: false
+    t.string "email"
+    t.string "parent_name"
+    t.bigint "space_id"
+    t.datetime "started_at", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["assessment_id"], name: "index_onboarding_sessions_on_assessment_id"
+    t.index ["assessment_response_id"], name: "index_onboarding_sessions_on_assessment_response_id"
+    t.index ["assessment_template_id"], name: "index_onboarding_sessions_on_assessment_template_id"
+    t.index ["child_profile_id"], name: "index_onboarding_sessions_on_child_profile_id"
+    t.index ["space_id"], name: "index_onboarding_sessions_on_space_id"
+    t.index ["status"], name: "index_onboarding_sessions_on_status"
+    t.index ["user_id"], name: "index_onboarding_sessions_on_user_id"
   end
 
   create_table "plans", force: :cascade do |t|
@@ -234,6 +261,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000500) do
   add_foreign_key "assessments", "users", column: "assigned_to_user_id"
   add_foreign_key "child_profiles", "spaces"
   add_foreign_key "current_profiles", "child_profiles"
+  add_foreign_key "onboarding_sessions", "assessment_responses"
+  add_foreign_key "onboarding_sessions", "assessment_templates"
+  add_foreign_key "onboarding_sessions", "assessments"
+  add_foreign_key "onboarding_sessions", "child_profiles"
+  add_foreign_key "onboarding_sessions", "spaces"
+  add_foreign_key "onboarding_sessions", "users"
   add_foreign_key "profile_evidences", "child_profiles"
   add_foreign_key "profile_snapshots", "child_profiles"
   add_foreign_key "recommendations", "child_profiles"
