@@ -1,6 +1,10 @@
 {
   "name": "app",
   "private": "true",
+  "scripts": {
+    "build:css": "bin/rails tailwindcss:build",
+    "watch:css": "bin/rails tailwindcss:watch"
+  },
   "browserslist": [
     "defaults"
   ],

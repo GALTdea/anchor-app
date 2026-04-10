@@ -3,7 +3,14 @@
 require "rails_helper"
 
 RSpec.describe "Onboarding flow", type: :request do
-  let!(:template) { create(:assessment_template, title: "Parent onboarding") }
+  let!(:template) do
+    create(
+      :assessment_template,
+      title: "Parent onboarding",
+      template_key: "child-onboarding",
+      category: "onboarding"
+    )
+  end
 
   describe "GET /" do
     it "shows the child-first CTA on the landing page" do

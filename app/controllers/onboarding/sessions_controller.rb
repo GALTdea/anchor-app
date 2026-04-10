@@ -17,6 +17,9 @@ class Onboarding::SessionsController < ApplicationController
     session[:onboarding_session_id] = onboarding_session.id
 
     redirect_to onboarding_child_path, notice: "Let's start with a few details about your child."
+  rescue OnboardingSessionStarter::TemplateNotConfiguredError
+    redirect_to new_onboarding_session_path,
+      alert: "Onboarding is not configured yet. Run the latest seeds to install the child onboarding template."
   end
 
   def show
