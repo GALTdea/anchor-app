@@ -191,6 +191,7 @@ User/Space/Role foundation with child-centered models.
 | **CurrentProfile** | 4.5 ✅ | `child_profile_id`, `summary`, `narrative`, `generated_at`, `profile_version` | ChildProfile |
 | **ProfileSnapshot** | 4.5 ✅ | `child_profile_id`, `summary`, `narrative`, `generated_at`, `trigger_source_type`, `trigger_source_id` | ChildProfile |
 | **Recommendation** | 4.5 ✅ | `child_profile_id`, `status`, `category`, `title`, `body`, `rationale`, `generated_at` | ChildProfile, ProfileSnapshot |
+| **OnboardingSession** | 4.6 ✅ | `status`, `email`, `parent_name`, `child_first_name`, `child_last_name`, `child_date_of_birth`, `draft_answers`, `started_at`, `completed_at`, optional finalized foreign keys | AssessmentTemplate, optional User/Space/ChildProfile/Assessment/AssessmentResponse |
 
 ### Planned models (not yet built)
 
@@ -237,6 +238,33 @@ Each `AssessmentResponse` records:
 - **respondent_kind** — who the answers represent (`parent_proxy`, `self_report`, `therapist_report`, `teacher_report`)
 - **subject** — implied via the assessment's child profile
 
+### First-time onboarding funnel
+
+Stage 4.6 adds a public **session-first, finalize-later** funnel in front of the
+existing assessment/profile pipeline.
+
+`OnboardingSession` is the temporary public record used to:
+- store browser-session progress before account creation
+- collect child basics and draft onboarding answers
+- avoid creating abandoned `Space` / `ChildProfile` records on first click
+- finalize into the durable Stage 4.5 write path only when the parent commits
+
+The public flow is:
+
+```text
+landing CTA
+-> OnboardingSession
+-> child basics
+-> onboarding assessment draft answers
+-> account create/claim
+-> finalize User + Space + ChildProfile + Assessment + AssessmentResponse
+-> Stage 4.5 pipeline
+-> onboarding results
+```
+
+Finalization currently runs the same Stage 4.5 jobs inline so the first results
+screen can immediately render a real `CurrentProfile` and `Recommendation` set.
+
 ### Second-brain pipeline
 
 The second-brain layer now follows this shared pattern:
@@ -269,6 +297,7 @@ See `docs/features/` for detailed briefs per stage.
 | 3 | Observations *(deferred — post-MVP)* | Observation |
 | 4 | Assessments | AssessmentTemplate, Assessment, AssessmentResponse |
 | 4.5 | Second-brain foundation | ProfileEvidence, CurrentProfile, ProfileSnapshot, Recommendation |
+| 4.6 | First-time parent onboarding funnel | OnboardingSession |
 | 5 | External collaborators + child access | ChildAccess |
 | 6 | Consent tracking + audit trail | ConsentRecord, AuditLog |
 | 7 | Goals and progress tracking | TBD |

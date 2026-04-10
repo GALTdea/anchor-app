@@ -226,4 +226,40 @@ RSpec.describe "Onboarding flow", type: :request do
       expect(response.body).to include("Email already exists. Use the correct password to continue with this account.")
     end
   end
+
+  describe "completed onboarding session" do
+    it "redirects signed-in users from public onboarding steps back to results" do
+      post onboarding_session_path
+      patch onboarding_child_path, params: {
+        onboarding_session: {
+          child_first_name: "Maya",
+          child_last_name: "Rivera",
+          child_date_of_birth: "2021-04-14"
+        }
+      }
+      patch onboarding_assessment_path, params: {
+        submit_action: "continue",
+        onboarding_assessment: {
+          respondent_kind: "parent_proxy",
+          answers: {
+            concern_level: "3",
+            notes: "Transitions are hardest after school."
+          }
+        }
+      }
+      post onboarding_account_path, params: {
+        onboarding_account: {
+          first_name: "Ariana",
+          last_name: "Rivera",
+          email: "ariana@example.com",
+          password: "password123",
+          password_confirmation: "password123"
+        }
+      }
+
+      get onboarding_assessment_path
+
+      expect(response).to redirect_to(onboarding_results_path)
+    end
+  end
 end

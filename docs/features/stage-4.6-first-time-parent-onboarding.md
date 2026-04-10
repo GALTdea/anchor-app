@@ -1,6 +1,6 @@
 # Stage 4.6 — First-Time Parent Onboarding Funnel
 
-> **Status: IN PROGRESS**
+> **Status: COMPLETED**
 > Full brief. Builds on Stage 4.5 by adding a much simpler first-time parent
 > journey in front of the existing assessment + second-brain system. The parent
 > should feel like they are starting help for their child, not configuring a
@@ -32,6 +32,8 @@ records behind the scenes at the right moment.
       `AssessmentResponse`
 - [x] Account creation / claim step
 - [x] Results screen backed by Stage 4.5 profile and recommendation records
+- [x] Post-build audit completed for authorization, completed-session behavior,
+      and onboarding edge cases
 
 ## User value
 
