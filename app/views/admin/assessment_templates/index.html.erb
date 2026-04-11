@@ -1,0 +1,53 @@
+<% content_for :actions do %>
+  <%= link_to "New draft template", new_admin_assessment_template_path, class: "btn btn-primary" %>
+<% end %>
+
+<%= render "shared/page_header",
+  title: "Assessment templates",
+  subtitle: "Manage draft and published template versions for onboarding and future assessments." %>
+
+<% if @assessment_templates.any? %>
+  <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Version</th>
+          <th>Status</th>
+          <th>Questions</th>
+          <th>Updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @assessment_templates.each do |template| %>
+          <tr>
+            <td>
+              <div class="font-medium"><%= template.title %></div>
+              <div class="text-sm text-base-content/60"><%= template.template_key %></div>
+            </td>
+            <td>v<%= template.version %></td>
+            <td>
+              <% badge_class = case template.status
+                 when "published" then "badge badge-success badge-outline"
+                 when "archived" then "badge badge-ghost"
+                 else "badge badge-warning badge-outline"
+                 end %>
+              <span class="<%= badge_class %>"><%= template.status.humanize %></span>
+            </td>
+            <td><%= template.question_count %></td>
+            <td><%= l(template.updated_at, format: :short) %></td>
+            <td class="text-right">
+              <%= link_to "Open", admin_assessment_template_path(template), class: "btn btn-ghost btn-sm" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="rounded-box border border-dashed border-base-300 bg-base-100 p-10 text-center">
+    <h2 class="text-lg font-semibold text-base-content">No assessment templates yet</h2>
+    <p class="mt-2 text-sm text-base-content/70">Create your first draft template to start building the assessment library.</p>
+  </div>
+<% end %>

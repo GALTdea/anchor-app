@@ -29,4 +29,38 @@ RSpec.describe AssessmentTemplatePolicy, type: :policy do
       expect(policy.show?).to be false
     end
   end
+
+  describe "admin management" do
+    let(:admin) { create(:user, :admin) }
+
+    it "allows index on the model class" do
+      policy = described_class.new(admin, AssessmentTemplate)
+
+      expect(policy.index?).to be true
+    end
+
+    it "allows updating a template record" do
+      policy = described_class.new(admin, template)
+
+      expect(policy.update?).to be true
+    end
+
+    it "scopes admin management to all templates" do
+      expect(described_class::Scope.new(admin, AssessmentTemplate.all).resolve).to eq(AssessmentTemplate.all)
+    end
+  end
+
+  describe "non-admin management" do
+    let(:user) { create(:user) }
+
+    it "denies index on the model class" do
+      policy = described_class.new(user, AssessmentTemplate)
+
+      expect(policy.index?).to be false
+    end
+
+    it "returns no records from scope" do
+      expect(described_class::Scope.new(user, AssessmentTemplate.all).resolve).to be_empty
+    end
+  end
 end

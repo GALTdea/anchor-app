@@ -49,6 +49,7 @@ Reference: `docs/features/_constraints.md`
 
 - Model pattern: `app/models/assessment_template.rb`
 - Controller pattern: `app/controllers/child_profiles/assessments_controller.rb`
+- Admin navigation pattern: `app/views/layouts/dashboard.html.erb`
 - View pattern: `app/views/child_profiles/assessment_responses/edit.html.erb`,
   `app/views/onboarding/assessments/show.html.erb`
 - Policy pattern: `app/policies/assessment_template_policy.rb`
@@ -168,6 +169,8 @@ end
 
 ### Routing notes
 
+- `index` should use `policy_scope` and paginate template versions for consistency
+  with app conventions
 - `show` should act as the admin detail page for a template version
 - `edit` is available only for draft versions
 - `preview` renders the template with the same field partials used by the real
@@ -187,8 +190,15 @@ end
 - Keep admin management explicit instead of inferring from workspace roles
 - Existing nested caregiver flows may continue to authorize template visibility
   in space context as they do today
-- If needed, use a dedicated admin-facing record/context object rather than
-  overloading the current space-context-only read checks
+- The current `AssessmentTemplatePolicy` is shaped around a space-aware context
+  object for caregiver flows, so the admin manager should either:
+  - extend that policy to support both plain `AssessmentTemplate` records and
+    the existing context object cleanly, or
+  - introduce a dedicated admin policy/context pattern that avoids ambiguous
+    initialization logic
+
+The preferred outcome is one clear, testable authorization path for admin
+management and one clear path for caregiver template visibility.
 
 ## Service / form layer
 
@@ -200,6 +210,9 @@ To keep controllers thin, prefer small focused objects:
   Runs publish validations and transitions draft to `published`
 - `AssessmentTemplateVersionCloner`
   Creates a new editable draft from a published template version
+- `AssessmentTemplatePreviewPresenter` or shared helper/partial strategy
+  Keeps preview rendering aligned with the live runner without coupling preview
+  to form parameter names
 
 These do not need to be created all at once, but the brief assumes business
 logic will not live directly in the controller.
@@ -217,7 +230,9 @@ logic will not live directly in the controller.
   - `admin/assessment_templates/preview`
   - shared partials for section/question rows and question-type-specific fields
 - **Changed views:**
-  - reuse question rendering partials from existing assessment runner where possible
+  - add an admin navigation entry in the dashboard for signed-in admins
+  - extract shared question rendering logic where it reduces duplication without
+    tying preview rendering to live form field names
 
 ### UX requirements
 
@@ -228,6 +243,8 @@ logic will not live directly in the controller.
 - Publish flow shows validation errors in human-readable terms
 - Published versions clearly display as read-only
 - Version history is understandable from the index/show pages
+- Preview should reflect runner behavior closely enough to trust question type,
+  labels, help text, sections, and options, even if it is rendered read-only
 
 ## Acceptance criteria
 
@@ -268,7 +285,8 @@ logic will not live directly in the controller.
 ### Step 1 — Admin template management foundation
 
 Add routes, controller, policy updates, and basic index/show/new/create/edit/update
-support for admin-only draft templates.
+support for admin-only draft templates, including an admin navigation entry and
+policy-scoped index page.
 
 **Verify:** `bundle exec rspec spec/policies/assessment_template_policy_spec.rb spec/requests/admin/assessment_templates_spec.rb`
 **Revert:** `git checkout -- config/routes.rb app/controllers/admin/assessment_templates_controller.rb app/policies/assessment_template_policy.rb app/views/admin/assessment_templates spec/requests/admin/assessment_templates_spec.rb spec/policies/assessment_template_policy_spec.rb`
@@ -310,7 +328,7 @@ runner rendering patterns. Update this brief's status section once build work is
 ## Status
 
 - [x] Brief created
-- [ ] Step 1
+- [x] Step 1
 - [ ] Step 2
 - [ ] Step 3
 - [ ] Step 4
@@ -318,6 +336,8 @@ runner rendering patterns. Update this brief's status section once build work is
 
 **Last updated:** 2026-04-10
 **Handoff note:** The feature is framed as an admin-only assessment template
-manager built on the existing `AssessmentTemplate` versioning model. Open
-questions are cleared, so the next phase can be a design review against
-architecture, conventions, and current code patterns before implementation.
+manager built on the existing `AssessmentTemplate` versioning model. Step 1 is
+now implemented: admin routes, controller, policy scope, dashboard navigation,
+basic draft metadata CRUD, and initial request/policy coverage are in place.
+Step 2 should focus on schema authoring for sections, questions, options, and
+AI semantics inside the draft editor.

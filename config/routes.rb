@@ -3,6 +3,15 @@ Rails.application.routes.draw do
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :users, only: %i[edit update destroy]
+  namespace :admin do
+    resources :assessment_templates, only: %i[index show new create edit update] do
+      member do
+        get :preview
+        post :publish
+        post :new_version
+      end
+    end
+  end
 
   scope :onboarding, as: :onboarding do
     resource :session, only: %i[new create show], controller: "onboarding/sessions"

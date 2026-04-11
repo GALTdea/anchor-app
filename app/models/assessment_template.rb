@@ -49,6 +49,30 @@ class AssessmentTemplate < ApplicationRecord
 
   scope :published, -> { where(status: :published) }
 
+  def self.default_schema
+    {
+      "version" => 1,
+      "sections" => [],
+      "questions" => []
+    }
+  end
+
+  def draft_editable?
+    draft?
+  end
+
+  def schema_version
+    schema.to_h.deep_stringify_keys["version"] || 1
+  end
+
+  def question_count
+    Array(schema.to_h.deep_stringify_keys["questions"]).size
+  end
+
+  def section_count
+    Array(schema.to_h.deep_stringify_keys["sections"]).size
+  end
+
   def question_ids
     Array(schema&.dig("questions")).filter_map { |q| q["id"].presence }.map(&:to_s)
   end

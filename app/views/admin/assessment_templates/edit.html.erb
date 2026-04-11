@@ -1,0 +1,5 @@
+<%= render "shared/page_header",
+  title: "Edit draft template",
+  subtitle: "#{@assessment_template.template_key} · Version #{@assessment_template.version}" %>
+
+<%= render "form", assessment_template: @assessment_template %>
