@@ -1,0 +1,184 @@
+<% question = question.deep_stringify_keys %>
+<% field_name_prefix = "assessment_template[sections_attributes][#{section_index}][questions_attributes][#{question_index}]" %>
+<% position_value = question["position"].presence || question_index.to_s.to_i + 1 %>
+<div class="rounded-box border border-base-300 bg-base-200/40 p-4"
+     data-question-item
+     data-new-record="<%= template_mode %>"
+     data-controller="assessment-template-question">
+  <input type="hidden"
+         name="<%= "#{field_name_prefix}[_destroy]" %>"
+         value="false"
+         data-destroy-field />
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h5 class="text-sm font-semibold text-base-content">Question</h5>
+    <button type="button" class="btn btn-ghost btn-sm" data-action="assessment-template-editor#removeItem">
+      Remove question
+    </button>
+  </div>
+
+  <div class="mt-4 grid gap-4 lg:grid-cols-4">
+    <fieldset class="fieldset">
+      <label class="label">Order</label>
+      <input type="number"
+             name="<%= "#{field_name_prefix}[position]" %>"
+             value="<%= position_value %>"
+             min="1"
+             class="input w-full max-w-24" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Question ID</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[id]" %>"
+             value="<%= question["id"] %>"
+             class="input w-full"
+             placeholder="expresses_needs" />
+    </fieldset>
+
+    <fieldset class="fieldset lg:col-span-2">
+      <label class="label">Label</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[label]" %>"
+             value="<%= question["label"] %>"
+             class="input w-full"
+             placeholder="How does your child usually express their needs?" />
+    </fieldset>
+  </div>
+
+  <div class="mt-4 grid gap-4 lg:grid-cols-3">
+    <fieldset class="fieldset">
+      <label class="label">Type</label>
+      <select name="<%= "#{field_name_prefix}[type]" %>"
+              class="select w-full"
+              data-assessment-template-question-target="type"
+              data-action="change->assessment-template-question#toggleConfig">
+        <%= options_for_select(question_type_options, question["type"].presence || "text") %>
+      </select>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label cursor-pointer justify-start gap-3 pt-7">
+        <%= hidden_field_tag "#{field_name_prefix}[required]", "0" %>
+        <%= check_box_tag "#{field_name_prefix}[required]",
+          "1",
+          ActiveModel::Type::Boolean.new.cast(question["required"]),
+          class: "checkbox checkbox-sm" %>
+        <span>Required</span>
+      </label>
+    </fieldset>
+
+    <fieldset class="fieldset lg:col-span-1">
+      <label class="label">Help text</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[help_text]" %>"
+             value="<%= question["help_text"] %>"
+             class="input w-full"
+             placeholder="Optional helper copy" />
+    </fieldset>
+  </div>
+
+  <fieldset class="fieldset mt-4">
+    <label class="label">Placeholder</label>
+    <input type="text"
+           name="<%= "#{field_name_prefix}[placeholder]" %>"
+           value="<%= question["placeholder"] %>"
+           class="input w-full"
+           placeholder="Optional placeholder text" />
+  </fieldset>
+
+  <div class="mt-4 grid gap-4 lg:grid-cols-2">
+    <fieldset class="fieldset"
+              data-assessment-template-question-target="scaleConfig">
+      <label class="label">Scale range</label>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <input type="number"
+               name="<%= "#{field_name_prefix}[min]" %>"
+               value="<%= question["min"] %>"
+               class="input w-full"
+               placeholder="Min" />
+        <input type="number"
+               name="<%= "#{field_name_prefix}[max]" %>"
+               value="<%= question["max"] %>"
+               class="input w-full"
+               placeholder="Max" />
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset"
+              data-assessment-template-question-target="optionsConfig">
+      <label class="label">Select options</label>
+      <textarea name="<%= "#{field_name_prefix}[options_text]" %>"
+                rows="4"
+                class="textarea w-full"
+                placeholder="One option per line"><%= question["options_text"] || Array(question["options"]).join("\n") %></textarea>
+    </fieldset>
+  </div>
+
+  <div class="mt-6 grid gap-4 lg:grid-cols-2">
+    <fieldset class="fieldset">
+      <label class="label">Dimension key</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[dimension_key]" %>"
+             value="<%= question["dimension_key"] %>"
+             class="input w-full"
+             placeholder="communication.expression" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Concept key</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[concept_key]" %>"
+             value="<%= question["concept_key"] %>"
+             class="input w-full"
+             placeholder="expresses_needs" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Time window</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[time_window]" %>"
+             value="<%= question["time_window"] %>"
+             class="input w-full"
+             placeholder="typical_two_weeks" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Evidence weight</label>
+      <input type="number"
+             name="<%= "#{field_name_prefix}[evidence_weight]" %>"
+             value="<%= question["evidence_weight"] %>"
+             min="0"
+             max="1"
+             step="0.1"
+             class="input w-full"
+             placeholder="0.8" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Units</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[units]" %>"
+             value="<%= question["units"] %>"
+             class="input w-full"
+             placeholder="Optional units" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Polarity</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[polarity]" %>"
+             value="<%= question["polarity"] %>"
+             class="input w-full"
+             placeholder="Optional polarity" />
+    </fieldset>
+  </div>
+
+  <fieldset class="fieldset mt-4">
+    <label class="label">Extraction hint</label>
+    <textarea name="<%= "#{field_name_prefix}[extraction_hint]" %>"
+              rows="3"
+              class="textarea w-full"
+              placeholder="Optional AI extraction guidance"><%= question["extraction_hint"] %></textarea>
+  </fieldset>
+</div>

@@ -1,0 +1,86 @@
+<% section = section.deep_stringify_keys %>
+<% field_name_prefix = "assessment_template[sections_attributes][#{section_index}]" %>
+<% position_value = section["position"].presence || section_index.to_s.to_i + 1 %>
+<div class="rounded-box border border-base-300 bg-base-200/40 p-5"
+     data-section-item
+     data-new-record="<%= template_mode %>">
+  <input type="hidden"
+         name="<%= "#{field_name_prefix}[_destroy]" %>"
+         value="false"
+         data-destroy-field />
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h3 class="text-base font-semibold text-base-content">Section</h3>
+    <button type="button" class="btn btn-ghost btn-sm" data-action="assessment-template-editor#removeItem">
+      Remove section
+    </button>
+  </div>
+
+  <div class="mt-4 grid gap-4 lg:grid-cols-3">
+    <fieldset class="fieldset">
+      <label class="label">Order</label>
+      <input type="number"
+             name="<%= "#{field_name_prefix}[position]" %>"
+             value="<%= position_value %>"
+             min="1"
+             class="input w-full max-w-24" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Section ID</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[id]" %>"
+             value="<%= section["id"] %>"
+             class="input w-full"
+             placeholder="communication" />
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <label class="label">Title</label>
+      <input type="text"
+             name="<%= "#{field_name_prefix}[title]" %>"
+             value="<%= section["title"] %>"
+             class="input w-full"
+             placeholder="Communication" />
+    </fieldset>
+  </div>
+
+  <fieldset class="fieldset mt-4">
+    <label class="label">Description</label>
+    <textarea name="<%= "#{field_name_prefix}[description]" %>"
+              rows="2"
+              class="textarea w-full"
+              placeholder="Optional intro copy for this section"><%= section["description"] %></textarea>
+  </fieldset>
+
+  <div class="mt-6 rounded-box border border-base-300 bg-base-100 p-4"
+       data-controller="assessment-template-questions">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h4 class="text-sm font-semibold text-base-content">Questions</h4>
+        <p class="text-sm text-base-content/65">Question order is controlled by the numeric position field.</p>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" data-action="assessment-template-questions#addQuestion">
+        Add question
+      </button>
+    </div>
+
+    <div class="mt-4 space-y-4" data-assessment-template-questions-target="questionList">
+      <% Array(section["questions"]).each_with_index do |question, question_index| %>
+        <%= render "question_fields",
+          question: question,
+          section_index: section_index,
+          question_index: question_index,
+          template_mode: false %>
+      <% end %>
+    </div>
+
+    <template data-assessment-template-questions-target="questionTemplate">
+      <%= render "question_fields",
+        question: assessment_template.send(:default_editor_question, section["id"]),
+        section_index: section_index,
+        question_index: "__QUESTION_INDEX__",
+        template_mode: true %>
+    </template>
+  </div>
+</div>

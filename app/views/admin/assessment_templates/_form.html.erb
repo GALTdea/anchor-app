@@ -1,4 +1,6 @@
-<%= form_with model: [:admin, assessment_template], class: "space-y-6" do |f| %>
+<%= form_with model: [:admin, assessment_template],
+  class: "space-y-6",
+  data: { controller: "assessment-template-editor" } do |f| %>
   <% if assessment_template.errors.any? %>
     <div class="alert alert-error">
       <span><%= pluralize(assessment_template.errors.count, "error") %> prevented this template from saving.</span>
@@ -28,6 +30,13 @@
       <label class="label" for="assessment_template_version">Version</label>
       <%= f.number_field :version, min: 1, class: "input w-full max-w-32", id: "assessment_template_version" %>
 
+      <label class="label" for="assessment_template_schema_version">Schema version</label>
+      <%= number_field_tag "assessment_template[schema_version]",
+        assessment_template.schema_version,
+        min: 1,
+        class: "input w-full max-w-32",
+        id: "assessment_template_schema_version" %>
+
       <div class="mt-4">
         <p class="label">Allowed respondent types</p>
         <div class="mt-2 space-y-2">
@@ -46,9 +55,37 @@
     </fieldset>
   </div>
 
-  <div class="alert alert-info">
-    <span>Step 1 covers draft metadata only. Section and question authoring will land in the next build step.</span>
-  </div>
+  <section class="space-y-4 rounded-box border border-base-300 bg-base-100 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">Draft structure</h2>
+        <p class="mt-1 text-sm text-base-content/70">
+          Build sections and questions here. Use the order fields to control how the assessment appears.
+        </p>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" data-action="assessment-template-editor#addSection">
+        Add section
+      </button>
+    </div>
+
+    <div class="space-y-4" data-assessment-template-editor-target="sectionList">
+      <% schema_editor_sections(assessment_template).each_with_index do |section, section_index| %>
+        <%= render "section_fields",
+          assessment_template: assessment_template,
+          section: section,
+          section_index: section_index,
+          template_mode: false %>
+      <% end %>
+    </div>
+
+    <template data-assessment-template-editor-target="sectionTemplate">
+      <%= render "section_fields",
+        assessment_template: assessment_template,
+        section: assessment_template.send(:default_editor_section),
+        section_index: "__SECTION_INDEX__",
+        template_mode: true %>
+    </template>
+  </section>
 
   <div class="flex flex-wrap gap-3">
     <%= f.submit assessment_template.persisted? ? "Save draft" : "Create draft", class: "btn btn-primary" %>

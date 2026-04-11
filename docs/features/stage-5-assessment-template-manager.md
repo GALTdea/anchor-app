@@ -329,7 +329,7 @@ runner rendering patterns. Update this brief's status section once build work is
 
 - [x] Brief created
 - [x] Step 1
-- [ ] Step 2
+- [x] Step 2
 - [ ] Step 3
 - [ ] Step 4
 - [ ] Step 5
@@ -339,5 +339,6 @@ runner rendering patterns. Update this brief's status section once build work is
 manager built on the existing `AssessmentTemplate` versioning model. Step 1 is
 now implemented: admin routes, controller, policy scope, dashboard navigation,
 basic draft metadata CRUD, and initial request/policy coverage are in place.
-Step 2 should focus on schema authoring for sections, questions, options, and
-AI semantics inside the draft editor.
+Step 2 is also complete: the draft editor now supports section/question authoring,
+order fields, select options, and AI semantics mapped into `schema`. Step 3
+should focus on preview and publish validation.

@@ -145,4 +145,65 @@ RSpec.describe AssessmentTemplate, type: :model do
       expect(described_class.published).to contain_exactly(published)
     end
   end
+
+  describe "#apply_schema_editor_attributes!" do
+    it "normalizes draft editor params into schema sections and questions" do
+      template = build(:assessment_template, :draft, schema: {})
+
+      template.apply_schema_editor_attributes!(
+        schema_version: 2,
+        sections_attributes: [
+          {
+            "id" => "communication",
+            "title" => "Communication",
+            "description" => "How the child communicates",
+            "position" => "1",
+            "questions_attributes" => {
+              "0" => {
+                "id" => "expresses_needs",
+                "label" => "How does your child express needs?",
+                "type" => "select",
+                "required" => "1",
+                "options_text" => "Words\nGestures\nMixed",
+                "dimension_key" => "communication.expression",
+                "concept_key" => "expresses_needs",
+                "time_window" => "typical_two_weeks",
+                "evidence_weight" => "0.8",
+                "position" => "1"
+              }
+            }
+          }
+        ]
+      )
+
+      expect(template.schema).to eq(
+        {
+          "version" => 2,
+          "sections" => [
+            {
+              "id" => "communication",
+              "title" => "Communication",
+              "description" => "How the child communicates",
+              "position" => 1
+            }
+          ],
+          "questions" => [
+            {
+              "id" => "expresses_needs",
+              "label" => "How does your child express needs?",
+              "type" => "select",
+              "required" => true,
+              "dimension_key" => "communication.expression",
+              "concept_key" => "expresses_needs",
+              "time_window" => "typical_two_weeks",
+              "evidence_weight" => 0.8,
+              "position" => 1,
+              "options" => [ "Words", "Gestures", "Mixed" ],
+              "section" => "communication"
+            }
+          ]
+        }
+      )
+    end
+  end
 end

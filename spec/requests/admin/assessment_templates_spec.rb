@@ -74,6 +74,74 @@ RSpec.describe "Admin assessment templates", type: :request do
       expect(draft_template.respondent_types).to eq([ "self_report" ])
     end
 
+    it "builds schema sections and questions from editor params" do
+      sign_in admin
+
+      patch admin_assessment_template_path(draft_template), params: {
+        assessment_template: {
+          title: draft_template.title,
+          slug: draft_template.slug,
+          template_key: draft_template.template_key,
+          version: draft_template.version,
+          category: draft_template.category,
+          schema_version: 2,
+          respondent_types: [ "parent_proxy" ],
+          sections_attributes: {
+            "0" => {
+              id: "communication",
+              title: "Communication",
+              description: "How the child communicates",
+              position: 1,
+              questions_attributes: {
+                "0" => {
+                  id: "expresses_needs",
+                  label: "How does your child express needs?",
+                  type: "select",
+                  required: "1",
+                  options_text: "Words\nGestures\nMixed",
+                  dimension_key: "communication.expression",
+                  concept_key: "expresses_needs",
+                  time_window: "typical_two_weeks",
+                  evidence_weight: "0.8",
+                  extraction_hint: "Capture expressive communication style",
+                  position: 1
+                }
+              }
+            }
+          }
+        }
+      }
+
+      expect(response).to redirect_to(admin_assessment_template_path(draft_template))
+
+      schema = draft_template.reload.schema.deep_stringify_keys
+      expect(schema["version"]).to eq(2)
+      expect(schema["sections"]).to eq([
+        {
+          "id" => "communication",
+          "title" => "Communication",
+          "description" => "How the child communicates",
+          "position" => 1
+        }
+      ])
+      expect(schema["questions"]).to eq([
+        {
+          "id" => "expresses_needs",
+          "label" => "How does your child express needs?",
+          "type" => "select",
+          "required" => true,
+          "dimension_key" => "communication.expression",
+          "concept_key" => "expresses_needs",
+          "time_window" => "typical_two_weeks",
+          "evidence_weight" => 0.8,
+          "extraction_hint" => "Capture expressive communication style",
+          "position" => 1,
+          "options" => [ "Words", "Gestures", "Mixed" ],
+          "section" => "communication"
+        }
+      ])
+    end
+
     it "does not allow editing a published template in place" do
       sign_in admin
 
@@ -81,6 +149,20 @@ RSpec.describe "Admin assessment templates", type: :request do
 
       expect(response).to redirect_to(admin_assessment_template_path(published_template))
       expect(flash[:alert]).to eq("Published templates cannot be edited in place.")
+    end
+  end
+
+  describe "GET /admin/assessment_templates/:id/edit" do
+    it "renders schema authoring fields for draft templates" do
+      sign_in admin
+
+      get edit_admin_assessment_template_path(draft_template)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Draft structure")
+      expect(response.body).to include("Add section")
+      expect(response.body).to include("Questions")
+      expect(response.body).to include("Dimension key")
     end
   end
 end

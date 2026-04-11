@@ -35,6 +35,20 @@ class AssessmentTemplate < ApplicationRecord
   ].freeze
   REQUIRED_QUESTION_FIELDS = %w[id label type dimension_key concept_key time_window].freeze
   OPTIONAL_STRING_QUESTION_FIELDS = %w[section help_text extraction_hint units polarity].freeze
+  EDITOR_SECTION_FIELDS = %w[id title description].freeze
+  EDITOR_QUESTION_STRING_FIELDS = %w[
+    id
+    label
+    type
+    help_text
+    placeholder
+    dimension_key
+    concept_key
+    time_window
+    extraction_hint
+    units
+    polarity
+  ].freeze
   SUPPORTED_QUESTION_TYPES = %w[scale textarea text select].freeze
 
   enum :status, { draft: 0, published: 1, archived: 2 }, default: :draft
@@ -73,11 +87,158 @@ class AssessmentTemplate < ApplicationRecord
     Array(schema.to_h.deep_stringify_keys["sections"]).size
   end
 
+  def editor_sections
+    schema_hash = schema.to_h.deep_stringify_keys
+    sections = Array(schema_hash["sections"]).map.with_index do |section, index|
+      normalized = section.deep_stringify_keys.slice(*EDITOR_SECTION_FIELDS)
+      normalized["position"] = index + 1
+      normalized["questions"] = []
+      normalized
+    end
+
+    indexed_sections = sections.index_by { |section| section["id"].to_s }
+
+    Array(schema_hash["questions"]).each_with_index do |question, index|
+      normalized = normalize_editor_question(question, index + 1)
+      section_id = normalized["section"].to_s
+
+      target_section = if section_id.present? && indexed_sections.key?(section_id)
+        indexed_sections[section_id]
+      else
+        sections.find { |section| section["id"].blank? } || begin
+          extra = {
+            "id" => "",
+            "title" => "",
+            "description" => "",
+            "position" => sections.size + 1,
+            "questions" => []
+          }
+          sections << extra
+          extra
+        end
+      end
+
+      target_section["questions"] << normalized
+    end
+
+    sections = [ default_editor_section ] if sections.empty?
+
+    sections.each { |section| section["questions"] = [ default_editor_question(section["id"]) ] if section["questions"].empty? }
+    sections
+  end
+
+  def apply_schema_editor_attributes!(sections_attributes:, schema_version: nil)
+    normalized_sections = Array(sections_attributes).filter_map.with_index do |section_attributes, index|
+      normalize_editor_section(section_attributes, index)
+    end
+
+    questions = normalized_sections.flat_map do |section|
+      Array(section.delete("questions")).map do |question|
+        question["section"] = section["id"].to_s
+        question
+      end
+    end
+
+    self.schema = {
+      "version" => normalize_schema_version(schema_version),
+      "sections" => normalized_sections,
+      "questions" => questions
+    }
+  end
+
   def question_ids
     Array(schema&.dig("questions")).filter_map { |q| q["id"].presence }.map(&:to_s)
   end
 
   private
+
+  def default_editor_section
+    {
+      "id" => "",
+      "title" => "",
+      "description" => "",
+      "position" => 1,
+      "questions" => [ default_editor_question("") ]
+    }
+  end
+
+  def default_editor_question(section_id = "")
+    {
+      "id" => "",
+      "label" => "",
+      "type" => "text",
+      "section" => section_id.to_s,
+      "help_text" => "",
+      "placeholder" => "",
+      "dimension_key" => "",
+      "concept_key" => "",
+      "time_window" => "",
+      "evidence_weight" => "",
+      "extraction_hint" => "",
+      "units" => "",
+      "polarity" => "",
+      "min" => "",
+      "max" => "",
+      "required" => false,
+      "options_text" => "",
+      "position" => 1
+    }
+  end
+
+  def normalize_schema_version(value)
+    version_value = Integer(value.presence || schema_version, exception: false)
+    version_value.present? && version_value.positive? ? version_value : 1
+  end
+
+  def normalize_editor_section(section_attributes, index)
+    section = section_attributes.to_h.deep_stringify_keys
+    return if ActiveModel::Type::Boolean.new.cast(section["_destroy"])
+
+    normalized = section.slice(*EDITOR_SECTION_FIELDS)
+    normalized.transform_values! { |value| value.is_a?(String) ? value.strip : value }
+    normalized["position"] = normalize_position(section["position"], index)
+    normalized["questions"] = Array(section["questions_attributes"]&.to_h&.values).filter_map.with_index do |question_attributes, question_index|
+      normalize_editor_question(question_attributes, question_index + 1)
+    end
+    normalized
+  end
+
+  def normalize_editor_question(question_attributes, index)
+    question = question_attributes.to_h.deep_stringify_keys
+    return if ActiveModel::Type::Boolean.new.cast(question["_destroy"])
+
+    normalized = question.slice(*EDITOR_QUESTION_STRING_FIELDS)
+    normalized.transform_values! { |value| value.is_a?(String) ? value.strip : value }
+    normalized["required"] = ActiveModel::Type::Boolean.new.cast(question["required"])
+    normalized["position"] = normalize_position(question["position"], index)
+    normalized["options_text"] = Array(question["options"]).join("\n") if question["options"].present?
+
+    type = normalized["type"].to_s
+    normalized["min"] = Integer(question["min"], exception: false) if type == "scale" && question["min"].present?
+    normalized["max"] = Integer(question["max"], exception: false) if type == "scale" && question["max"].present?
+    normalized["evidence_weight"] = normalize_decimal(question["evidence_weight"])
+    normalized["options"] = question_options_from_editor(question)
+
+    normalized.compact_blank
+  end
+
+  def question_options_from_editor(question)
+    options_text = question["options_text"].to_s
+    options = options_text.split("\n").map(&:strip).reject(&:blank?)
+    return options if options.present?
+
+    Array(question["options"]).map(&:to_s).map(&:strip).reject(&:blank?)
+  end
+
+  def normalize_position(value, fallback)
+    position = Integer(value, exception: false)
+    position.present? && position.positive? ? position : fallback
+  end
+
+  def normalize_decimal(value)
+    decimal = Float(value, exception: false)
+    decimal.nil? ? nil : decimal
+  end
 
   def published_templates_have_valid_respondent_types
     types = respondent_types

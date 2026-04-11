@@ -26,6 +26,10 @@ class Admin::AssessmentTemplatesController < ApplicationController
     @assessment_template = AssessmentTemplate.new(assessment_template_params)
     @assessment_template.status = :draft
     @assessment_template.schema = AssessmentTemplate.default_schema if @assessment_template.schema.blank?
+    @assessment_template.apply_schema_editor_attributes!(
+      sections_attributes: schema_sections_attributes,
+      schema_version: schema_version_param
+    )
     authorize @assessment_template
 
     if @assessment_template.save
@@ -41,8 +45,13 @@ class Admin::AssessmentTemplatesController < ApplicationController
 
   def update
     authorize @assessment_template
+    @assessment_template.assign_attributes(assessment_template_params)
+    @assessment_template.apply_schema_editor_attributes!(
+      sections_attributes: schema_sections_attributes,
+      schema_version: schema_version_param
+    )
 
-    if @assessment_template.update(assessment_template_params)
+    if @assessment_template.save
       redirect_to admin_assessment_template_path(@assessment_template), notice: "Draft template updated."
     else
       render :edit, status: :unprocessable_content
@@ -73,5 +82,16 @@ class Admin::AssessmentTemplatesController < ApplicationController
     )
     permitted[:respondent_types] = Array(permitted[:respondent_types]).reject(&:blank?)
     permitted
+  end
+
+  def schema_sections_attributes
+    sections = params.fetch(:assessment_template, ActionController::Parameters.new)[:sections_attributes]
+    return [] if sections.blank?
+
+    sections.permit!.to_h.values
+  end
+
+  def schema_version_param
+    params.fetch(:assessment_template, {})[:schema_version]
   end
 end
