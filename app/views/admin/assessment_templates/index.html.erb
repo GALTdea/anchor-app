@@ -24,7 +24,12 @@
           <tr>
             <td>
               <div class="font-medium"><%= template.title %></div>
-              <div class="text-sm text-base-content/60"><%= template.template_key %></div>
+              <div class="flex flex-wrap items-center gap-2 text-sm text-base-content/60">
+                <span><%= template.template_key %></span>
+                <% if onboarding_template_selected?(template) %>
+                  <span class="badge badge-primary badge-outline">Onboarding</span>
+                <% end %>
+              </div>
             </td>
             <td>v<%= template.version %></td>
             <td>

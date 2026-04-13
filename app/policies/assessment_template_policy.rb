@@ -50,6 +50,10 @@ class AssessmentTemplatePolicy < ApplicationPolicy
     user.admin?
   end
 
+  def set_as_onboarding?
+    user.admin?
+  end
+
   private
 
   def admin_record?

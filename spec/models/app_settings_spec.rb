@@ -45,6 +45,7 @@ RSpec.describe AppSettings, type: :model do
     it 'defines methods for each app setting' do
       %i[
         interface_layout login_layout multi_tenant_mode show_landing_page
+        onboarding_assessment_template_id
         color_mode color_scheme theme_base font_family corner_radius
       ].each do |method|
         expect(AppSettings).to respond_to(method)

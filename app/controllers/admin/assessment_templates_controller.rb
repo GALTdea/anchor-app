@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Admin::AssessmentTemplatesController < ApplicationController
-  before_action :set_assessment_template, only: %i[show edit update preview publish]
+  before_action :set_assessment_template, only: %i[show edit update preview publish new_version set_as_onboarding]
   before_action :ensure_draft_editable!, only: %i[edit update publish]
 
   def index
@@ -74,7 +74,6 @@ class Admin::AssessmentTemplatesController < ApplicationController
   end
 
   def new_version
-    @assessment_template = AssessmentTemplate.find(params[:id])
     authorize @assessment_template
 
     unless @assessment_template.published?
@@ -92,6 +91,21 @@ class Admin::AssessmentTemplatesController < ApplicationController
       redirect_to admin_assessment_template_path(@assessment_template),
         alert: next_draft.errors.full_messages.to_sentence.presence || "Could not create the next draft version."
     end
+  end
+
+  def set_as_onboarding
+    authorize @assessment_template
+
+    unless @assessment_template.published?
+      redirect_to admin_assessment_template_path(@assessment_template),
+        alert: "Only published templates can be used for onboarding."
+      return
+    end
+
+    AppSettings.write_setting!("onboarding_assessment_template_id", @assessment_template.id.to_s)
+
+    redirect_to admin_assessment_template_path(@assessment_template),
+      notice: "#{@assessment_template.title} is now the onboarding assessment."
   end
 
   private

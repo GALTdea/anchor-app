@@ -12,6 +12,7 @@
           <div class="space-y-4">
             <% Rails.application.config.app_settings
                 .each do |key, schema| %>
+              <% next if schema["hidden"] %>
               <fieldset class="fieldset">
                 <%= form.label key,
                   class: "label" do %>

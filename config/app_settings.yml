@@ -32,6 +32,11 @@ show_landing_page:
   - true
   - false
   default: 'true'
+onboarding_assessment_template_id:
+  type: string
+  available: []
+  default: ''
+  hidden: true
 color_mode:
   type: string
   available:

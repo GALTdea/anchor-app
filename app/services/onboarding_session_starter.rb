@@ -29,6 +29,7 @@ class OnboardingSessionStarter
   end
 
   def onboarding_template
+    configured_onboarding_template ||
     AssessmentTemplate.published
       .where(template_key: ONBOARDING_TEMPLATE_KEY)
       .order(version: :desc)
@@ -42,6 +43,19 @@ class OnboardingSessionStarter
 
   def onboarding_template_match?(assessment_template)
     assessment_template.present? &&
-      (assessment_template.template_key == ONBOARDING_TEMPLATE_KEY || assessment_template.category == "onboarding")
+      (configured_onboarding_template_match?(assessment_template) ||
+      assessment_template.template_key == ONBOARDING_TEMPLATE_KEY || assessment_template.category == "onboarding")
+  end
+
+  def configured_onboarding_template
+    template_id = AppSettings.onboarding_assessment_template_id.presence
+    return if template_id.blank?
+
+    AssessmentTemplate.published.find_by(id: template_id)
+  end
+
+  def configured_onboarding_template_match?(assessment_template)
+    configured_template = configured_onboarding_template
+    configured_template.present? && assessment_template.id == configured_template.id
   end
 end

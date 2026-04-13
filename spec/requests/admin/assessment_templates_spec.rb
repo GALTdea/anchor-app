@@ -229,4 +229,25 @@ RSpec.describe "Admin assessment templates", type: :request do
       expect(flash[:alert]).to eq("Only published templates can be versioned.")
     end
   end
+
+  describe "POST /admin/assessment_templates/:id/set_as_onboarding" do
+    it "sets a published template as the onboarding assessment" do
+      sign_in admin
+
+      post set_as_onboarding_admin_assessment_template_path(published_template)
+
+      expect(response).to redirect_to(admin_assessment_template_path(published_template))
+      expect(AppSettings.onboarding_assessment_template_id).to eq(published_template.id.to_s)
+      expect(flash[:notice]).to eq("#{published_template.title} is now the onboarding assessment.")
+    end
+
+    it "rejects draft templates" do
+      sign_in admin
+
+      post set_as_onboarding_admin_assessment_template_path(draft_template)
+
+      expect(response).to redirect_to(admin_assessment_template_path(draft_template))
+      expect(flash[:alert]).to eq("Only published templates can be used for onboarding.")
+    end
+  end
 end

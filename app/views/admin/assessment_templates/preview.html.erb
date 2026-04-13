@@ -10,6 +10,12 @@
       class: "btn btn-secondary",
       form: { data: { turbo_confirm: "Publish this draft? Published templates become read-only." } } %>
   <% elsif @assessment_template.published? %>
+    <% unless onboarding_template_selected?(@assessment_template) %>
+      <%= button_to "Use for onboarding",
+        set_as_onboarding_admin_assessment_template_path(@assessment_template),
+        method: :post,
+        class: "btn btn-secondary" %>
+    <% end %>
     <%= button_to "Create new version",
       new_version_admin_assessment_template_path(@assessment_template),
       method: :post,
@@ -31,6 +37,9 @@
           <div class="flex flex-wrap items-center gap-2">
             <span class="badge badge-primary badge-outline">Assessment preview</span>
             <span class="badge badge-ghost"><%= @assessment_template.status.humanize %></span>
+            <% if onboarding_template_selected?(@assessment_template) %>
+              <span class="badge badge-secondary badge-outline">Current onboarding assessment</span>
+            <% end %>
           </div>
           <div class="space-y-2">
             <h2 class="text-2xl font-semibold text-base-content">

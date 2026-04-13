@@ -32,6 +32,13 @@ class AppSettings < ApplicationRecord
       @global_settings = nil
     end
 
+    def write_setting!(key, value)
+      record = first_or_initialize
+      updated_settings = record.settings.merge(key.to_s => value)
+      record.update!(settings: updated_settings)
+      record
+    end
+
     private
 
     def global_settings

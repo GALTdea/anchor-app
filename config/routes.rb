@@ -9,6 +9,7 @@ Rails.application.routes.draw do
         get :preview
         post :publish
         post :new_version
+        post :set_as_onboarding
       end
     end
   end

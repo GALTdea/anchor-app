@@ -10,4 +10,8 @@ module Admin::AssessmentTemplatesHelper
   def question_type_options
     QUESTION_TYPE_OPTIONS
   end
+
+  def onboarding_template_selected?(template)
+    onboarding_assessment_template_id == template.id.to_s
+  end
 end
