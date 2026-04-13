@@ -11,7 +11,12 @@
          data-destroy-field />
 
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <h5 class="text-sm font-semibold text-base-content">Question</h5>
+    <div>
+      <h5 class="text-sm font-semibold text-base-content">
+        <%= question["label"].presence || "Untitled question" %>
+      </h5>
+      <p class="text-sm text-base-content/60">Define the respondent-facing prompt and the profile semantics this answer should feed.</p>
+    </div>
     <button type="button" class="btn btn-ghost btn-sm" data-action="assessment-template-editor#removeItem">
       Remove question
     </button>
@@ -34,6 +39,7 @@
              value="<%= question["id"] %>"
              class="input w-full"
              placeholder="expresses_needs" />
+      <p class="mt-1 text-sm text-base-content/60">Stable answer key stored in responses and evidence extraction.</p>
     </fieldset>
 
     <fieldset class="fieldset lg:col-span-2">
@@ -75,6 +81,7 @@
              value="<%= question["help_text"] %>"
              class="input w-full"
              placeholder="Optional helper copy" />
+      <p class="mt-1 text-sm text-base-content/60">Extra context shown under the question label.</p>
     </fieldset>
   </div>
 
@@ -103,6 +110,7 @@
                class="input w-full"
                placeholder="Max" />
       </div>
+      <p class="mt-1 text-sm text-base-content/60">Required only for `scale` questions.</p>
     </fieldset>
 
     <fieldset class="fieldset"
@@ -112,10 +120,18 @@
                 rows="4"
                 class="textarea w-full"
                 placeholder="One option per line"><%= question["options_text"] || Array(question["options"]).join("\n") %></textarea>
+      <p class="mt-1 text-sm text-base-content/60">Required only for `select` questions.</p>
     </fieldset>
   </div>
 
-  <div class="mt-6 grid gap-4 lg:grid-cols-2">
+  <div class="mt-6">
+    <div class="mb-3">
+      <h6 class="text-sm font-semibold text-base-content">AI and profile semantics</h6>
+      <p class="text-sm text-base-content/60">These fields shape how answers are interpreted in the profile pipeline and should stay consistent across versions when meaning has not changed.</p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2">
     <fieldset class="fieldset">
       <label class="label">Dimension key</label>
       <input type="text"
@@ -150,9 +166,10 @@
              value="<%= question["evidence_weight"] %>"
              min="0"
              max="1"
-             step="0.1"
+             step="0.05"
              class="input w-full"
              placeholder="0.8" />
+      <p class="mt-1 text-sm text-base-content/60">Use a value between 0 and 1 to indicate how strongly this answer should influence evidence extraction.</p>
     </fieldset>
 
     <fieldset class="fieldset">
@@ -180,5 +197,6 @@
               rows="3"
               class="textarea w-full"
               placeholder="Optional AI extraction guidance"><%= question["extraction_hint"] %></textarea>
+    <p class="mt-1 text-sm text-base-content/60">Useful for free-text questions where the model should look for specific signals, themes, or examples.</p>
   </fieldset>
 </div>

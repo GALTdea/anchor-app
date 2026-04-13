@@ -10,7 +10,12 @@
          data-destroy-field />
 
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <h3 class="text-base font-semibold text-base-content">Section</h3>
+    <div>
+      <h3 class="text-base font-semibold text-base-content">
+        <%= section["title"].presence || "Untitled section" %>
+      </h3>
+      <p class="text-sm text-base-content/60">Group related questions and keep section IDs stable for published versions.</p>
+    </div>
     <button type="button" class="btn btn-ghost btn-sm" data-action="assessment-template-editor#removeItem">
       Remove section
     </button>
@@ -33,6 +38,7 @@
              value="<%= section["id"] %>"
              class="input w-full"
              placeholder="communication" />
+      <p class="mt-1 text-sm text-base-content/60">Short machine-friendly ID used by questions to reference this section.</p>
     </fieldset>
 
     <fieldset class="fieldset">
@@ -42,6 +48,7 @@
              value="<%= section["title"] %>"
              class="input w-full"
              placeholder="Communication" />
+      <p class="mt-1 text-sm text-base-content/60">Reader-facing label shown in the assessment runner.</p>
     </fieldset>
   </div>
 
@@ -58,7 +65,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h4 class="text-sm font-semibold text-base-content">Questions</h4>
-        <p class="text-sm text-base-content/65">Question order is controlled by the numeric position field.</p>
+        <p class="text-sm text-base-content/65">Question order is controlled by the numeric position field. Use preview to validate the final flow.</p>
       </div>
       <button type="button" class="btn btn-outline btn-sm" data-action="assessment-template-questions#addQuestion">
         Add question

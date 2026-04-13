@@ -3,9 +3,31 @@
   data: { controller: "assessment-template-editor" } do |f| %>
   <% if assessment_template.errors.any? %>
     <div class="alert alert-error">
-      <span><%= pluralize(assessment_template.errors.count, "error") %> prevented this template from saving.</span>
+      <div>
+        <p class="font-medium"><%= pluralize(assessment_template.errors.count, "error") %> prevented this template from saving.</p>
+        <p class="text-sm opacity-80">Check the highlighted draft structure details and fix any publish validation issues before trying again.</p>
+      </div>
     </div>
   <% end %>
+
+  <div class="grid gap-4 lg:grid-cols-4">
+    <div class="rounded-box border border-base-300 bg-base-100 p-4">
+      <p class="text-sm text-base-content/60">Template status</p>
+      <p class="mt-2 text-lg font-semibold text-base-content"><%= assessment_template.status.humanize %></p>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-4">
+      <p class="text-sm text-base-content/60">Sections</p>
+      <p class="mt-2 text-lg font-semibold text-base-content"><%= assessment_template.section_count %></p>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-4">
+      <p class="text-sm text-base-content/60">Questions</p>
+      <p class="mt-2 text-lg font-semibold text-base-content"><%= assessment_template.question_count %></p>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-4">
+      <p class="text-sm text-base-content/60">Schema version</p>
+      <p class="mt-2 text-lg font-semibold text-base-content"><%= assessment_template.schema_version %></p>
+    </div>
+  </div>
 
   <div class="grid gap-6 lg:grid-cols-2">
     <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-5">
@@ -13,15 +35,19 @@
 
       <label class="label" for="assessment_template_title">Title</label>
       <%= f.text_field :title, class: "input w-full", id: "assessment_template_title" %>
+      <p class="mt-1 text-sm text-base-content/60">Human-readable name shown in the assessment library and preview.</p>
 
       <label class="label" for="assessment_template_slug">Slug</label>
       <%= f.text_field :slug, class: "input w-full", id: "assessment_template_slug" %>
+      <p class="mt-1 text-sm text-base-content/60">Stable URL-safe identifier for this specific version.</p>
 
       <label class="label" for="assessment_template_template_key">Template key</label>
       <%= f.text_field :template_key, class: "input w-full", id: "assessment_template_template_key" %>
+      <p class="mt-1 text-sm text-base-content/60">Shared identifier across versions of the same template family.</p>
 
       <label class="label" for="assessment_template_category">Category</label>
       <%= f.text_field :category, class: "input w-full", id: "assessment_template_category" %>
+      <p class="mt-1 text-sm text-base-content/60">Optional grouping such as screening, intake, or follow-up.</p>
     </fieldset>
 
     <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-5">
@@ -36,6 +62,7 @@
         min: 1,
         class: "input w-full max-w-32",
         id: "assessment_template_schema_version" %>
+      <p class="mt-1 text-sm text-base-content/60">Increment only when the schema contract meaning changes.</p>
 
       <div class="mt-4">
         <p class="label">Allowed respondent types</p>
@@ -51,6 +78,7 @@
             </label>
           <% end %>
         </div>
+        <p class="mt-2 text-sm text-base-content/60">Published templates must have at least one respondent type selected.</p>
       </div>
     </fieldset>
   </div>
@@ -60,7 +88,7 @@
       <div>
         <h2 class="text-lg font-semibold text-base-content">Draft structure</h2>
         <p class="mt-1 text-sm text-base-content/70">
-          Build sections and questions here. Use the order fields to control how the assessment appears.
+          Build sections and questions here. Use the order fields to control how the assessment appears, and keep IDs stable once a version is published.
         </p>
       </div>
       <button type="button" class="btn btn-outline btn-sm" data-action="assessment-template-editor#addSection">
@@ -87,10 +115,17 @@
     </template>
   </section>
 
-  <div class="flex flex-wrap gap-3">
-    <%= f.submit assessment_template.persisted? ? "Save draft" : "Create draft", class: "btn btn-primary" %>
-    <%= link_to "Cancel",
-      assessment_template.persisted? ? admin_assessment_template_path(assessment_template) : admin_assessment_templates_path,
-      class: "btn btn-ghost" %>
+  <div class="sticky bottom-4 z-10 rounded-box border border-base-300 bg-base-100/95 p-4 shadow-lg backdrop-blur">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="text-sm text-base-content/70">
+        Save your draft any time. Use preview to sanity-check flow before publishing.
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <%= f.submit assessment_template.persisted? ? "Save draft" : "Create draft", class: "btn btn-primary" %>
+        <%= link_to "Cancel",
+          assessment_template.persisted? ? admin_assessment_template_path(assessment_template) : admin_assessment_templates_path,
+          class: "btn btn-ghost" %>
+      </div>
+    </div>
   </div>
 <% end %>
