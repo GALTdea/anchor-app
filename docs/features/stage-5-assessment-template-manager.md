@@ -332,9 +332,9 @@ runner rendering patterns. Update this brief's status section once build work is
 - [x] Step 2
 - [x] Step 3
 - [x] Step 4
-- [ ] Step 5
+- [x] Step 5
 
-**Last updated:** 2026-04-10
+**Last updated:** 2026-04-13
 **Handoff note:** The feature is framed as an admin-only assessment template
 manager built on the existing `AssessmentTemplate` versioning model. Step 1 is
 now implemented: admin routes, controller, policy scope, dashboard navigation,
@@ -345,4 +345,5 @@ now complete as well: admins can preview a read-only assessment rendering and
 publish valid drafts, with publish failures surfacing the model validation
 errors back in the editor. Step 4 is now complete too: published templates can
 spawn a new editable draft version that preserves the prior schema and metadata
-while incrementing the version number. Step 5 is the post-build audit.
+while incrementing the version number. Step 5 is complete: post-build audit
+found no blocking issues, full RSpec is green, and full RuboCop is clean.
