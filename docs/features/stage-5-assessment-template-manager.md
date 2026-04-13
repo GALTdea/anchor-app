@@ -330,7 +330,7 @@ runner rendering patterns. Update this brief's status section once build work is
 - [x] Brief created
 - [x] Step 1
 - [x] Step 2
-- [ ] Step 3
+- [x] Step 3
 - [ ] Step 4
 - [ ] Step 5
 
@@ -340,5 +340,7 @@ manager built on the existing `AssessmentTemplate` versioning model. Step 1 is
 now implemented: admin routes, controller, policy scope, dashboard navigation,
 basic draft metadata CRUD, and initial request/policy coverage are in place.
 Step 2 is also complete: the draft editor now supports section/question authoring,
-order fields, select options, and AI semantics mapped into `schema`. Step 3
-should focus on preview and publish validation.
+order fields, select options, and AI semantics mapped into `schema`. Step 3 is
+now complete as well: admins can preview a read-only assessment rendering and
+publish valid drafts, with publish failures surfacing the model validation
+errors back in the editor. Step 4 should focus on version cloning.

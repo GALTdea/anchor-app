@@ -1,0 +1,122 @@
+<% sections = assessment_sections(@assessment_template) %>
+<% progress = assessment_progress(@assessment_template, {}) %>
+
+<% content_for :actions do %>
+  <% if @assessment_template.draft_editable? %>
+    <%= link_to "Back to edit", edit_admin_assessment_template_path(@assessment_template), class: "btn btn-ghost" %>
+    <%= button_to "Publish",
+      publish_admin_assessment_template_path(@assessment_template),
+      method: :post,
+      class: "btn btn-secondary",
+      form: { data: { turbo_confirm: "Publish this draft? Published templates become read-only." } } %>
+  <% else %>
+    <%= link_to "Back to template", admin_assessment_template_path(@assessment_template), class: "btn btn-ghost" %>
+  <% end %>
+<% end %>
+
+<div class="mx-auto max-w-5xl space-y-6">
+  <%= render "shared/page_header",
+    title: "#{@assessment_template.title} preview",
+    subtitle: "#{@assessment_template.template_key} · Version #{@assessment_template.version}" %>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_20rem]">
+    <div class="space-y-6">
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="badge badge-primary badge-outline">Assessment preview</span>
+            <span class="badge badge-ghost"><%= @assessment_template.status.humanize %></span>
+          </div>
+          <div class="space-y-2">
+            <h2 class="text-2xl font-semibold text-base-content">
+              <%= assessment_intro_title(@assessment_template) %>
+            </h2>
+            <p class="max-w-3xl text-base leading-7 text-base-content/75">
+              <%= assessment_intro_body(@assessment_template) %>
+            </p>
+          </div>
+          <div class="rounded-box bg-base-200/70 p-4">
+            <p class="text-sm leading-6 text-base-content/75">
+              This is a read-only admin preview of how the assessment will appear to respondents.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <% if @assessment_template.errors.any? %>
+        <div class="alert alert-error">
+          <ul class="list-disc list-inside">
+            <% @assessment_template.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% sections.each_with_index do |section, index| %>
+        <section class="card bg-base-100 shadow-sm">
+          <div class="card-body gap-6">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="badge badge-ghost">Section <%= index + 1 %> of <%= sections.size %></span>
+                  <span class="badge badge-outline"><%= Array(section["questions"]).size %> questions</span>
+                </div>
+                <div>
+                  <h3 class="text-xl font-semibold text-base-content"><%= section["title"] %></h3>
+                  <% if section["description"].present? %>
+                    <p class="mt-1 text-sm leading-6 text-base-content/70"><%= section["description"] %></p>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <% Array(section["questions"]).each do |question| %>
+                <%= render "preview_question", question: question %>
+              <% end %>
+            </div>
+          </div>
+        </section>
+      <% end %>
+    </div>
+
+    <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-4">
+          <div>
+            <p class="text-sm font-medium text-base-content/60">Preview summary</p>
+            <h3 class="mt-1 text-2xl font-semibold text-base-content">
+              <%= progress[:total] %> questions
+            </h3>
+          </div>
+          <p class="text-sm text-base-content/70">
+            <%= sections.size %> sections · <%= @assessment_template.respondent_types.size %> respondent types
+          </p>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-3">
+          <h3 class="text-base font-semibold text-base-content">Respondent types</h3>
+          <div class="flex flex-wrap gap-2">
+            <% @assessment_template.respondent_types.each do |kind| %>
+              <span class="badge badge-outline"><%= respondent_kind_label(kind) %></span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-3">
+          <h3 class="text-base font-semibold text-base-content">Publish rules</h3>
+          <ul class="space-y-2 text-sm leading-6 text-base-content/70">
+            <li>Published drafts must have valid respondent types.</li>
+            <li>Each question needs supported type and AI semantics.</li>
+            <li>Select questions need options, and scale questions need min/max.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

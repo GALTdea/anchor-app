@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class Admin::AssessmentTemplatesController < ApplicationController
-  before_action :set_assessment_template, only: %i[show edit update]
-  before_action :ensure_draft_editable!, only: %i[edit update]
+  before_action :set_assessment_template, only: %i[show edit update preview publish]
+  before_action :ensure_draft_editable!, only: %i[edit update publish]
 
   def index
     authorize AssessmentTemplate
@@ -54,6 +54,21 @@ class Admin::AssessmentTemplatesController < ApplicationController
     if @assessment_template.save
       redirect_to admin_assessment_template_path(@assessment_template), notice: "Draft template updated."
     else
+      render :edit, status: :unprocessable_content
+    end
+  end
+
+  def preview
+    authorize @assessment_template
+  end
+
+  def publish
+    authorize @assessment_template
+
+    if @assessment_template.update(status: :published)
+      redirect_to admin_assessment_template_path(@assessment_template), notice: "Template published."
+    else
+      flash.now[:alert] = "This draft must be fixed before it can be published."
       render :edit, status: :unprocessable_content
     end
   end

@@ -1,6 +1,12 @@
 <% content_for :actions do %>
+  <%= link_to "Preview", preview_admin_assessment_template_path(@assessment_template), class: "btn btn-ghost" %>
   <% if @assessment_template.draft_editable? %>
     <%= link_to "Edit draft", edit_admin_assessment_template_path(@assessment_template), class: "btn btn-primary" %>
+    <%= button_to "Publish",
+      publish_admin_assessment_template_path(@assessment_template),
+      method: :post,
+      class: "btn btn-secondary",
+      form: { data: { turbo_confirm: "Publish this draft? Published templates become read-only." } } %>
   <% end %>
 <% end %>
 

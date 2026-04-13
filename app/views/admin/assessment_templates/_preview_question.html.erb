@@ -1,0 +1,74 @@
+<% question = question.stringify_keys %>
+<div class="rounded-box border border-base-300/70 bg-base-100 p-5">
+  <div class="flex flex-wrap items-center gap-2">
+    <h4 class="text-base font-semibold text-base-content"><%= question["label"] %></h4>
+    <% if question["required"] %>
+      <span class="badge badge-error badge-outline">Required</span>
+    <% end %>
+    <span class="badge badge-ghost"><%= question["type"].to_s.humanize %></span>
+  </div>
+
+  <% if question["help_text"].present? %>
+    <p class="mt-2 text-sm text-base-content/70"><%= question["help_text"] %></p>
+  <% end %>
+
+  <% case question["type"].to_s %>
+  <% when "scale" %>
+    <div class="mt-4">
+      <label class="label">Scale preview</label>
+      <input type="number"
+             disabled
+             min="<%= question["min"] %>"
+             max="<%= question["max"] %>"
+             class="input w-full max-w-32"
+             placeholder="#{question["min"]}-#{question["max"]}" />
+    </div>
+  <% when "textarea" %>
+    <div class="mt-4">
+      <label class="label">Long text preview</label>
+      <textarea disabled
+                rows="4"
+                class="textarea w-full"
+                placeholder="<%= question["placeholder"].presence || "Long-form response" %>"></textarea>
+    </div>
+  <% when "text" %>
+    <div class="mt-4">
+      <label class="label">Short text preview</label>
+      <input type="text"
+             disabled
+             class="input w-full"
+             placeholder="<%= question["placeholder"].presence || "Short response" %>" />
+    </div>
+  <% when "select" %>
+    <div class="mt-4">
+      <label class="label">Select preview</label>
+      <select disabled class="select w-full">
+        <option>Select an answer</option>
+        <% assessment_question_options(question).each do |label, value| %>
+          <option value="<%= value %>"><%= label %></option>
+        <% end %>
+      </select>
+    </div>
+  <% else %>
+    <p class="mt-4 text-sm text-error">Unsupported question type: <%= question["type"] %></p>
+  <% end %>
+
+  <dl class="mt-4 grid gap-3 text-sm text-base-content/70 sm:grid-cols-2">
+    <div>
+      <dt class="font-medium text-base-content/60">Dimension</dt>
+      <dd><%= question["dimension_key"].presence || "—" %></dd>
+    </div>
+    <div>
+      <dt class="font-medium text-base-content/60">Concept</dt>
+      <dd><%= question["concept_key"].presence || "—" %></dd>
+    </div>
+    <div>
+      <dt class="font-medium text-base-content/60">Time window</dt>
+      <dd><%= question["time_window"].presence || "—" %></dd>
+    </div>
+    <div>
+      <dt class="font-medium text-base-content/60">Evidence weight</dt>
+      <dd><%= question["evidence_weight"].presence || "—" %></dd>
+    </div>
+  </dl>
+</div>

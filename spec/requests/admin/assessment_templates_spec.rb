@@ -165,4 +165,39 @@ RSpec.describe "Admin assessment templates", type: :request do
       expect(response.body).to include("Dimension key")
     end
   end
+
+  describe "GET /admin/assessment_templates/:id/preview" do
+    it "renders a read-only preview" do
+      sign_in admin
+
+      get preview_admin_assessment_template_path(draft_template)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Assessment preview")
+      expect(response.body).to include("Publish rules")
+      expect(response.body).to include(draft_template.title)
+    end
+  end
+
+  describe "POST /admin/assessment_templates/:id/publish" do
+    it "publishes a valid draft" do
+      sign_in admin
+
+      post publish_admin_assessment_template_path(draft_template)
+
+      expect(response).to redirect_to(admin_assessment_template_path(draft_template))
+      expect(draft_template.reload).to be_published
+    end
+
+    it "renders edit with errors for an invalid draft" do
+      sign_in admin
+      draft_template.update_columns(respondent_types: [], schema: { "version" => 1, "questions" => [] })
+
+      post publish_admin_assessment_template_path(draft_template)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("This draft must be fixed before it can be published.")
+      expect(draft_template.reload).to be_draft
+    end
+  end
 end

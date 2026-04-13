@@ -1,3 +1,12 @@
+<% content_for :actions do %>
+  <%= link_to "Preview", preview_admin_assessment_template_path(@assessment_template), class: "btn btn-ghost" %>
+  <%= button_to "Publish",
+    publish_admin_assessment_template_path(@assessment_template),
+    method: :post,
+    class: "btn btn-secondary",
+    form: { data: { turbo_confirm: "Publish this draft? Published templates become read-only." } } %>
+<% end %>
+
 <%= render "shared/page_header",
   title: "Edit draft template",
   subtitle: "#{@assessment_template.template_key} · Version #{@assessment_template.version}" %>
