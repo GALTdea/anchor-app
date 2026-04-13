@@ -146,11 +146,39 @@ class AssessmentTemplate < ApplicationRecord
     }
   end
 
+  def build_next_version_draft
+    next_version = self.class.where(template_key: template_key).maximum(:version).to_i + 1
+
+    self.class.new(
+      title: title,
+      slug: next_version_slug(next_version),
+      template_key: template_key,
+      version: next_version,
+      category: category,
+      respondent_types: respondent_types.deep_dup,
+      schema: schema.deep_dup,
+      status: :draft
+    )
+  end
+
   def question_ids
     Array(schema&.dig("questions")).filter_map { |q| q["id"].presence }.map(&:to_s)
   end
 
   private
+
+  def next_version_slug(next_version)
+    base_slug = template_key.to_s.parameterize.presence || slug.to_s.parameterize.presence || title.to_s.parameterize
+    candidate = "#{base_slug}-v#{next_version}-draft"
+    suffix = 2
+
+    while self.class.exists?(slug: candidate)
+      candidate = "#{base_slug}-v#{next_version}-draft-#{suffix}"
+      suffix += 1
+    end
+
+    candidate
+  end
 
   def default_editor_section
     {

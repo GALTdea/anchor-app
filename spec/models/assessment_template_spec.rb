@@ -206,4 +206,19 @@ RSpec.describe AssessmentTemplate, type: :model do
       )
     end
   end
+
+  describe "#build_next_version_draft" do
+    it "clones a published template into the next draft version" do
+      template = create(:assessment_template, slug: "child-onboarding", template_key: "child-onboarding", version: 1)
+
+      next_draft = template.build_next_version_draft
+
+      expect(next_draft).to be_draft
+      expect(next_draft.version).to eq(2)
+      expect(next_draft.template_key).to eq("child-onboarding")
+      expect(next_draft.slug).to eq("child-onboarding-v2-draft")
+      expect(next_draft.schema).to eq(template.schema)
+      expect(next_draft.respondent_types).to eq(template.respondent_types)
+    end
+  end
 end

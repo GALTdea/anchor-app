@@ -9,6 +9,11 @@
       method: :post,
       class: "btn btn-secondary",
       form: { data: { turbo_confirm: "Publish this draft? Published templates become read-only." } } %>
+  <% elsif @assessment_template.published? %>
+    <%= button_to "Create new version",
+      new_version_admin_assessment_template_path(@assessment_template),
+      method: :post,
+      class: "btn btn-primary" %>
   <% else %>
     <%= link_to "Back to template", admin_assessment_template_path(@assessment_template), class: "btn btn-ghost" %>
   <% end %>

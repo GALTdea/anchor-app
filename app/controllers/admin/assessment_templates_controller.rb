@@ -73,6 +73,27 @@ class Admin::AssessmentTemplatesController < ApplicationController
     end
   end
 
+  def new_version
+    @assessment_template = AssessmentTemplate.find(params[:id])
+    authorize @assessment_template
+
+    unless @assessment_template.published?
+      redirect_to admin_assessment_template_path(@assessment_template),
+        alert: "Only published templates can be versioned."
+      return
+    end
+
+    next_draft = @assessment_template.build_next_version_draft
+
+    if next_draft.save
+      redirect_to edit_admin_assessment_template_path(next_draft),
+        notice: "New draft version created from the published template."
+    else
+      redirect_to admin_assessment_template_path(@assessment_template),
+        alert: next_draft.errors.full_messages.to_sentence.presence || "Could not create the next draft version."
+    end
+  end
+
   private
 
   def set_assessment_template

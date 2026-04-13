@@ -331,7 +331,7 @@ runner rendering patterns. Update this brief's status section once build work is
 - [x] Step 1
 - [x] Step 2
 - [x] Step 3
-- [ ] Step 4
+- [x] Step 4
 - [ ] Step 5
 
 **Last updated:** 2026-04-10
@@ -343,4 +343,6 @@ Step 2 is also complete: the draft editor now supports section/question authorin
 order fields, select options, and AI semantics mapped into `schema`. Step 3 is
 now complete as well: admins can preview a read-only assessment rendering and
 publish valid drafts, with publish failures surfacing the model validation
-errors back in the editor. Step 4 should focus on version cloning.
+errors back in the editor. Step 4 is now complete too: published templates can
+spawn a new editable draft version that preserves the prior schema and metadata
+while incrementing the version number. Step 5 is the post-build audit.

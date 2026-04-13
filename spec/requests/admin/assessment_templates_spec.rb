@@ -200,4 +200,33 @@ RSpec.describe "Admin assessment templates", type: :request do
       expect(draft_template.reload).to be_draft
     end
   end
+
+  describe "POST /admin/assessment_templates/:id/new_version" do
+    it "creates a new draft version from a published template" do
+      sign_in admin
+
+      expect {
+        post new_version_admin_assessment_template_path(published_template)
+      }.to change(AssessmentTemplate, :count).by(1)
+
+      new_draft = AssessmentTemplate.order(:id).last
+      expect(response).to redirect_to(edit_admin_assessment_template_path(new_draft))
+      expect(new_draft).to be_draft
+      expect(new_draft.version).to eq(published_template.version + 1)
+      expect(new_draft.template_key).to eq(published_template.template_key)
+      expect(new_draft.schema).to eq(published_template.schema)
+      expect(new_draft.respondent_types).to eq(published_template.respondent_types)
+    end
+
+    it "rejects versioning a draft template" do
+      sign_in admin
+
+      expect {
+        post new_version_admin_assessment_template_path(draft_template)
+      }.not_to change(AssessmentTemplate, :count)
+
+      expect(response).to redirect_to(admin_assessment_template_path(draft_template))
+      expect(flash[:alert]).to eq("Only published templates can be versioned.")
+    end
+  end
 end
