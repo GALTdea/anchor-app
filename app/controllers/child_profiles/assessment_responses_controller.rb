@@ -5,6 +5,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
   before_action :set_child_profile
   before_action :set_assessment
   before_action :set_assessment_response
+  before_action :set_runner_context, only: %i[edit update]
 
   def show
     authorize @assessment_response
@@ -17,7 +18,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
   def update
     authorize @assessment_response
 
-    @assessment_response.assign_attributes(assessment_response_params)
+    merge_assessment_response_attributes
 
     submitting = params[:submit_action] == "submit"
     @assessment_response.submitting = submitting
@@ -41,9 +42,14 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
       redirect_to space_child_profile_assessment_path(@space, @child_profile, @assessment),
         notice: "Assessment submitted."
     elsif @assessment_response.save
-      redirect_to edit_space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
-        notice: "Draft saved."
+      redirect_to edit_space_child_profile_assessment_assessment_response_path(
+        @space,
+        @child_profile,
+        @assessment,
+        step: next_step_id
+      )
     else
+      set_runner_context_from_current_response
       render :edit, status: :unprocessable_content
     end
   end
@@ -67,7 +73,49 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     raise ActiveRecord::RecordNotFound if @assessment_response.blank?
   end
 
+  def set_runner_context
+    set_runner_context_from_current_response
+  end
+
+  def set_runner_context_from_current_response
+    @template = @assessment.assessment_template
+    @answers = (@assessment_response.answers || {}).deep_stringify_keys
+    @runner = AssessmentRunner.new(template: @template, answers: @answers)
+    @current_step = @runner.current_step(params[:step])
+    @next_step = @runner.next_step_for(@current_step)
+    @previous_step = @runner.previous_step_for(@current_step)
+    @progress = view_context.assessment_progress(@template, @answers)
+  end
+
   def assessment_response_params
     params.require(:assessment_response).permit(:respondent_kind, answers: {})
+  end
+
+  def merge_assessment_response_attributes
+    permitted = assessment_response_params
+    merged_answers = @assessment_response.answers.deep_stringify_keys.merge(
+      permitted.fetch(:answers, {}).to_h.transform_keys(&:to_s)
+    )
+
+    @assessment_response.assign_attributes(
+      respondent_kind: permitted[:respondent_kind].presence || @assessment_response.respondent_kind,
+      answers: merged_answers
+    )
+  end
+
+  def next_step_id
+    return @current_step["id"] if params[:submit_action] == "stay"
+
+    refreshed_runner = AssessmentRunner.new(
+      template: @assessment.assessment_template,
+      answers: @assessment_response.answers
+    )
+    current_step = refreshed_runner.current_step(params[:current_step_id])
+
+    if params[:submit_action] == "back"
+      refreshed_runner.previous_step_for(current_step)&.dig("id") || current_step["id"]
+    else
+      refreshed_runner.next_step_for(current_step)&.dig("id") || current_step["id"]
+    end
   end
 end

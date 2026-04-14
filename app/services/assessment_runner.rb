@@ -34,6 +34,33 @@ class AssessmentRunner
     end
   end
 
+  def current_step(step_id = nil)
+    requested_step = find_step(step_id)
+    return requested_step if requested_step.present?
+
+    default_step
+  end
+
+  def next_step_for(step_or_id)
+    step = step_or_id.is_a?(Hash) ? step_or_id : find_step(step_or_id)
+    return nil if step.blank?
+
+    index = steps.index { |candidate| candidate["id"] == step["id"] }
+    return nil if index.nil?
+
+    steps[index + 1]
+  end
+
+  def previous_step_for(step_or_id)
+    step = step_or_id.is_a?(Hash) ? step_or_id : find_step(step_or_id)
+    return nil if step.blank?
+
+    index = steps.index { |candidate| candidate["id"] == step["id"] }
+    return nil if index.nil? || index.zero?
+
+    steps[index - 1]
+  end
+
   private
 
   attr_reader :template, :answers
@@ -145,6 +172,33 @@ class AssessmentRunner
 
   def question_answered?(question)
     answers[question["id"].to_s].present?
+  end
+
+  def find_step(step_id)
+    return nil if step_id.blank?
+
+    steps.find { |step| step["id"] == step_id.to_s }
+  end
+
+  def default_step
+    sections.each do |section|
+      section_questions = Array(section["questions"])
+      answered_count = section_questions.count { |question| question_answered?(question) }
+      next if answered_count == section_questions.size && section_questions.any?
+
+      return find_step("section-#{section['id']}-intro") if answered_count.zero?
+
+      first_incomplete_question_step = steps.find do |step|
+        step["kind"] == "questions" &&
+          step["section_id"] == section["id"] &&
+          !step["answered"]
+      end
+      return first_incomplete_question_step if first_incomplete_question_step.present?
+
+      return find_step("section-#{section['id']}-summary")
+    end
+
+    steps.last
   end
 
   def normalized_position(value, fallback)

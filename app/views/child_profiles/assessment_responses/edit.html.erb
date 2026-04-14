@@ -1,14 +1,9 @@
-<% template = @assessment.assessment_template %>
-<% answers = (@assessment_response.answers || {}).stringify_keys %>
-<% sections = assessment_sections(template) %>
-<% progress = assessment_progress(template, answers) %>
-
 <div class="mx-auto max-w-5xl space-y-6">
   <%= render "shared/page_header",
-    title: template.title,
+    title: @template.title,
     subtitle: "Onboarding draft · #{@child_profile.name}" %>
 
-  <div class="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_20rem]">
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_18rem]">
     <div class="space-y-6">
       <div class="card bg-base-100 shadow-sm">
         <div class="card-body gap-4">
@@ -18,92 +13,134 @@
           </div>
           <div class="space-y-2">
             <h2 class="text-2xl font-semibold text-base-content">
-              <%= assessment_intro_title(template) %>
+              <%= assessment_intro_title(@template) %>
             </h2>
             <p class="max-w-3xl text-base leading-7 text-base-content/75">
-              <%= assessment_intro_body(template) %>
+              <%= assessment_intro_body(@template) %>
             </p>
           </div>
           <div class="rounded-box bg-base-200/70 p-4">
             <p class="text-sm leading-6 text-base-content/75">
-              You can save at any time and come back later. The goal is to create a clear starting picture of how <%= @child_profile.name %> experiences the world today.
+              We’ll guide you through this one step at a time and save progress as you go.
             </p>
           </div>
         </div>
       </div>
 
-      <%= form_with model: @assessment_response,
-        url: space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
-        method: :patch,
-        class: "space-y-6" do |f| %>
-        <% if @assessment_response.errors.any? %>
-          <div class="alert alert-error">
-            <ul class="list-disc list-inside">
-              <% @assessment_response.errors.full_messages.each do |msg| %>
-                <li><%= msg %></li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
+      <% if @assessment_response.errors.any? %>
+        <div class="alert alert-error">
+          <ul class="list-disc list-inside">
+            <% @assessment_response.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
-        <div class="card bg-base-100 shadow-sm">
-          <div class="card-body gap-6">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div class="space-y-1">
-                <h3 class="text-lg font-semibold text-base-content">Who is answering today?</h3>
-                <p class="text-sm text-base-content/70">
-                  This helps the app interpret the answers with the right context.
+      <%= turbo_frame_tag "assessment_runner_step" do %>
+        <% case @current_step["kind"] %>
+        <% when "section_intro" %>
+          <section class="card bg-base-100 shadow-sm">
+            <div class="card-body gap-6">
+              <div class="space-y-2">
+                <span class="badge badge-ghost">Section <%= @current_step["section_position"] %> of <%= @runner.sections.size %></span>
+                <h3 class="text-3xl font-semibold text-base-content"><%= @current_step["title"] %></h3>
+                <p class="max-w-2xl text-base leading-7 text-base-content/75">
+                  <%= @current_step["body"].presence || "We’ll keep this section focused and easy to move through." %>
                 </p>
               </div>
-              <div class="min-w-64 flex-1 lg:max-w-sm">
-                <fieldset class="fieldset">
-                  <label class="label" for="assessment_response_respondent_kind">Respondent</label>
-                  <%= f.select :respondent_kind,
-                    Array(template.respondent_types).map { |kind| [respondent_kind_label(kind), kind] },
-                    {},
-                    class: "select w-full",
-                    id: "assessment_response_respondent_kind" %>
-                </fieldset>
+
+              <div class="flex flex-wrap gap-2">
+                <% if @next_step.present? %>
+                  <%= link_to "Continue",
+                    edit_space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment, step: @next_step["id"]),
+                    class: "btn btn-primary",
+                    data: { turbo_frame: "assessment_runner_step" } %>
+                <% end %>
+                <%= link_to "Cancel",
+                  space_child_profile_assessment_path(@space, @child_profile, @assessment),
+                  class: "btn btn-ghost",
+                  data: { turbo_frame: "_top" } %>
               </div>
             </div>
-          </div>
-        </div>
-
-        <% sections.each_with_index do |section, index| %>
-          <% section_progress = assessment_section_progress(section, answers) %>
-          <section id="<%= section["id"] %>" class="card bg-base-100 shadow-sm">
+          </section>
+        <% when "section_summary" %>
+          <section class="card bg-base-100 shadow-sm">
             <div class="card-body gap-6">
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="space-y-2">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="badge badge-ghost">Section <%= index + 1 %> of <%= sections.size %></span>
-                    <span class="badge badge-outline">
-                      <%= section_progress[:answered] %>/<%= section_progress[:total] %> answered
-                    </span>
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-semibold text-base-content"><%= section["title"] %></h3>
-                    <% if section["description"].present? %>
-                      <p class="mt-1 text-sm leading-6 text-base-content/70"><%= section["description"] %></p>
-                    <% end %>
-                  </div>
-                </div>
+              <div class="space-y-2">
+                <span class="badge badge-primary badge-outline">Section reflection</span>
+                <h3 class="text-2xl font-semibold text-base-content"><%= @current_step["title"] %></h3>
+                <p class="max-w-2xl text-base leading-7 text-base-content/75">
+                  <%= @current_step["body"] %>
+                </p>
               </div>
 
-              <div class="space-y-4">
-                <% Array(section["questions"]).each do |question| %>
-                  <%= render "question_field", question: question, answers: answers %>
+              <div class="rounded-box bg-base-200/70 p-4">
+                <p class="text-sm text-base-content/75">
+                  We’ve captured <strong><%= @current_step["answered"] %></strong> of
+                  <strong><%= @current_step["total"] %></strong> prompts in this section.
+                </p>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <% if @previous_step.present? %>
+                  <%= link_to "Back",
+                    edit_space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment, step: @previous_step["id"]),
+                    class: "btn btn-ghost",
+                    data: { turbo_frame: "assessment_runner_step" } %>
+                <% end %>
+
+                <% if @next_step.present? %>
+                  <%= link_to "Continue",
+                    edit_space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment, step: @next_step["id"]),
+                    class: "btn btn-primary",
+                    data: { turbo_frame: "assessment_runner_step" } %>
+                <% else %>
+                  <%= form_with model: @assessment_response,
+                    url: space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
+                    method: :patch,
+                    class: "flex flex-wrap gap-2" do |f| %>
+                    <%= f.hidden_field :respondent_kind, value: @assessment_response.respondent_kind %>
+                    <%= hidden_field_tag :current_step_id, @current_step["id"] %>
+                    <%= button_tag "Submit onboarding assessment", type: "submit", name: "submit_action", value: "submit", class: "btn btn-primary" %>
+                  <% end %>
                 <% end %>
               </div>
             </div>
           </section>
-        <% end %>
+        <% else %>
+          <%= form_with model: @assessment_response,
+            url: space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
+            method: :patch,
+            class: "space-y-6" do |f| %>
+            <%= f.hidden_field :respondent_kind, value: @assessment_response.respondent_kind %>
+            <%= hidden_field_tag :current_step_id, @current_step["id"] %>
 
-        <div class="flex flex-wrap gap-2">
-          <%= button_tag "Save draft", type: "submit", name: "submit_action", value: "draft", class: "btn btn-ghost" %>
-          <%= button_tag "Submit onboarding assessment", type: "submit", name: "submit_action", value: "submit", class: "btn btn-primary" %>
-          <%= link_to "Cancel", space_child_profile_assessment_path(@space, @child_profile, @assessment), class: "btn btn-ghost" %>
-        </div>
+            <section class="card bg-base-100 shadow-sm">
+              <div class="card-body gap-6">
+                <div class="space-y-2">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="badge badge-ghost">Section <%= @current_step["section_position"] %> of <%= @runner.sections.size %></span>
+                    <span class="badge badge-outline"><%= @current_step["questions"].size %> prompt<%= "s" unless @current_step["questions"].size == 1 %></span>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <% @current_step["questions"].each do |question| %>
+                    <%= render "question_field", question: question, answers: @answers %>
+                  <% end %>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                  <% if @previous_step.present? %>
+                    <%= button_tag "Back", type: "submit", name: "submit_action", value: "back", class: "btn btn-ghost" %>
+                  <% end %>
+                  <%= button_tag "Continue", type: "submit", name: "submit_action", value: "next", class: "btn btn-primary" %>
+                </div>
+              </div>
+            </section>
+          <% end %>
+        <% end %>
       <% end %>
     </div>
 
@@ -113,13 +150,34 @@
           <div>
             <p class="text-sm font-medium text-base-content/60">Progress</p>
             <h3 class="mt-1 text-2xl font-semibold text-base-content">
-              <%= progress[:answered] %> of <%= progress[:total] %> answered
+              <%= @progress[:answered] %> of <%= @progress[:total] %> answered
             </h3>
           </div>
-          <progress class="progress progress-primary w-full" value="<%= progress[:percentage] %>" max="100"></progress>
+          <progress class="progress progress-primary w-full" value="<%= @progress[:percentage] %>" max="100"></progress>
           <p class="text-sm text-base-content/70">
-            <%= progress[:percentage] %>% complete
+            <%= @progress[:percentage] %>% complete
           </p>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-3">
+          <h3 class="text-base font-semibold text-base-content">Respondent</h3>
+          <%= form_with model: @assessment_response,
+            url: space_child_profile_assessment_assessment_response_path(@space, @child_profile, @assessment),
+            method: :patch,
+            class: "space-y-3" do |f| %>
+            <%= hidden_field_tag :current_step_id, @current_step["id"] %>
+            <fieldset class="fieldset">
+              <label class="label" for="assessment_response_respondent_kind_sidebar">Who is answering?</label>
+              <%= f.select :respondent_kind,
+                Array(@template.respondent_types).map { |kind| [respondent_kind_label(kind), kind] },
+                {},
+                class: "select w-full",
+                id: "assessment_response_respondent_kind_sidebar" %>
+            </fieldset>
+            <%= button_tag "Update", type: "submit", name: "submit_action", value: "stay", class: "btn btn-ghost btn-sm w-full" %>
+          <% end %>
         </div>
       </div>
 
@@ -128,24 +186,9 @@
           <h3 class="text-base font-semibold text-base-content">What to expect</h3>
           <ul class="space-y-2 text-sm leading-6 text-base-content/70">
             <li>Answer only what feels true today.</li>
-            <li>You can save your progress and come back later.</li>
+            <li>Your progress is saved as you move forward.</li>
             <li>After submission, the app will use this as the starting point for your child’s profile.</li>
           </ul>
-        </div>
-      </div>
-
-      <div class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-3">
-          <h3 class="text-base font-semibold text-base-content">Sections</h3>
-          <nav class="space-y-2">
-            <% sections.each_with_index do |section, index| %>
-              <%= link_to "##{section["id"]}", class: "flex items-center justify-between rounded-box border border-base-300/70 px-3 py-2 text-sm text-base-content hover:bg-base-200/70" do %>
-                <span><%= index + 1 %>. <%= section["title"] %></span>
-                <% section_progress = assessment_section_progress(section, answers) %>
-                <span class="text-base-content/60"><%= section_progress[:answered] %>/<%= section_progress[:total] %></span>
-              <% end %>
-            <% end %>
-          </nav>
         </div>
       </div>
     </aside>

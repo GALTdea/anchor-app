@@ -61,6 +61,35 @@ RSpec.describe "Child profile assessments", type: :request do
       create(:assessment_response, assessment: assessment, actor: user, answers: { "concern_level" => 2 })
     end
 
+    it "merges the current step answers and advances through the runner" do
+      patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+        params: {
+          current_step_id: "section-regulation-step-2",
+          submit_action: "next",
+          assessment_response: {
+            respondent_kind: "parent_proxy",
+            answers: {
+              "notes" => "More detail"
+            }
+          }
+        }
+
+      expect(response).to redirect_to(
+        edit_space_child_profile_assessment_assessment_response_path(
+          space,
+          child_profile,
+          assessment,
+          step: "section-regulation-summary"
+        )
+      )
+
+      assessment_response.reload
+      expect(assessment_response.answers).to include(
+        "concern_level" => 2,
+        "notes" => "More detail"
+      )
+    end
+
     it "submits and marks assessment submitted" do
       assessment_response.update!(last_processing_error: "old failure")
 
@@ -94,13 +123,13 @@ RSpec.describe "Child profile assessments", type: :request do
     let(:assessment) { create(:assessment, child_profile: child_profile, assessment_template: template) }
     let!(:assessment_response) { create(:assessment_response, assessment: assessment, actor: user) }
 
-    it "renders the onboarding runner with progress and section content" do
+    it "renders the progressive runner with a single focused step" do
       get edit_space_child_profile_assessment_assessment_response_path(space, child_profile, assessment)
 
       expect(response).to be_successful
       expect(response.body).to include("Onboarding draft")
       expect(response.body).to include("Progress")
-      expect(response.body).to include("Regulation")
+      expect(response.body).to include("Continue")
       expect(response.body).to include("What to expect")
     end
   end
