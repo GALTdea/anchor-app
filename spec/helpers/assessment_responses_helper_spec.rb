@@ -59,6 +59,41 @@ RSpec.describe AssessmentResponsesHelper, type: :helper do
     end
   end
 
+  describe "#assessment_runner_steps" do
+    it "delegates to the assessment runner and returns ordered steps" do
+      template = build(
+        :assessment_template,
+        schema: {
+          "version" => 1,
+          "sections" => [
+            { "id" => "regulation", "title" => "Regulation" }
+          ],
+          "questions" => [
+            {
+              "id" => "recovery",
+              "label" => "Recovery",
+              "type" => "scale",
+              "section" => "regulation",
+              "required" => true,
+              "min" => 1,
+              "max" => 5,
+              "dimension_key" => "regulation.recovery",
+              "concept_key" => "recovery_time",
+              "time_window" => "current",
+              "evidence_weight" => 0.6
+            }
+          ]
+        }
+      )
+
+      steps = helper.assessment_runner_steps(template, answers: { "recovery" => 4 })
+
+      expect(steps.map { |step| step["kind"] }).to eq([ "section_intro", "questions", "section_summary" ])
+      expect(steps.second["question_ids"]).to eq([ "recovery" ])
+      expect(steps.second["answered"]).to be(true)
+    end
+  end
+
   describe "#assessment_answer_display" do
     it "renders the label for select answers stored by value" do
       question = {

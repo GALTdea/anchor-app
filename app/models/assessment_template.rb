@@ -34,7 +34,25 @@ class AssessmentTemplate < ApplicationRecord
     version
   ].freeze
   REQUIRED_QUESTION_FIELDS = %w[id label type dimension_key concept_key time_window].freeze
-  OPTIONAL_STRING_QUESTION_FIELDS = %w[section help_text extraction_hint units polarity].freeze
+  OPTIONAL_STRING_QUESTION_FIELDS = %w[
+    section
+    help_text
+    extraction_hint
+    units
+    polarity
+    placeholder
+    step_group
+    optional_detail_prompt
+    short_label
+    progress_label
+  ].freeze
+  OPTIONAL_SECTION_STRING_FIELDS = %w[
+    description
+    transition_title
+    transition_body
+    summary_title
+    summary_body
+  ].freeze
   EDITOR_SECTION_FIELDS = %w[id title description].freeze
   EDITOR_QUESTION_STRING_FIELDS = %w[
     id
@@ -330,6 +348,13 @@ class AssessmentTemplate < ApplicationRecord
 
       errors.add(:schema, "section #{index + 1} must include an id") if section_id.blank?
       errors.add(:schema, "section #{section_id.presence || index + 1} must include a title") if title.blank?
+
+      OPTIONAL_SECTION_STRING_FIELDS.each do |field|
+        next unless section.key?(field)
+        next if section[field].is_a?(String)
+
+        errors.add(:schema, "section #{section_id.presence || index + 1} #{field} must be a string")
+      end
 
       next if section_id.blank?
 

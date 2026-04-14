@@ -29,53 +29,11 @@ module AssessmentResponsesHelper
   end
 
   def assessment_sections(template)
-    schema = template.schema.to_h.deep_stringify_keys
-    questions = Array(schema["questions"]).filter_map do |question|
-      next unless question.respond_to?(:stringify_keys)
+    AssessmentRunner.new(template: template).sections
+  end
 
-      normalized = question.stringify_keys
-      next if normalized["id"].blank?
-
-      normalized
-    end
-
-    sections = Array(schema["sections"]).filter_map do |section|
-      next unless section.respond_to?(:stringify_keys)
-
-      normalized = section.stringify_keys
-      next if normalized["id"].blank?
-
-      normalized.merge("questions" => [])
-    end
-
-    if sections.any?
-      indexed_sections = sections.index_by { |section| section["id"].to_s }
-
-      questions.each do |question|
-        section_id = question["section"].to_s
-        if section_id.present? && indexed_sections.key?(section_id)
-          indexed_sections[section_id]["questions"] << question
-        else
-          sections << {
-            "id" => "additional-details",
-            "title" => "Additional details",
-            "description" => nil,
-            "questions" => []
-          } unless sections.any? { |section| section["id"] == "additional-details" }
-
-          sections.find { |section| section["id"] == "additional-details" }["questions"] << question
-        end
-      end
-
-      sections.reject { |section| section["questions"].blank? }
-    else
-      [ {
-        "id" => "questions",
-        "title" => "Questions",
-        "description" => nil,
-        "questions" => questions
-      } ]
-    end
+  def assessment_runner_steps(template, answers: {})
+    AssessmentRunner.new(template: template, answers: answers).steps
   end
 
   def assessment_progress(template, answers)

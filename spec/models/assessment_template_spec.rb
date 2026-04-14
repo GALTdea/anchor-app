@@ -124,6 +124,48 @@ RSpec.describe AssessmentTemplate, type: :model do
       expect(template.errors[:schema]).to be_present
     end
 
+    it "allows optional runner metadata on published sections and questions" do
+      template = build(
+        :assessment_template,
+        schema: {
+          "version" => 1,
+          "sections" => [
+            {
+              "id" => "regulation",
+              "title" => "Regulation",
+              "description" => "Core regulation questions",
+              "transition_title" => "Start here",
+              "transition_body" => "We will go one step at a time.",
+              "summary_title" => "Quick recap",
+              "summary_body" => "Here is what we captured."
+            }
+          ],
+          "questions" => [
+            {
+              "id" => "concern_level",
+              "label" => "Overall level of concern",
+              "type" => "scale",
+              "section" => "regulation",
+              "step_group" => "regulation-core",
+              "optional_detail_prompt" => "Add more detail if you want",
+              "short_label" => "Concern",
+              "progress_label" => "Concern level",
+              "placeholder" => "Type here",
+              "dimension_key" => "regulation.overall_concern",
+              "concept_key" => "overall_concern_level",
+              "time_window" => "typical_week",
+              "evidence_weight" => 0.8,
+              "min" => 1,
+              "max" => 5,
+              "required" => true
+            }
+          ]
+        }
+      )
+
+      expect(template).to be_valid
+    end
+
     it "treats published versions as immutable" do
       template = create(:assessment_template)
 
