@@ -94,6 +94,40 @@ RSpec.describe AssessmentResponsesHelper, type: :helper do
     end
   end
 
+  describe "#assessment_step_highlights" do
+    it "builds deterministic highlights from answered questions" do
+      step = {
+        "questions" => [
+          {
+            "id" => "support_style",
+            "label" => "Support style",
+            "type" => "select",
+            "options" => [
+              { "value" => "quiet_space", "label" => "Quiet space" }
+            ]
+          },
+          {
+            "id" => "notes",
+            "label" => "Notes",
+            "type" => "text"
+          }
+        ]
+      }
+
+      highlights = helper.assessment_step_highlights(
+        step,
+        { "support_style" => "quiet_space", "notes" => "Loves movement" }
+      )
+
+      expect(highlights).to eq(
+        [
+          { label: "Support style", value: "Quiet space" },
+          { label: "Notes", value: "Loves movement" }
+        ]
+      )
+    end
+  end
+
   describe "#assessment_answer_display" do
     it "renders the label for select answers stored by value" do
       question = {

@@ -104,13 +104,13 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
   end
 
   def next_step_id
-    return @current_step["id"] if params[:submit_action] == "stay"
-
     refreshed_runner = AssessmentRunner.new(
       template: @assessment.assessment_template,
       answers: @assessment_response.answers
     )
-    current_step = refreshed_runner.current_step(params[:current_step_id])
+    current_step = refreshed_runner.current_step(params[:current_step_id].presence || params[:step])
+
+    return current_step["id"] if params[:submit_action] == "stay"
 
     if params[:submit_action] == "back"
       refreshed_runner.previous_step_for(current_step)&.dig("id") || current_step["id"]

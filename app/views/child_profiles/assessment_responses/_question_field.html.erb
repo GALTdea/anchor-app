@@ -28,7 +28,8 @@
       id: answer_id,
       min: question["min"],
       max: question["max"],
-      class: "input w-full max-w-32" %>
+      class: "input w-full max-w-32",
+      data: { action: "input->assessment-autosave#queue blur->assessment-autosave#queueImmediate" } %>
   <% when "textarea" %>
     <label class="label" for="<%= answer_id %>">Your notes</label>
     <%= text_area_tag "assessment_response[answers][#{question_id}]",
@@ -36,6 +37,7 @@
       id: answer_id,
       rows: 4,
       class: "textarea w-full",
+      data: { action: "input->assessment-autosave#queue blur->assessment-autosave#queueImmediate" },
       placeholder: question["placeholder"].presence || "Add any details that would help us understand your child better" %>
   <% when "text" %>
     <label class="label" for="<%= answer_id %>">Your answer</label>
@@ -43,6 +45,7 @@
       answers[question_id],
       id: answer_id,
       class: "input w-full",
+      data: { action: "input->assessment-autosave#queue blur->assessment-autosave#queueImmediate" },
       placeholder: question["placeholder"].presence || "Type your answer" %>
   <% when "select" %>
     <label class="label" for="<%= answer_id %>">Choose the best fit</label>
@@ -50,7 +53,8 @@
       options_for_select(assessment_question_options(question), answers[question_id]),
       id: answer_id,
       include_blank: "Select an answer",
-      class: "select w-full" %>
+      class: "select w-full",
+      data: { action: "change->assessment-autosave#queueImmediate blur->assessment-autosave#queueImmediate" } %>
   <% else %>
     <p class="text-sm text-error">Unsupported question type: <%= question["type"] %></p>
   <% end %>

@@ -156,6 +156,7 @@ class AssessmentRunner
       "section_position" => section_index + 1,
       "title" => section["summary_title"].presence || DEFAULT_SECTION_SUMMARY_TITLE,
       "body" => section["summary_body"].presence || DEFAULT_SECTION_SUMMARY_BODY,
+      "questions" => Array(section["questions"]),
       "answered" => Array(section["questions"]).count { |question| question_answered?(question) },
       "total" => Array(section["questions"]).size
     }

@@ -4,16 +4,14 @@ class Onboarding::AssessmentsController < ApplicationController
   skip_before_action :authenticate_user!
   before_action :set_onboarding_session
   before_action :redirect_completed_session
+  before_action :set_runner_context, only: %i[show update]
 
   def show
     authorize_onboarding_session(@onboarding_session)
-    @assessment_template = @onboarding_session.assessment_template
-    @answers = @onboarding_session.assessment_answers
   end
 
   def update
     authorize_onboarding_session(@onboarding_session)
-    @assessment_template = @onboarding_session.assessment_template
 
     validation_context = params[:submit_action] == "continue" ? :assessment : nil
 
@@ -25,10 +23,10 @@ class Onboarding::AssessmentsController < ApplicationController
       if params[:submit_action] == "continue"
         redirect_to onboarding_account_path, notice: "Assessment progress saved."
       else
-        redirect_to onboarding_assessment_path, notice: "Draft saved."
+        redirect_to onboarding_assessment_path(step: next_step_id)
       end
     else
-      @answers = @onboarding_session.assessment_answers
+      set_runner_context_from_current_session
       render :show, status: :unprocessable_content
     end
   end
@@ -58,7 +56,37 @@ class Onboarding::AssessmentsController < ApplicationController
     )
   end
 
+  def set_runner_context
+    set_runner_context_from_current_session
+  end
+
+  def set_runner_context_from_current_session
+    @assessment_template = @onboarding_session.assessment_template
+    @answers = @onboarding_session.assessment_answers.deep_stringify_keys
+    @runner = AssessmentRunner.new(template: @assessment_template, answers: @answers)
+    @current_step = @runner.current_step(params[:step])
+    @next_step = @runner.next_step_for(@current_step)
+    @previous_step = @runner.previous_step_for(@current_step)
+    @progress = view_context.assessment_progress(@assessment_template, @answers)
+  end
+
   def assessment_params
     params.require(:onboarding_assessment).permit(:respondent_kind, answers: {})
+  end
+
+  def next_step_id
+    refreshed_runner = AssessmentRunner.new(
+      template: @onboarding_session.assessment_template,
+      answers: @onboarding_session.assessment_answers
+    )
+    current_step = refreshed_runner.current_step(params[:current_step_id].presence || params[:step])
+
+    return current_step["id"] if params[:submit_action] == "stay"
+
+    if params[:submit_action] == "back"
+      refreshed_runner.previous_step_for(current_step)&.dig("id") || current_step["id"]
+    else
+      refreshed_runner.next_step_for(current_step)&.dig("id") || current_step["id"]
+    end
   end
 end

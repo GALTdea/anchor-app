@@ -90,6 +90,32 @@ RSpec.describe "Child profile assessments", type: :request do
       )
     end
 
+    it "stays on the same step when saving in place" do
+      patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+        params: {
+          current_step_id: "section-regulation-step-2",
+          submit_action: "stay",
+          assessment_response: {
+            respondent_kind: "parent_proxy",
+            answers: {
+              "notes" => "Autosaved detail"
+            }
+          }
+        }
+
+      expect(response).to redirect_to(
+        edit_space_child_profile_assessment_assessment_response_path(
+          space,
+          child_profile,
+          assessment,
+          step: "section-regulation-step-2"
+        )
+      )
+
+      assessment_response.reload
+      expect(assessment_response.answers["notes"]).to eq("Autosaved detail")
+    end
+
     it "submits and marks assessment submitted" do
       assessment_response.update!(last_processing_error: "old failure")
 

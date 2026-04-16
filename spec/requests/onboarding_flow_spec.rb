@@ -56,7 +56,7 @@ RSpec.describe "Onboarding flow", type: :request do
       expect(response).to redirect_to(onboarding_assessment_path)
       follow_redirect!
       expect(response.body).to include("Answer a few questions to build a clearer picture.")
-      expect(response.body).to include("Overall level of concern")
+      expect(response.body).to include("Continue")
     end
 
     it "rejects access without an onboarding session in the browser" do
@@ -85,7 +85,8 @@ RSpec.describe "Onboarding flow", type: :request do
 
     it "saves a draft and stays on the assessment step" do
       patch onboarding_assessment_path, params: {
-        submit_action: "draft",
+        current_step_id: "section-regulation-step-1",
+        submit_action: "next",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
           answers: {
@@ -94,18 +95,37 @@ RSpec.describe "Onboarding flow", type: :request do
         }
       }
 
-      expect(response).to redirect_to(onboarding_assessment_path)
+      expect(response).to redirect_to(onboarding_assessment_path(step: "section-regulation-step-2"))
       follow_redirect!
-      expect(response.body).to include("Draft saved.")
+      expect(response.body).to include("Notes")
       expect(OnboardingSession.last.draft_answers).to include(
         "respondent_kind" => "parent_proxy",
         "answers" => include("concern_level" => "4")
       )
     end
 
+    it "stays on the same step when saving in place" do
+      patch onboarding_assessment_path, params: {
+        current_step_id: "section-regulation-step-2",
+        submit_action: "stay",
+        onboarding_assessment: {
+          respondent_kind: "parent_proxy",
+          answers: {
+            notes: "Autosaved context"
+          }
+        }
+      }
+
+      expect(response).to redirect_to(onboarding_assessment_path(step: "section-regulation-step-2"))
+      expect(OnboardingSession.last.draft_answers).to include(
+        "answers" => include("notes" => "Autosaved context")
+      )
+    end
+
     it "continues to the account step when required answers are present" do
       patch onboarding_assessment_path, params: {
         submit_action: "continue",
+        current_step_id: "section-regulation-summary",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
           answers: {
@@ -124,6 +144,7 @@ RSpec.describe "Onboarding flow", type: :request do
     it "shows validation errors when continuing without required answers" do
       patch onboarding_assessment_path, params: {
         submit_action: "continue",
+        current_step_id: "section-regulation-summary",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
           answers: {
