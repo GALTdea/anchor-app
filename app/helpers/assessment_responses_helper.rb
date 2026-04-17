@@ -85,21 +85,6 @@ module AssessmentResponsesHelper
     end
   end
 
-  def assessment_step_highlights(step, answers, limit: 3)
-    return [] if step.blank?
-
-    Array(step["questions"]).filter_map do |question|
-      question = question.stringify_keys
-      value = answers[question["id"].to_s]
-      next unless assessment_answered?(value)
-
-      {
-        label: question["short_label"].presence || question["label"],
-        value: assessment_answer_display(question, value)
-      }
-    end.first(limit)
-  end
-
   def assessment_processing_status_label(status)
     return nil if status.blank?
 

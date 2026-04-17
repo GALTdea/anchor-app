@@ -56,6 +56,7 @@ RSpec.describe "Onboarding flow", type: :request do
       expect(response).to redirect_to(onboarding_assessment_path)
       follow_redirect!
       expect(response.body).to include("Answer a few questions to build a clearer picture.")
+      expect(response.body).to include("Onboarding assessment")
       expect(response.body).to include("Continue")
     end
 
@@ -98,6 +99,8 @@ RSpec.describe "Onboarding flow", type: :request do
       expect(response).to redirect_to(onboarding_assessment_path(step: "section-regulation-step-2"))
       follow_redirect!
       expect(response.body).to include("Notes")
+      expect(response.body).not_to include("What to expect")
+      expect(response.body).not_to include("Onboarding assessment")
       expect(OnboardingSession.last.draft_answers).to include(
         "respondent_kind" => "parent_proxy",
         "answers" => include("concern_level" => "4")
@@ -125,7 +128,7 @@ RSpec.describe "Onboarding flow", type: :request do
     it "continues to the account step when required answers are present" do
       patch onboarding_assessment_path, params: {
         submit_action: "continue",
-        current_step_id: "section-regulation-summary",
+        current_step_id: "section-regulation-step-2",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
           answers: {
@@ -144,7 +147,7 @@ RSpec.describe "Onboarding flow", type: :request do
     it "shows validation errors when continuing without required answers" do
       patch onboarding_assessment_path, params: {
         submit_action: "continue",
-        current_step_id: "section-regulation-summary",
+        current_step_id: "section-regulation-step-2",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
           answers: {

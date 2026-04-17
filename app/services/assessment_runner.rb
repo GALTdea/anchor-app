@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 class AssessmentRunner
-  DEFAULT_SECTION_SUMMARY_TITLE = "What we captured so far".freeze
-  DEFAULT_SECTION_SUMMARY_BODY = "You can continue or go back and adjust anything before moving on.".freeze
-
   def initialize(template:, answers: {})
     @template = template
     @answers = answers.to_h.deep_stringify_keys
@@ -104,15 +101,9 @@ class AssessmentRunner
   end
 
   def build_section_steps(section, section_index)
-    question_steps = grouped_questions(section).map.with_index do |group, group_index|
+    grouped_questions(section).map.with_index do |group, group_index|
       build_question_step(section, section_index, group, group_index)
     end
-
-    [
-      build_section_intro_step(section, section_index),
-      *question_steps,
-      build_section_summary_step(section, section_index)
-    ]
   end
 
   def grouped_questions(section)
@@ -122,43 +113,20 @@ class AssessmentRunner
       .values
   end
 
-  def build_section_intro_step(section, section_index)
-    {
-      "id" => "section-#{section['id']}-intro",
-      "kind" => "section_intro",
-      "section_id" => section["id"],
-      "section_position" => section_index + 1,
-      "title" => section["transition_title"].presence || section["title"],
-      "body" => section["transition_body"].presence || section["description"]
-    }.compact
-  end
-
   def build_question_step(section, section_index, question_group, group_index)
-    first_question = question_group.first
-
     {
       "id" => "section-#{section['id']}-step-#{group_index + 1}",
       "kind" => "questions",
       "section_id" => section["id"],
       "section_position" => section_index + 1,
       "position" => group_index + 1,
+      "section_title" => section["title"],
+      "section_description" => section["description"],
+      "transition_title" => section["transition_title"],
+      "transition_body" => section["transition_body"],
       "question_ids" => question_group.map { |question| question["id"].to_s },
       "questions" => question_group,
       "answered" => question_group.all? { |question| question_answered?(question) }
-    }
-  end
-
-  def build_section_summary_step(section, section_index)
-    {
-      "id" => "section-#{section['id']}-summary",
-      "kind" => "section_summary",
-      "section_id" => section["id"],
-      "section_position" => section_index + 1,
-      "title" => section["summary_title"].presence || DEFAULT_SECTION_SUMMARY_TITLE,
-      "body" => section["summary_body"].presence || DEFAULT_SECTION_SUMMARY_BODY,
-      "questions" => Array(section["questions"]),
-      "answered" => Array(section["questions"]).count { |question| question_answered?(question) },
-      "total" => Array(section["questions"]).size
     }
   end
 
@@ -182,24 +150,7 @@ class AssessmentRunner
   end
 
   def default_step
-    sections.each do |section|
-      section_questions = Array(section["questions"])
-      answered_count = section_questions.count { |question| question_answered?(question) }
-      next if answered_count == section_questions.size && section_questions.any?
-
-      return find_step("section-#{section['id']}-intro") if answered_count.zero?
-
-      first_incomplete_question_step = steps.find do |step|
-        step["kind"] == "questions" &&
-          step["section_id"] == section["id"] &&
-          !step["answered"]
-      end
-      return first_incomplete_question_step if first_incomplete_question_step.present?
-
-      return find_step("section-#{section['id']}-summary")
-    end
-
-    steps.last
+    steps.find { |step| !step["answered"] } || steps.last
   end
 
   def normalized_position(value, fallback)

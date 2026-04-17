@@ -88,43 +88,9 @@ RSpec.describe AssessmentResponsesHelper, type: :helper do
 
       steps = helper.assessment_runner_steps(template, answers: { "recovery" => 4 })
 
-      expect(steps.map { |step| step["kind"] }).to eq([ "section_intro", "questions", "section_summary" ])
-      expect(steps.second["question_ids"]).to eq([ "recovery" ])
-      expect(steps.second["answered"]).to be(true)
-    end
-  end
-
-  describe "#assessment_step_highlights" do
-    it "builds deterministic highlights from answered questions" do
-      step = {
-        "questions" => [
-          {
-            "id" => "support_style",
-            "label" => "Support style",
-            "type" => "select",
-            "options" => [
-              { "value" => "quiet_space", "label" => "Quiet space" }
-            ]
-          },
-          {
-            "id" => "notes",
-            "label" => "Notes",
-            "type" => "text"
-          }
-        ]
-      }
-
-      highlights = helper.assessment_step_highlights(
-        step,
-        { "support_style" => "quiet_space", "notes" => "Loves movement" }
-      )
-
-      expect(highlights).to eq(
-        [
-          { label: "Support style", value: "Quiet space" },
-          { label: "Notes", value: "Loves movement" }
-        ]
-      )
+      expect(steps.map { |step| step["kind"] }).to eq([ "questions" ])
+      expect(steps.first["question_ids"]).to eq([ "recovery" ])
+      expect(steps.first["answered"]).to be(true)
     end
   end
 

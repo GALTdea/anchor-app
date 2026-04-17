@@ -64,12 +64,12 @@ RSpec.describe "Child profile assessments", type: :request do
     it "merges the current step answers and advances through the runner" do
       patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
         params: {
-          current_step_id: "section-regulation-step-2",
+          current_step_id: "section-regulation-step-1",
           submit_action: "next",
           assessment_response: {
             respondent_kind: "parent_proxy",
             answers: {
-              "notes" => "More detail"
+              "concern_level" => "3"
             }
           }
         }
@@ -79,15 +79,12 @@ RSpec.describe "Child profile assessments", type: :request do
           space,
           child_profile,
           assessment,
-          step: "section-regulation-summary"
+          step: "section-regulation-step-2"
         )
       )
 
       assessment_response.reload
-      expect(assessment_response.answers).to include(
-        "concern_level" => 2,
-        "notes" => "More detail"
-      )
+      expect(assessment_response.answers).to include("concern_level" => "3")
     end
 
     it "stays on the same step when saving in place" do
@@ -153,10 +150,12 @@ RSpec.describe "Child profile assessments", type: :request do
       get edit_space_child_profile_assessment_assessment_response_path(space, child_profile, assessment)
 
       expect(response).to be_successful
-      expect(response.body).to include("Onboarding draft")
-      expect(response.body).to include("Progress")
+      expect(response.body).to include(template.title)
+      expect(response.body).to include(child_profile.name)
+      expect(response.body).to include("0 of 2 answered")
       expect(response.body).to include("Continue")
-      expect(response.body).to include("What to expect")
+      expect(response.body).not_to include("What to expect")
+      expect(response.body).not_to include("prompt")
     end
   end
 

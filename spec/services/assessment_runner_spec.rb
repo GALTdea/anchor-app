@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe AssessmentRunner do
   describe "#steps" do
-    it "builds section intro, grouped question, and summary steps from schema metadata" do
+    it "builds grouped question steps from schema metadata" do
       template = build(
         :assessment_template,
         schema: {
@@ -52,13 +52,10 @@ RSpec.describe AssessmentRunner do
         answers: { "overwhelm_frequency" => 3, "recovery_supports" => "quiet time" }
       ).steps
 
-      expect(steps.map { |step| step["kind"] }).to eq([ "section_intro", "questions", "section_summary" ])
-      expect(steps.first["title"]).to eq("Let’s start with regulation")
-      expect(steps.second["question_ids"]).to eq([ "overwhelm_frequency", "recovery_supports" ])
-      expect(steps.second["answered"]).to be(true)
-      expect(steps.third["title"]).to eq("Regulation recap")
-      expect(steps.third["answered"]).to eq(2)
-      expect(steps.third["total"]).to eq(2)
+      expect(steps.map { |step| step["kind"] }).to eq([ "questions" ])
+      expect(steps.first["question_ids"]).to eq([ "overwhelm_frequency", "recovery_supports" ])
+      expect(steps.first["answered"]).to be(true)
+      expect(steps.first["section_title"]).to eq("Regulation")
     end
 
     it "adds a fallback questions section when a question has no declared section" do
@@ -84,7 +81,7 @@ RSpec.describe AssessmentRunner do
       runner = described_class.new(template: template)
 
       expect(runner.sections.map { |section| section["id"] }).to eq([ "questions" ])
-      expect(runner.steps.map { |step| step["kind"] }).to eq([ "section_intro", "questions", "section_summary" ])
+      expect(runner.steps.map { |step| step["kind"] }).to eq([ "questions" ])
     end
   end
 end
