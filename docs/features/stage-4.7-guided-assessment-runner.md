@@ -128,7 +128,12 @@ end
 
 - Show one focused question at a time, or one very small related group at a time
 - Replace long crowded forms with a cleaner single-task layout
-- Use warm section transitions with generic placeholder copy for now
+- Use warm section transitions inline with the question flow rather than as
+  standalone intro pages
+- Keep reflection/supportive framing lightweight and inline rather than as
+  standalone summary pages between sections
+- Keep the question area visually dominant; repeated explanatory chrome should be
+  minimized after the first assessment screen
 - Use lighter answer controls that still follow Rails `form_with` + daisyUI 5
   fieldset/input/select/textarea patterns from `docs/CONVENTIONS.md`
 - Offer optional deeper detail instead of forcing long-form answers upfront
@@ -166,8 +171,8 @@ AssessmentTemplate schema
 - The primary implementation change is the runner/orchestration layer, not the
   domain model
 - The app should derive a linear sequence of runner steps from schema-defined
-  sections and questions; a step may be a question, a very small grouped set, a
-  section intro, or a reflective summary
+  sections and questions; for MVP, a step should be a question, a very small
+  grouped set, or the final completion/submit step
 - The runner should remain server-driven: controller update actions remain the
   source of truth for persistence, validation, and next-step progression
 - Keep answers stored by stable schema question IDs
@@ -193,6 +198,12 @@ AssessmentTemplate schema
       one question at a time or one very small related group at a time
 - [ ] The rebuilt UI feels materially cleaner and less crowded than the current
       long-form assessment pages
+- [ ] Section introduction copy, when present, is embedded into the first
+      question step of the section instead of rendered as its own standalone page
+- [ ] Section reflection/summary copy, when present, is embedded inline or
+      omitted rather than rendered as its own standalone page between sections
+- [ ] Large intro/context cards are shown only where they are actually helpful
+      and are not repeated on every assessment step
 - [ ] The app saves each step as the user progresses without requiring explicit
       draft-save behavior as the main interaction
 - [ ] Users can leave and return without losing previously entered answers
@@ -203,6 +214,12 @@ AssessmentTemplate schema
 - [ ] Section transition moments exist and can use generic placeholder copy
 - [ ] Reflective section summaries make the app feel present without becoming a
       chat transcript and use deterministic/template-guided behavior in MVP
+- [ ] Internal/system wording such as "prompt" is not shown in the user-facing
+      assessment UI
+- [ ] Repeated right-rail utility cards such as respondent/help text are removed,
+      collapsed, or greatly minimized for MVP so the runner feels minimalistic
+- [ ] After the first screen, the runner can present as a mostly single-column,
+      low-chrome question flow
 - [ ] The implementation preserves the current schema-driven architecture and does
       not require a new `Question` model
 - [ ] The implementation preserves both onboarding and authenticated assessment
@@ -227,6 +244,25 @@ AssessmentTemplate schema
 > **Gate rule:** If any questions remain here, do not start Phase 3 (Build).
 
 - None
+
+## UX issues found during live walkthrough
+
+- Standalone section intro pages add an extra click before the user reaches the
+  first actual question and should be removed for MVP
+- Section transition framing should be folded into the first question screen of a
+  section rather than rendered as its own step
+- Standalone section summary/reflection pages add friction between sections and
+  should be removed for MVP
+- After the user completes a section, the runner should advance directly to the
+  next section's first question step rather than stopping on a section-summary page
+- The label showing grouped-question counts as "prompts" is internal language and
+  should be removed or replaced with plain user-facing wording
+- The large assessment intro/context card should not repeat on every step; it is
+  better suited to the first screen only
+- The right-rail cards for progress, respondent, and "what to expect" create too
+  much repeated chrome and should be removed, collapsed, or greatly minimized
+- The visual direction should feel more minimalistic and single-task, with the
+  question area as the dominant focus on each step
 
 ## Steps
 
