@@ -1,91 +1,107 @@
 # frozen_string_literal: true
 
 anchor_onboarding = AssessmentTemplate.find_or_initialize_by(
-  template_key: "child-onboarding",
-  version: 2
+  template_key: "anchor_functional_profile_v1"
 )
 
 anchor_onboarding.assign_attributes(
-  slug: "anchor-initial-profile-v2",
-  title: "Anchor Initial Profile Assessment",
-  category: "onboarding",
-  status: :published,
-  respondent_types: [ "parent_proxy" ],
-  schema: {
+  "title" => "Anchor Functional Support Profile",
+  "slug" => "anchor-functional-profile",
+  "template_key" => "anchor_functional_profile_v1",
+  "version" => 1,
+  "category" => "onboarding",
+  "respondent_types" => [ "parent_proxy" ],
+  "status" => "published",
+  "schema" => {
     "version" => 1,
-    "intro_title" => "Building Your Child's Functional Map",
-    "intro_body" => "Beyond a diagnosis, every child has a unique internal operating system. This 10-minute assessment helps us identify your child's specific sensory needs, communication style, and strengths so we can surface useful support strategies right away.",
+    "intro_title" => "Mapping Your Child's Profile",
+    "intro_body" => "Welcome to Anchor. This assessment helps move beyond clinical labels to map your child's functional needs, sensory preferences, and communication style.",
     "sections" => [
       {
-        "id" => "comm",
-        "title" => "Communication & Understanding",
-        "description" => "How your child shares their world and processes yours.",
-        "transition_title" => "Moving to Sensory Needs",
-        "transition_body" => "Communication is only half the story. Now let's look at how your child's body perceives the environment.",
-        "summary_title" => "Communication Summary",
-        "summary_body" => "You've identified how your child bridges the gap between their thoughts and their environment."
+        "id" => "comm_landscape",
+        "title" => "The Communication Landscape",
+        "description" => "Understanding the gap between what your child understands and how they express needs.",
+        "transition_title" => "Next: Sensory Processing",
+        "transition_body" => "Great. Now let's look at how your child's body perceives their environment.",
+        "summary_title" => "Communication Overview",
+        "summary_body" => "You've provided key insights into your child's expressive and receptive language styles."
       },
       {
-        "id" => "sensory",
-        "title" => "The Sensory System",
-        "description" => "Mapping what drains and charges your child's battery.",
-        "transition_title" => "Regulation and Change",
-        "transition_body" => "Next, we'll look at how sensory input impacts daily transitions and routines.",
-        "summary_title" => "Sensory Profile Complete",
-        "summary_body" => "Understanding these hidden inputs is the first step in reducing daily overwhelm."
+        "id" => "sensory_os",
+        "title" => "The Sensory Operating System",
+        "description" => "Mapping the sensory battery that impacts your child's energy levels.",
+        "transition_title" => "Next: Regulation",
+        "transition_body" => "Next, we'll explore how these patterns impact daily transitions and routines.",
+        "summary_title" => "Sensory Overview",
+        "summary_body" => "These sensory markers help identify potential triggers for overload or seeking behaviors."
       },
       {
-        "id" => "reg",
-        "title" => "Regulation & Joy",
-        "description" => "Understanding your child's flexibility and what brings them the most engagement.",
-        "summary_title" => "Profile Map Generated",
-        "summary_body" => "We have enough to build your child's initial support profile."
+        "id" => "reg_transitions",
+        "title" => "Regulation & Transitions",
+        "description" => "Understanding safety, flexibility, and the impact of change.",
+        "transition_title" => "Next: Social Connection",
+        "transition_body" => "Now let's look at how your child connects with others and where their joy lives.",
+        "summary_title" => "Regulation Overview",
+        "summary_body" => "Predictability and transition support appear to be core factors in your child's daily flow."
+      },
+      {
+        "id" => "social_glimmers",
+        "title" => "Social Interaction & Glimmers",
+        "description" => "Focusing on connection, shared joy, and deep interests.",
+        "transition_title" => "Final: Daily Living",
+        "transition_body" => "One last section regarding internal body cues and motor coordination.",
+        "summary_title" => "Connection Overview",
+        "summary_body" => "Focusing on glimmers helps us leverage your child's natural strengths for learning."
+      },
+      {
+        "id" => "daily_autonomy",
+        "title" => "Daily Living & Autonomy",
+        "description" => "How your child manages their own body and internal sensations.",
+        "summary_title" => "Profile Map Ready",
+        "summary_body" => "Thank you. We are now generating your child's functional support map."
       }
     ],
     "questions" => [
       {
-        "id" => "needs_communication",
-        "section" => "comm",
-        "label" => "How does your child primarily let you know they want something out of reach?",
-        "help_text" => "Think about a favorite snack or toy.",
+        "id" => "expression_of_needs",
+        "section" => "comm_landscape",
+        "label" => "How does your child primarily communicate a need they can't reach (like a favorite snack)?",
         "type" => "select",
         "dimension_key" => "communication.expressive",
         "concept_key" => "functional_communication",
         "time_window" => "current_pattern",
-        "step_group" => "comm_flow",
+        "step_group" => "comm_basics",
         "required" => true,
         "evidence_weight" => 0.8,
         "options" => [
-          { "label" => "Leads me to it by the hand (using me as a tool)", "value" => "hand_leading" },
-          { "label" => "Uses one-word requests or scripts from shows", "value" => "scripting" },
-          { "label" => "Points and makes eye contact to ensure I see", "value" => "joint_attention" },
+          { "label" => "Leads me to the item by the hand (using me as a tool)", "value" => "hand_leading" },
+          { "label" => "Uses one-word requests or scripts from media", "value" => "scripting" },
+          { "label" => "Points and uses eye contact to check in", "value" => "joint_attention_pointing" },
           { "label" => "Becomes frustrated or upset", "value" => "frustration_based" }
         ]
       },
       {
         "id" => "receptive_processing",
-        "section" => "comm",
-        "label" => "When you give a two-step instruction, what happens?",
-        "help_text" => "Example: Get your shoes and wait by the door.",
+        "section" => "comm_landscape",
+        "label" => "How do they react to a simple, two-step instruction (e.g., 'Get your shoes and go to the door')?",
         "type" => "select",
         "dimension_key" => "communication.receptive",
-        "concept_key" => "processing_speed",
+        "concept_key" => "processing_delay",
         "time_window" => "current_pattern",
-        "step_group" => "comm_flow",
+        "step_group" => "comm_basics",
         "required" => true,
         "evidence_weight" => 0.7,
         "options" => [
-          { "label" => "Follows both steps immediately", "value" => "typical" },
-          { "label" => "Follows the first part, but loses the second", "value" => "limited_working_memory" },
-          { "label" => "Needs a physical gesture to understand", "value" => "visual_dependent" },
-          { "label" => "Seems to hear me but cannot translate it to action", "value" => "processing_lag" }
+          { "label" => "Follows it immediately", "value" => "immediate" },
+          { "label" => "Follows the first part, but loses the second", "value" => "partial_recall" },
+          { "label" => "Needs a physical gesture (pointing) to understand", "value" => "visual_prompt_dependent" },
+          { "label" => "Seems to hear words but cannot translate to action yet", "value" => "processing_lag" }
         ]
       },
       {
         "id" => "auditory_load",
-        "section" => "sensory",
-        "label" => "How does your child react to unpredictable noise?",
-        "help_text" => "Examples: vacuum, hand dryers, or blenders.",
+        "section" => "sensory_os",
+        "label" => "How does your child react to unpredictable noise (vacuum, hand-dryer)?",
         "type" => "select",
         "dimension_key" => "sensory.auditory",
         "concept_key" => "sensory_reactivity",
@@ -94,105 +110,136 @@ anchor_onboarding.assign_attributes(
         "required" => true,
         "evidence_weight" => 0.9,
         "options" => [
-          { "label" => "Covers ears or tries to flee", "value" => "hyper_reactive" },
-          { "label" => "Becomes louder or more active to drown it out", "value" => "sensory_seeking" },
-          { "label" => "Seems completely unfazed or does not notice", "value" => "hypo_reactive" },
-          { "label" => "Seems fine in the moment but crashes later", "value" => "delayed_overload" }
+          { "label" => "Covers ears or tries to flee (Avoider)", "value" => "avoider" },
+          { "label" => "Becomes louder/active to 'drown out' noise (Seeker)", "value" => "seeker" },
+          { "label" => "Seems completely unfazed/doesn't notice", "value" => "hypo_reactive" },
+          { "label" => "Seems fine in the moment but has a crash later", "value" => "delayed_overload" }
         ]
       },
       {
-        "id" => "proprioceptive_seeking",
-        "section" => "sensory",
-        "label" => "Does your child seek out heavy physical input?",
-        "type" => "scale",
-        "min" => 1,
-        "max" => 5,
+        "id" => "proprioceptive_need",
+        "section" => "sensory_os",
+        "label" => "Does your child seek out heavy physical input (crashing, jumping, tight hugs)?",
+        "type" => "select",
         "dimension_key" => "sensory.proprioception",
         "concept_key" => "body_awareness",
         "time_window" => "typical_week",
         "step_group" => "sensory_profile",
         "required" => true,
         "evidence_weight" => 0.8,
-        "help_text" => "1 = Never, 5 = Constant seeking",
-        "progress_label" => "Body Awareness"
-      },
-      {
-        "id" => "interoception_cues",
-        "section" => "sensory",
-        "label" => "Does your child seem to know when they are hungry, thirsty, or hurt?",
-        "type" => "select",
-        "dimension_key" => "sensory.interoception",
-        "concept_key" => "internal_cues",
-        "time_window" => "current_pattern",
-        "required" => false,
-        "evidence_weight" => 0.6,
         "options" => [
-          { "label" => "Yes, communicates needs clearly", "value" => "aware" },
-          { "label" => "Only realizes when it becomes urgent or overwhelming", "value" => "low_awareness" },
-          { "label" => "High pain tolerance or limited pain response", "value" => "hyposensitive_pain" }
+          { "label" => "Frequently/Constantly (Boundless energy)", "value" => "high_seeker" },
+          { "label" => "Occasionally, usually when stressed", "value" => "intermittent_seeker" },
+          { "label" => "Rarely; prefers still or gentle movement", "value" => "low_seeker" },
+          { "label" => "Avoids being touched or squeezed", "value" => "tactile_avoider" }
         ]
       },
       {
-        "id" => "transition_friction",
-        "section" => "reg",
-        "label" => "What is the hardest transition of the day?",
+        "id" => "stop_start_friction",
+        "section" => "reg_transitions",
+        "label" => "How do they react when it is time to stop a preferred activity?",
         "type" => "select",
         "dimension_key" => "regulation.transitions",
-        "concept_key" => "flexibility",
-        "time_window" => "typical_week",
-        "step_group" => "reg_flow",
+        "concept_key" => "set_shifting",
+        "time_window" => "recent_pattern",
+        "step_group" => "flexibility",
         "required" => true,
         "evidence_weight" => 0.8,
         "options" => [
-          { "label" => "Waking up or starting the day", "value" => "morning" },
-          { "label" => "Leaving the house", "value" => "departures" },
-          { "label" => "Stopping a favorite activity", "value" => "disengagement" },
-          { "label" => "Bedtime routine", "value" => "evening" }
+          { "label" => "Immediate emotional collapse (meltdown)", "value" => "emotional_collapse" },
+          { "label" => "Ignores the request entirely (stalling)", "value" => "stalling" },
+          { "label" => "Only transitions with specific timers or warnings", "value" => "timer_dependent" },
+          { "label" => "Transitions easily but seems lost or anxious after", "value" => "anxious_post_transition" }
         ]
       },
       {
-        "id" => "routine_rigidity",
-        "section" => "reg",
-        "label" => "If a small part of a routine changes unexpectedly, how does it impact them?",
-        "type" => "scale",
-        "min" => 1,
-        "max" => 5,
-        "dimension_key" => "regulation.predictability",
-        "concept_key" => "adaptive_loading",
-        "time_window" => "recent_pattern",
-        "step_group" => "reg_flow",
+        "id" => "routine_predictability",
+        "section" => "reg_transitions",
+        "label" => "How does an unexpected change in routine (like a new route home) impact their mood?",
+        "type" => "select",
+        "dimension_key" => "regulation.routine",
+        "concept_key" => "predictability_need",
+        "time_window" => "typical_week",
+        "step_group" => "flexibility",
         "required" => true,
         "evidence_weight" => 0.7,
-        "help_text" => "1 = No reaction, 5 = Extreme distress",
-        "progress_label" => "Flexibility"
+        "options" => [
+          { "label" => "Significant distress; needs things just so", "value" => "high_rigidity" },
+          { "label" => "Mild confusion, but can be redirected", "value" => "moderate_flexibility" },
+          { "label" => "Does not seem to notice the change", "value" => "low_awareness" },
+          { "label" => "Enjoys the novelty or change", "value" => "high_flexibility" }
+        ]
       },
       {
-        "id" => "monotropic_interests",
-        "section" => "reg",
-        "label" => "Does your child have a deep-dive interest they could focus on for hours?",
-        "placeholder" => "Example: trains, ceiling fans, space, or certain movie scenes",
-        "type" => "textarea",
-        "dimension_key" => "interests.monotropism",
-        "concept_key" => "specialized_focus",
-        "time_window" => "current_pattern",
-        "required" => true,
-        "evidence_weight" => 0.5,
-        "extraction_hint" => "Extract the primary subject of interest and whether it is a physical object, topic, or repetitive action."
-      },
-      {
-        "id" => "joint_attention_joy",
-        "section" => "reg",
-        "label" => "If your child finds something exciting, do they try to get you to look at it too?",
+        "id" => "shared_joy",
+        "section" => "social_glimmers",
+        "label" => "If they find something exciting, do they try to get you to look at it too?",
         "type" => "select",
         "dimension_key" => "social.engagement",
         "concept_key" => "joint_attention",
         "time_window" => "recent_pattern",
+        "step_group" => "social_connection",
         "required" => true,
         "evidence_weight" => 0.8,
         "options" => [
-          { "label" => "Yes, they bring it to me or point", "value" => "active_sharing" },
-          { "label" => "They enjoy it intensely but keep it to themselves", "value" => "internalized_joy" },
-          { "label" => "They only show me if I ask", "value" => "responsive_only" }
+          { "label" => "Yes, they bring it or point to it", "value" => "active_sharing" },
+          { "label" => "They enjoy it intensely but keep it to themselves", "value" => "internalized_sharing" },
+          { "label" => "They show me only if I ask 'What do you have?'", "value" => "responsive_only" },
+          { "label" => "They prefer to play in a separate room", "value" => "solitary_preference" }
+        ]
+      },
+      {
+        "id" => "deep_interests",
+        "section" => "social_glimmers",
+        "label" => "Does your child have an Expert Topic or play style they focus on for hours?",
+        "type" => "select",
+        "dimension_key" => "social.interests",
+        "concept_key" => "monotropism",
+        "time_window" => "current_pattern",
+        "step_group" => "social_connection",
+        "required" => true,
+        "evidence_weight" => 0.6,
+        "options" => [
+          { "label" => "Yes, and it is hard to pull them away", "value" => "intense_monotropism" },
+          { "label" => "They have interests, but they shift frequently", "value" => "shifting_interests" },
+          { "label" => "No deep-dive interest yet; play is scattered", "value" => "low_monotropism" },
+          { "label" => "Interest is mainly physical (running/climbing)", "value" => "vestibular_focus" }
+        ]
+      },
+      {
+        "id" => "interoception_cues",
+        "section" => "daily_autonomy",
+        "label" => "Does your child know when they are hungry, thirsty, or need the bathroom?",
+        "type" => "select",
+        "dimension_key" => "daily_living.interoception",
+        "concept_key" => "internal_awareness",
+        "time_window" => "current_pattern",
+        "step_group" => "body_management",
+        "required" => true,
+        "evidence_weight" => 0.7,
+        "options" => [
+          { "label" => "Yes, communicates these needs clearly", "value" => "high_awareness" },
+          { "label" => "Only realizes when it's an emergency or meltdown", "value" => "low_awareness" },
+          { "label" => "Very high pain tolerance (doesn't cry when hurt)", "value" => "hypo_sensitive_pain" },
+          { "label" => "Hyper-aware of every small scratch or itch", "value" => "hyper_sensitive" }
+        ]
+      },
+      {
+        "id" => "motor_planning",
+        "section" => "daily_autonomy",
+        "label" => "How does your child handle complex movements (stairs, spoons, coats)?",
+        "type" => "select",
+        "dimension_key" => "daily_living.motor",
+        "concept_key" => "coordination",
+        "time_window" => "recent_pattern",
+        "step_group" => "body_management",
+        "required" => true,
+        "evidence_weight" => 0.6,
+        "options" => [
+          { "label" => "Typical age-appropriate coordination", "value" => "typical" },
+          { "label" => "Seems clumsy or frequently trips/falls", "value" => "clumsy" },
+          { "label" => "Avoids these tasks because they seem too hard", "value" => "avoidant" },
+          { "label" => "Can do them, but only with intense focus", "value" => "high_effort" }
         ]
       }
     ]
