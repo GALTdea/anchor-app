@@ -66,12 +66,27 @@ class AssessmentAnswerValidator
   end
 
   def validate_select(q, id, value)
-    options = Array(q["options"]).map(&:to_s)
-    if options.blank?
+    allowed = select_allowed_values(q)
+    if allowed.blank?
       @error_messages << "#{id} must define options for select"
       return
     end
 
-    @error_messages << "#{id} must be one of the allowed options" unless options.include?(value.to_s)
+    @error_messages << "#{id} must be one of the allowed options" unless allowed.include?(value.to_s)
+  end
+
+  # Matches AssessmentResponsesHelper#assessment_question_options: options may be
+  # plain strings or { "label" => "...", "value" => "..." } hashes.
+  def select_allowed_values(q)
+    Array(q["options"]).filter_map do |option|
+      if option.respond_to?(:stringify_keys)
+        normalized = option.stringify_keys
+        normalized["value"].presence&.to_s
+      elsif option.nil?
+        nil
+      else
+        option.to_s
+      end
+    end
   end
 end

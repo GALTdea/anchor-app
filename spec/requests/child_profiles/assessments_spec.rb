@@ -140,6 +140,53 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(assessment_response.template_slug_snapshot).to eq(template.slug)
       expect(assessment_response.template_version_snapshot).to eq(template.version)
     end
+
+    context "when the template uses hash-shaped select options" do
+      let(:hash_select_template) do
+        create(:assessment_template, schema: {
+          "version" => 1,
+          "sections" => [ { "id" => "s1", "title" => "Section" } ],
+          "questions" => [
+            {
+              "id" => "choice",
+              "label" => "Pick one",
+              "type" => "select",
+              "section" => "s1",
+              "dimension_key" => "test.dimension",
+              "concept_key" => "test_concept",
+              "time_window" => "current_pattern",
+              "evidence_weight" => 0.8,
+              "required" => true,
+              "options" => [
+                { "label" => "First", "value" => "first" },
+                { "label" => "Second", "value" => "second" }
+              ]
+            }
+          ]
+        })
+      end
+      let(:assessment) { create(:assessment, child_profile: child_profile, assessment_template: hash_select_template) }
+      let!(:assessment_response) do
+        create(:assessment_response, assessment: assessment, actor: user, answers: {})
+      end
+
+      it "submits final answers without false invalid-option errors" do
+        expect {
+          patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+            params: {
+              submit_action: "submit",
+              current_step_id: "section-s1-step-1",
+              assessment_response: {
+                respondent_kind: "parent_proxy",
+                answers: { "choice" => "first" }
+              }
+            }
+        }.to have_enqueued_job(AssessmentEvidenceExtractorJob)
+
+        expect(response).to redirect_to(space_child_profile_assessment_path(space, child_profile, assessment))
+        expect(assessment_response.reload.answers["choice"]).to eq("first")
+      end
+    end
   end
 
   describe "GET /response/edit" do

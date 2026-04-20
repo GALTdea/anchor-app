@@ -50,7 +50,7 @@ export default class extends Controller {
   }
 
   setStatus(message) {
-    return unless this.hasStatusTarget
+    if (!this.hasStatusTarget) return
 
     this.statusTarget.textContent = message
   }

@@ -24,6 +24,11 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     @assessment_response.submitting = submitting
 
     if submitting
+      prior_submitted_at = @assessment_response.submitted_at
+      prior_processing_status = @assessment_response.processing_status
+      prior_last_processed_at = @assessment_response.last_processed_at
+      prior_last_processing_error = @assessment_response.last_processing_error
+
       @assessment_response.actor = current_user
       @assessment_response.submitted_at = Time.current
       @assessment_response.processing_status = "queued"
@@ -31,6 +36,11 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
       @assessment_response.last_processing_error = nil
       ActiveRecord::Base.transaction do
         unless @assessment_response.save
+          @assessment_response.submitted_at = prior_submitted_at
+          @assessment_response.processing_status = prior_processing_status
+          @assessment_response.last_processed_at = prior_last_processed_at
+          @assessment_response.last_processing_error = prior_last_processing_error
+          set_runner_context_from_current_response
           render :edit, status: :unprocessable_content
           return
         end
@@ -81,7 +91,8 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     @template = @assessment.assessment_template
     @answers = (@assessment_response.answers || {}).deep_stringify_keys
     @runner = AssessmentRunner.new(template: @template, answers: @answers)
-    @current_step = @runner.current_step(params[:step])
+    step_id = params[:current_step_id].presence || params[:step]
+    @current_step = @runner.current_step(step_id)
     @next_step = @runner.next_step_for(@current_step)
     @previous_step = @runner.previous_step_for(@current_step)
     @progress = view_context.assessment_progress(@template, @answers)
