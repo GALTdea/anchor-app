@@ -89,13 +89,15 @@ Reference: `docs/features/_constraints.md`
 
 | Object | Location | Purpose |
 |--------|----------|---------|
-| `Assessment::PredicateEvaluator` | `app/services/assessment/predicate_evaluator.rb` | Evaluate a `visible_if` predicate against a given answers hash. Returns `true`/`false`. Pure function, no state. |
-| `Assessment::SchemaPredicate` | `app/models/assessment/schema_predicate.rb` (or kept inside `AssessmentTemplate` as a private helper) | Validate predicate shape and referenced question ids at template publish time. |
+| `AssessmentSchema::PredicateEvaluator` | `app/services/assessment_schema/predicate_evaluator.rb` | Evaluate a `visible_if` predicate against a given answers hash. Returns `true`/`false`. Pure function, no state. |
+| `AssessmentSchema::SchemaPredicate` | `app/models/assessment_schema/schema_predicate.rb` (or kept inside `AssessmentTemplate` as a private helper) | Validate predicate shape and referenced question ids at template publish time. |
 
-Namespace the new files under `app/services/assessment/` and
-`app/models/assessment/` to start consolidating the family of schema/runner
-helpers. This preserves the existing public classes while giving us a place
-to grow.
+Namespace the new files under `app/services/assessment_schema/` and
+`app/models/assessment_schema/` to start consolidating the family of
+schema/runner helpers. We use `AssessmentSchema` rather than `Assessment`
+because the latter is already an ActiveRecord model class; using a dedicated
+namespace avoids re-opening the model and leaves room for future schema
+utilities (e.g. a schema validator, a runner builder).
 
 ### Changed models
 
@@ -299,12 +301,12 @@ git status
 
 **Revert:** n/a
 
-### Step 1 — `Assessment::PredicateEvaluator` PORO + spec
+### Step 1 — `AssessmentSchema::PredicateEvaluator` PORO + spec
 
 Implement the evaluator against a truth table of predicate shapes and a
 given answers hash. Pure function, no AR access.
 
-**Verify:** `bundle exec rspec spec/services/assessment/predicate_evaluator_spec.rb`
+**Verify:** `bundle exec rspec spec/services/assessment_schema/predicate_evaluator_spec.rb`
 **Revert:** `git checkout -- app/services/assessment spec/services/assessment`
 
 ### Step 2 — Schema validation: `visible_if` shape + reference check
