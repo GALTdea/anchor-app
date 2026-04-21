@@ -90,7 +90,7 @@ Reference: `docs/features/_constraints.md`
 | Object | Location | Purpose |
 |--------|----------|---------|
 | `AssessmentSchema::PredicateEvaluator` | `app/services/assessment_schema/predicate_evaluator.rb` | Evaluate a `visible_if` predicate against a given answers hash. Returns `true`/`false`. Pure function, no state. |
-| `AssessmentSchema::SchemaPredicate` | `app/models/assessment_schema/schema_predicate.rb` (or kept inside `AssessmentTemplate` as a private helper) | Validate predicate shape and referenced question ids at template publish time. |
+| `AssessmentSchema::SchemaPredicate` | `app/services/assessment_schema/schema_predicate.rb` | Validate predicate shape and collect referenced question ids for cross-checking at template publish time. |
 
 Namespace the new files under `app/services/assessment_schema/` and
 `app/models/assessment_schema/` to start consolidating the family of
@@ -421,9 +421,9 @@ active set.
 
 ## Status
 
-- [ ] Step 0 — Pre-flight
-- [ ] Step 1 — `PredicateEvaluator`
-- [ ] Step 2 — Schema validation for `visible_if`
+- [x] Step 0 — Pre-flight
+- [x] Step 1 — `PredicateEvaluator`
+- [x] Step 2 — Schema validation for `visible_if`
 - [ ] Step 3 — `AssessmentAnswerValidator` active-set support
 - [ ] Step 4 — `AssessmentRunner` filtering + stable step ids
 - [ ] Step 5 — Wire validator active set into submit paths

@@ -318,15 +318,18 @@ class AssessmentTemplate < ApplicationRecord
       return
     end
 
-    section_ids = validate_sections(schema_hash["sections"])
+    referenced_visible_if_ids = Set.new
+    section_ids = validate_sections(schema_hash["sections"], referenced_visible_if_ids)
     seen_ids = Set.new
 
     questions.each_with_index do |question, index|
-      validate_question(question, index, section_ids, seen_ids)
+      validate_question(question, index, section_ids, seen_ids, referenced_visible_if_ids)
     end
+
+    validate_visible_if_references(referenced_visible_if_ids, seen_ids)
   end
 
-  def validate_sections(sections)
+  def validate_sections(sections, referenced_visible_if_ids)
     return Set.new unless sections.present?
 
     unless sections.is_a?(Array)
@@ -345,15 +348,24 @@ class AssessmentTemplate < ApplicationRecord
       section = section.deep_stringify_keys
       section_id = section["id"].to_s
       title = section["title"].to_s
+      label = section_id.presence || (index + 1).to_s
 
       errors.add(:schema, "section #{index + 1} must include an id") if section_id.blank?
-      errors.add(:schema, "section #{section_id.presence || index + 1} must include a title") if title.blank?
+      errors.add(:schema, "section #{label} must include a title") if title.blank?
 
       OPTIONAL_SECTION_STRING_FIELDS.each do |field|
         next unless section.key?(field)
         next if section[field].is_a?(String)
 
-        errors.add(:schema, "section #{section_id.presence || index + 1} #{field} must be a string")
+        errors.add(:schema, "section #{label} #{field} must be a string")
+      end
+
+      if section.key?("visible_if")
+        validate_visible_if(
+          section["visible_if"],
+          owner_path: "section[#{label}]",
+          referenced_ids: referenced_visible_if_ids
+        )
       end
 
       next if section_id.blank?
@@ -368,7 +380,7 @@ class AssessmentTemplate < ApplicationRecord
     seen_ids
   end
 
-  def validate_question(question, index, section_ids, seen_ids)
+  def validate_question(question, index, section_ids, seen_ids, referenced_visible_if_ids)
     unless question.is_a?(Hash)
       errors.add(:schema, "question #{index + 1} must be an object")
       return
@@ -376,6 +388,7 @@ class AssessmentTemplate < ApplicationRecord
 
     question = question.deep_stringify_keys
     question_id = question["id"].to_s
+    label = question_id.presence || (index + 1).to_s
 
     REQUIRED_QUESTION_FIELDS.each do |field|
       errors.add(:schema, "question #{index + 1} must include #{field}") if question[field].to_s.blank?
@@ -391,7 +404,7 @@ class AssessmentTemplate < ApplicationRecord
 
     type = question["type"].to_s
     unless SUPPORTED_QUESTION_TYPES.include?(type)
-      errors.add(:schema, "question #{question_id.presence || index + 1} has unsupported type #{type.inspect}")
+      errors.add(:schema, "question #{label} has unsupported type #{type.inspect}")
       return
     end
 
@@ -399,15 +412,38 @@ class AssessmentTemplate < ApplicationRecord
       next unless question.key?(field)
       next if question[field].is_a?(String)
 
-      errors.add(:schema, "question #{question_id.presence || index + 1} #{field} must be a string")
+      errors.add(:schema, "question #{label} #{field} must be a string")
     end
 
     if section_ids.present? && question["section"].present? && !section_ids.include?(question["section"].to_s)
-      errors.add(:schema, "question #{question_id.presence || index + 1} references unknown section #{question['section']}")
+      errors.add(:schema, "question #{label} references unknown section #{question['section']}")
+    end
+
+    if question.key?("visible_if")
+      validate_visible_if(
+        question["visible_if"],
+        owner_path: "question[#{label}]",
+        referenced_ids: referenced_visible_if_ids
+      )
     end
 
     validate_question_evidence_weight(question, question_id, index)
     validate_question_type_config(question, question_id, index)
+  end
+
+  def validate_visible_if(predicate, owner_path:, referenced_ids:)
+    validator = AssessmentSchema::SchemaPredicate.new(predicate, path: "#{owner_path}.visible_if")
+    validator.validate!
+
+    validator.errors.each { |message| errors.add(:schema, message) }
+    referenced_ids.merge(validator.referenced_question_ids)
+  end
+
+  def validate_visible_if_references(referenced_ids, question_ids)
+    unknown = referenced_ids - question_ids
+    unknown.each do |id|
+      errors.add(:schema, "visible_if references unknown question id #{id.inspect}")
+    end
   end
 
   def validate_question_evidence_weight(question, question_id, index)

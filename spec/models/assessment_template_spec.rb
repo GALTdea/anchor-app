@@ -166,6 +166,140 @@ RSpec.describe AssessmentTemplate, type: :model do
       expect(template).to be_valid
     end
 
+    describe "visible_if predicates" do
+      let(:base_schema) do
+        {
+          "version" => 1,
+          "sections" => [
+            { "id" => "core", "title" => "Core" }
+          ],
+          "questions" => [
+            {
+              "id" => "trigger",
+              "label" => "What's the primary trigger?",
+              "type" => "select",
+              "section" => "core",
+              "dimension_key" => "regulation.trigger",
+              "concept_key" => "primary_trigger",
+              "time_window" => "typical_week",
+              "evidence_weight" => 0.7,
+              "options" => [ "sensory", "social", "transition" ]
+            },
+            {
+              "id" => "severity",
+              "label" => "How severe is it?",
+              "type" => "scale",
+              "section" => "core",
+              "dimension_key" => "regulation.severity",
+              "concept_key" => "trigger_severity",
+              "time_window" => "typical_week",
+              "evidence_weight" => 0.6,
+              "min" => 1,
+              "max" => 5
+            }
+          ]
+        }
+      end
+
+      it "accepts a question with a valid visible_if predicate" do
+        schema = base_schema.deep_dup
+        schema["questions"][1]["visible_if"] = {
+          "question_id" => "trigger", "equals" => "sensory"
+        }
+
+        expect(build(:assessment_template, schema: schema)).to be_valid
+      end
+
+      it "accepts a section with a valid visible_if predicate" do
+        schema = base_schema.deep_dup
+        schema["sections"] << {
+          "id" => "sensory_detail",
+          "title" => "Sensory detail",
+          "visible_if" => { "question_id" => "trigger", "equals" => "sensory" }
+        }
+
+        expect(build(:assessment_template, schema: schema)).to be_valid
+      end
+
+      it "accepts forward references (visible_if referencing a later question)" do
+        schema = base_schema.deep_dup
+        schema["questions"][0]["visible_if"] = {
+          "question_id" => "severity", "answered" => true
+        }
+
+        expect(build(:assessment_template, schema: schema)).to be_valid
+      end
+
+      it "accepts nested all/any/not predicates" do
+        schema = base_schema.deep_dup
+        schema["questions"][1]["visible_if"] = {
+          "all" => [
+            { "question_id" => "trigger", "answered" => true },
+            { "not" => { "question_id" => "trigger", "equals" => "transition" } }
+          ]
+        }
+
+        expect(build(:assessment_template, schema: schema)).to be_valid
+      end
+
+      it "rejects a visible_if referencing an unknown question id" do
+        schema = base_schema.deep_dup
+        schema["questions"][1]["visible_if"] = {
+          "question_id" => "does_not_exist", "equals" => "x"
+        }
+
+        template = build(:assessment_template, schema: schema)
+
+        expect(template).not_to be_valid
+        expect(template.errors[:schema]).to include(match(/visible_if references unknown question id/))
+      end
+
+      it "rejects a malformed visible_if (missing operator)" do
+        schema = base_schema.deep_dup
+        schema["questions"][1]["visible_if"] = { "question_id" => "trigger" }
+
+        template = build(:assessment_template, schema: schema)
+
+        expect(template).not_to be_valid
+        expect(template.errors[:schema]).to include(match(/question\[severity\]\.visible_if/))
+      end
+
+      it "rejects a malformed visible_if on a section" do
+        schema = base_schema.deep_dup
+        schema["sections"] << {
+          "id" => "broken",
+          "title" => "Broken",
+          "visible_if" => { "all" => [] }
+        }
+
+        template = build(:assessment_template, schema: schema)
+
+        expect(template).not_to be_valid
+        expect(template.errors[:schema]).to include(match(/section\[broken\]\.visible_if\.all must be a non-empty array/))
+      end
+
+      it "rejects a visible_if that is not a hash" do
+        schema = base_schema.deep_dup
+        schema["questions"][1]["visible_if"] = "nope"
+
+        template = build(:assessment_template, schema: schema)
+
+        expect(template).not_to be_valid
+        expect(template.errors[:schema]).to include(match(/visible_if must be an object/))
+      end
+
+      it "allows visible_if to be omitted entirely" do
+        expect(build(:assessment_template, schema: base_schema)).to be_valid
+      end
+
+      it "allows visible_if to be explicitly nil" do
+        schema = base_schema.deep_dup
+        schema["questions"][1]["visible_if"] = nil
+
+        expect(build(:assessment_template, schema: schema)).to be_valid
+      end
+    end
+
     it "treats published versions as immutable" do
       template = create(:assessment_template)
 
