@@ -428,7 +428,7 @@ active set.
 - [x] Step 4 — `AssessmentRunner` filtering + stable step ids
 - [x] Step 5 — Wire validator active set into submit paths
 - [x] Step 6 — Evidence extractor active-set filter
-- [ ] Step 7 — Seed `anchor_functional_profile_v2`
+- [x] Step 7 — Seed `anchor_functional_profile_v2`
 - [ ] Step 8 — Admin editor `visible_if` field
 - [ ] Step 9 — Full-stack branching specs
 - [ ] Step 10 — Full verification

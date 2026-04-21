@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-anchor_onboarding = AssessmentTemplate.find_or_initialize_by(
+# V1: Original 10-question linear assessment
+anchor_onboarding_v1 = AssessmentTemplate.find_or_initialize_by(
   template_key: "anchor_functional_profile_v1"
 )
 
-anchor_onboarding.assign_attributes(
+anchor_onboarding_v1.assign_attributes(
   "title" => "Anchor Functional Support Profile",
   "slug" => "anchor-functional-profile",
   "template_key" => "anchor_functional_profile_v1",
@@ -246,5 +247,95 @@ anchor_onboarding.assign_attributes(
   }
 )
 
-anchor_onboarding.save!
-AppSettings.write_setting!("onboarding_assessment_template_id", anchor_onboarding.id.to_s)
+anchor_onboarding_v1.save! unless anchor_onboarding_v1.persisted?
+
+# V2: Same 10 questions + 3 adaptive follow-ups with visible_if
+anchor_onboarding_v2 = AssessmentTemplate.find_or_initialize_by(
+  template_key: "anchor_functional_profile_v2"
+)
+
+v2_questions = anchor_onboarding_v1.schema["questions"].deep_dup
+
+# Add conditional follow-up questions
+v2_questions << {
+  "id" => "transition_recovery_time",
+  "section" => "reg_transitions",
+  "label" => "When a meltdown happens during a transition, how long does it typically take for them to recover?",
+  "type" => "select",
+  "dimension_key" => "regulation.recovery",
+  "concept_key" => "emotional_recovery_duration",
+  "time_window" => "typical_week",
+  "step_group" => "flexibility",
+  "required" => false,
+  "evidence_weight" => 0.7,
+  "visible_if" => { "question_id" => "stop_start_friction", "equals" => "emotional_collapse" },
+  "options" => [
+    { "label" => "Under 5 minutes with comfort", "value" => "quick_recovery" },
+    { "label" => "10-20 minutes; needs quiet space", "value" => "moderate_recovery" },
+    { "label" => "30+ minutes; hard to console", "value" => "slow_recovery" },
+    { "label" => "Rest of the day is impacted", "value" => "extended_dysregulation" }
+  ]
+}
+
+v2_questions << {
+  "id" => "auditory_coping",
+  "section" => "sensory_os",
+  "label" => "What helps your child cope when they encounter overwhelming noise?",
+  "type" => "select",
+  "dimension_key" => "sensory.coping_strategies",
+  "concept_key" => "sensory_regulation_tools",
+  "time_window" => "recent_pattern",
+  "step_group" => "sensory_profile",
+  "required" => false,
+  "evidence_weight" => 0.6,
+  "visible_if" => {
+    "any" => [
+      { "question_id" => "auditory_load", "equals" => "avoider" },
+      { "question_id" => "auditory_load", "equals" => "delayed_overload" }
+    ]
+  },
+  "options" => [
+    { "label" => "Headphones or ear defenders", "value" => "noise_canceling" },
+    { "label" => "Moving to a quiet space", "value" => "escape_to_quiet" },
+    { "label" => "Physical pressure (tight hug, weighted item)", "value" => "proprioceptive_input" },
+    { "label" => "Nothing helps; must wait it out", "value" => "no_effective_strategy" }
+  ]
+}
+
+v2_questions << {
+  "id" => "frustration_deescalation",
+  "section" => "comm_landscape",
+  "label" => "When frustration builds because they can't express what they need, what helps most?",
+  "type" => "select",
+  "dimension_key" => "communication.regulation",
+  "concept_key" => "deescalation_strategies",
+  "time_window" => "recent_pattern",
+  "step_group" => "comm_basics",
+  "required" => false,
+  "evidence_weight" => 0.7,
+  "visible_if" => { "question_id" => "expression_of_needs", "equals" => "frustration_based" },
+  "options" => [
+    { "label" => "Visual supports (pictures, choice boards)", "value" => "visual_supports" },
+    { "label" => "Physical comfort and waiting", "value" => "coregulation" },
+    { "label" => "Offering specific options verbally", "value" => "structured_choices" },
+    { "label" => "Distraction or change of environment", "value" => "environmental_shift" }
+  ]
+}
+
+anchor_onboarding_v2.assign_attributes(
+  "title" => "Anchor Functional Support Profile",
+  "slug" => "anchor-functional-profile-v2",
+  "template_key" => "anchor_functional_profile_v2",
+  "version" => 2,
+  "category" => "onboarding",
+  "respondent_types" => [ "parent_proxy" ],
+  "status" => "published",
+  "schema" => anchor_onboarding_v1.schema.deep_dup.merge(
+    "questions" => v2_questions
+  )
+)
+
+anchor_onboarding_v2.save! unless anchor_onboarding_v2.persisted?
+
+# Point AppSettings to v2
+AppSettings.write_setting!("onboarding_assessment_template_id", anchor_onboarding_v2.id.to_s)
