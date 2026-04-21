@@ -75,4 +75,73 @@ RSpec.describe AssessmentAnswerValidator do
     expect(validator.error_messages).to include("hash_select is required")
     expect(validator.error_messages).to include("string_select is required")
   end
+
+  describe "active_question_ids" do
+    it "validates every question when active_question_ids is nil (default)" do
+      validator = described_class.new(schema: schema, answers: {})
+      expect(validator).not_to be_valid
+      expect(validator.error_messages).to include("hash_select is required", "string_select is required")
+    end
+
+    it "skips required-field checks for inactive questions" do
+      validator = described_class.new(
+        schema: schema,
+        answers: { "hash_select" => "one" },
+        active_question_ids: [ "hash_select" ]
+      )
+
+      expect(validator).to be_valid
+    end
+
+    it "still reports required-field errors for active questions" do
+      validator = described_class.new(
+        schema: schema,
+        answers: {},
+        active_question_ids: [ "hash_select" ]
+      )
+
+      expect(validator).not_to be_valid
+      expect(validator.error_messages).to contain_exactly("hash_select is required")
+    end
+
+    it "skips type/value checks for inactive questions" do
+      validator = described_class.new(
+        schema: schema,
+        answers: { "hash_select" => "one", "string_select" => "not_in_options" },
+        active_question_ids: [ "hash_select" ]
+      )
+
+      expect(validator).to be_valid
+    end
+
+    it "accepts a Set of ids" do
+      validator = described_class.new(
+        schema: schema,
+        answers: { "hash_select" => "one" },
+        active_question_ids: Set.new([ "hash_select" ])
+      )
+
+      expect(validator).to be_valid
+    end
+
+    it "normalizes ids to strings" do
+      validator = described_class.new(
+        schema: schema,
+        answers: { "hash_select" => "one" },
+        active_question_ids: [ :hash_select ]
+      )
+
+      expect(validator).to be_valid
+    end
+
+    it "treats an empty active set as 'validate nothing'" do
+      validator = described_class.new(
+        schema: schema,
+        answers: {},
+        active_question_ids: []
+      )
+
+      expect(validator).to be_valid
+    end
+  end
 end

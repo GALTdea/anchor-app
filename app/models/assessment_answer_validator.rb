@@ -1,12 +1,20 @@
 # frozen_string_literal: true
 
 # Validates +answers+ hash against an AssessmentTemplate +schema+ (version 1 contract).
+#
+# When +active_question_ids+ is provided (a collection of question ids), any
+# question whose id is not in the set is skipped entirely: no required-field
+# check, no type check. This lets callers validate against the subset of
+# questions that are actually visible under the template's +visible_if+
+# predicates. Passing +nil+ (the default) preserves the pre-branching
+# behavior of validating every question in the schema.
 class AssessmentAnswerValidator
   attr_reader :error_messages
 
-  def initialize(schema:, answers:)
+  def initialize(schema:, answers:, active_question_ids: nil)
     @schema = (schema || {}).deep_stringify_keys
     @answers = (answers || {}).stringify_keys
+    @active_question_ids = normalize_active_question_ids(active_question_ids)
     @error_messages = []
   end
 
@@ -24,9 +32,16 @@ class AssessmentAnswerValidator
 
   private
 
+  def normalize_active_question_ids(ids)
+    return nil if ids.nil?
+
+    Set.new(Array(ids).map(&:to_s))
+  end
+
   def validate_question(q)
     id = q["id"].to_s
     return if id.blank?
+    return if @active_question_ids && !@active_question_ids.include?(id)
 
     required = ActiveModel::Type::Boolean.new.cast(q["required"])
     value = @answers[id]

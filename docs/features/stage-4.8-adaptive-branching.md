@@ -424,7 +424,7 @@ active set.
 - [x] Step 0 — Pre-flight
 - [x] Step 1 — `PredicateEvaluator`
 - [x] Step 2 — Schema validation for `visible_if`
-- [ ] Step 3 — `AssessmentAnswerValidator` active-set support
+- [x] Step 3 — `AssessmentAnswerValidator` active-set support
 - [ ] Step 4 — `AssessmentRunner` filtering + stable step ids
 - [ ] Step 5 — Wire validator active set into submit paths
 - [ ] Step 6 — Evidence extractor active-set filter
