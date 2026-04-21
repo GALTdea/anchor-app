@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "ostruct"
+
 class AssessmentEvidenceExtractor
   def initialize(assessment_response)
     @assessment_response = assessment_response
@@ -20,16 +22,30 @@ class AssessmentEvidenceExtractor
   attr_reader :assessment_response
 
   def build_evidences
+    active_ids = active_question_ids
+
     questions.filter_map do |question|
       question = question.stringify_keys
       question_id = question["id"].to_s
       next if question_id.blank?
+      next if active_ids.present? && !active_ids.include?(question_id)
 
       answer = answers[question_id]
       next if answer.blank?
 
       evidence_attributes(question, answer)
     end
+  end
+
+  def active_question_ids
+    return nil if assessment_response.template_schema_snapshot.blank?
+
+    template_stub = OpenStruct.new(schema: assessment_response.template_schema_snapshot)
+    runner = AssessmentRunner.new(
+      template: template_stub,
+      answers: assessment_response.answers
+    )
+    runner.active_question_ids
   end
 
   def evidence_attributes(question, answer)

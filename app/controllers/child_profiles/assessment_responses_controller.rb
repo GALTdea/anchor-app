@@ -24,6 +24,12 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     @assessment_response.submitting = submitting
 
     if submitting
+      runner_with_final_answers = AssessmentRunner.new(
+        template: @assessment.assessment_template,
+        answers: @assessment_response.answers
+      )
+      @assessment_response.active_question_ids = runner_with_final_answers.active_question_ids
+
       prior_submitted_at = @assessment_response.submitted_at
       prior_processing_status = @assessment_response.processing_status
       prior_last_processed_at = @assessment_response.last_processed_at

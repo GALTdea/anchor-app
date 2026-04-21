@@ -37,7 +37,7 @@ class AssessmentResponse < ApplicationRecord
   belongs_to :actor, class_name: "User"
   has_many :profile_evidences, as: :source, dependent: :destroy
 
-  attr_accessor :submitting
+  attr_accessor :submitting, :active_question_ids
 
   before_validation :capture_template_snapshot, on: :create
 
@@ -89,7 +89,8 @@ class AssessmentResponse < ApplicationRecord
   def answers_must_match_schema_when_submitting
     validator = AssessmentAnswerValidator.new(
       schema: assessment.assessment_template.schema,
-      answers: answers
+      answers: answers,
+      active_question_ids: active_question_ids
     )
     return if validator.valid?
 

@@ -11,6 +11,15 @@ class OnboardingProgressUpdater
   def call
     onboarding_session.assign_attributes(child_attributes) if child_attributes.present?
     merge_assessment_attributes if assessment_attributes.present?
+
+    if validation_context == :assessment
+      runner = AssessmentRunner.new(
+        template: onboarding_session.assessment_template,
+        answers: onboarding_session.assessment_answers
+      )
+      onboarding_session.active_question_ids = runner.active_question_ids
+    end
+
     onboarding_session.save(context: validation_context)
   end
 

@@ -8,6 +8,8 @@ class OnboardingSession < ApplicationRecord
   belongs_to :assessment, optional: true
   belongs_to :assessment_response, optional: true
 
+  attr_accessor :active_question_ids
+
   enum :status, { active: 0, completed: 1, abandoned: 2 }, default: :active
 
   before_validation :set_started_at, on: :create
@@ -38,7 +40,8 @@ class OnboardingSession < ApplicationRecord
   def draft_answers_must_match_schema
     validator = AssessmentAnswerValidator.new(
       schema: assessment_template.schema,
-      answers: assessment_answers
+      answers: assessment_answers,
+      active_question_ids: active_question_ids
     )
     return if validator.valid?
 

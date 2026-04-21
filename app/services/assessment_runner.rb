@@ -1,9 +1,18 @@
 # frozen_string_literal: true
 
+# Interprets an AssessmentTemplate schema + current answers to build a linear
+# sequence of steps (sections, questions, summaries) suitable for a guided
+# runner UI.
+#
+# When questions or sections define +visible_if+ predicates, only those whose
+# predicates match the current answers are included in the output. Step IDs
+# are stable (based on question id, not position) so that adding/hiding
+# questions does not break existing URLs mid-run.
 class AssessmentRunner
   def initialize(template:, answers: {})
     @template = template
     @answers = answers.to_h.deep_stringify_keys
+    @evaluator = AssessmentSchema::PredicateEvaluator.new(@answers)
   end
 
   def sections
@@ -13,6 +22,7 @@ class AssessmentRunner
 
         normalized = section.stringify_keys
         next if normalized["id"].blank?
+        next unless visible?(normalized)
 
         normalized.merge("questions" => [])
       end
@@ -29,6 +39,10 @@ class AssessmentRunner
     @steps ||= sections.flat_map.with_index do |section, section_index|
       build_section_steps(section, section_index)
     end
+  end
+
+  def active_question_ids
+    @active_question_ids ||= questions.map { |q| q["id"].to_s }
   end
 
   def current_step(step_id = nil)
@@ -60,7 +74,7 @@ class AssessmentRunner
 
   private
 
-  attr_reader :template, :answers
+  attr_reader :template, :answers, :evaluator
 
   def schema
     @schema ||= template.schema.to_h.deep_stringify_keys
@@ -72,10 +86,18 @@ class AssessmentRunner
 
       normalized = question.stringify_keys
       next if normalized["id"].blank?
+      next unless visible?(normalized)
 
       normalized["position"] = normalized_position(normalized["position"], index + 1)
       normalized
     end
+  end
+
+  def visible?(item)
+    predicate = item["visible_if"]
+    return true if predicate.nil?
+
+    evaluator.match?(predicate)
   end
 
   def build_declared_sections(schema_sections)
@@ -114,8 +136,10 @@ class AssessmentRunner
   end
 
   def build_question_step(section, section_index, question_group, group_index)
+    first_question_id = question_group.first["id"].to_s
+
     {
-      "id" => "section-#{section['id']}-step-#{group_index + 1}",
+      "id" => "q-#{first_question_id}",
       "kind" => "questions",
       "section_id" => section["id"],
       "section_position" => section_index + 1,

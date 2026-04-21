@@ -11,7 +11,7 @@ RSpec.describe AssessmentRunner do
             {
               "id" => "regulation",
               "title" => "Regulation",
-              "transition_title" => "Let’s start with regulation",
+              "transition_title" => "Let's start with regulation",
               "summary_title" => "Regulation recap"
             }
           ],
@@ -53,6 +53,7 @@ RSpec.describe AssessmentRunner do
       ).steps
 
       expect(steps.map { |step| step["kind"] }).to eq([ "questions" ])
+      expect(steps.map { |step| step["id"] }).to eq([ "q-overwhelm_frequency" ])
       expect(steps.first["question_ids"]).to eq([ "overwhelm_frequency", "recovery_supports" ])
       expect(steps.first["answered"]).to be(true)
       expect(steps.first["section_title"]).to eq("Regulation")
@@ -82,6 +83,233 @@ RSpec.describe AssessmentRunner do
 
       expect(runner.sections.map { |section| section["id"] }).to eq([ "questions" ])
       expect(runner.steps.map { |step| step["kind"] }).to eq([ "questions" ])
+      expect(runner.steps.map { |step| step["id"] }).to eq([ "q-notes" ])
+    end
+  end
+
+  describe "visible_if filtering" do
+    let(:base_schema) do
+      {
+        "version" => 1,
+        "sections" => [
+          { "id" => "core", "title" => "Core" },
+          {
+            "id" => "sensory_detail",
+            "title" => "Sensory detail",
+            "visible_if" => { "question_id" => "trigger", "equals" => "sensory" }
+          }
+        ],
+        "questions" => [
+          {
+            "id" => "trigger",
+            "label" => "Primary trigger?",
+            "type" => "select",
+            "section" => "core",
+            "dimension_key" => "regulation.trigger",
+            "concept_key" => "primary_trigger",
+            "time_window" => "typical_week",
+            "evidence_weight" => 0.7,
+            "options" => [ "sensory", "social", "transition" ]
+          },
+          {
+            "id" => "severity",
+            "label" => "Severity?",
+            "type" => "scale",
+            "section" => "core",
+            "dimension_key" => "regulation.severity",
+            "concept_key" => "trigger_severity",
+            "time_window" => "typical_week",
+            "evidence_weight" => 0.6,
+            "min" => 1,
+            "max" => 5,
+            "visible_if" => { "question_id" => "trigger", "answered" => true }
+          },
+          {
+            "id" => "sensory_specifics",
+            "label" => "Sensory specifics?",
+            "type" => "textarea",
+            "section" => "sensory_detail",
+            "dimension_key" => "regulation.sensory_specifics",
+            "concept_key" => "sensory_specifics",
+            "time_window" => "typical_week",
+            "evidence_weight" => 0.5
+          }
+        ]
+      }
+    end
+
+    it "includes questions without visible_if" do
+      template = build(:assessment_template, schema: base_schema)
+      runner = described_class.new(template: template, answers: {})
+
+      expect(runner.active_question_ids).to include("trigger")
+    end
+
+    it "includes questions whose visible_if predicate matches" do
+      template = build(:assessment_template, schema: base_schema)
+      runner = described_class.new(template: template, answers: { "trigger" => "sensory" })
+
+      expect(runner.active_question_ids).to include("trigger", "severity")
+    end
+
+    it "excludes questions whose visible_if predicate does not match" do
+      template = build(:assessment_template, schema: base_schema)
+      runner = described_class.new(template: template, answers: {})
+
+      expect(runner.active_question_ids).not_to include("severity")
+    end
+
+    it "excludes sections whose visible_if predicate does not match" do
+      template = build(:assessment_template, schema: base_schema)
+      runner = described_class.new(template: template, answers: { "trigger" => "social" })
+
+      expect(runner.sections.map { |s| s["id"] }).not_to include("sensory_detail")
+    end
+
+    it "includes sections whose visible_if predicate matches" do
+      template = build(:assessment_template, schema: base_schema)
+      runner = described_class.new(template: template, answers: { "trigger" => "sensory" })
+
+      expect(runner.sections.map { |s| s["id"] }).to include("sensory_detail")
+      expect(runner.active_question_ids).to include("sensory_specifics")
+    end
+
+    it "generates steps only for visible questions" do
+      template = build(:assessment_template, schema: base_schema)
+      runner = described_class.new(template: template, answers: {})
+
+      expect(runner.steps.map { |s| s["id"] }).to eq([ "q-trigger" ])
+    end
+
+    it "updates steps when answers change to reveal new questions" do
+      template = build(:assessment_template, schema: base_schema)
+      runner_before = described_class.new(template: template, answers: {})
+      runner_after = described_class.new(template: template, answers: { "trigger" => "sensory" })
+
+      expect(runner_before.steps.map { |s| s["id"] }).to eq([ "q-trigger" ])
+      expect(runner_after.steps.map { |s| s["id"] }).to eq([ "q-trigger", "q-severity", "q-sensory_specifics" ])
+    end
+
+    it "generates stable step IDs based on first question id" do
+      schema = base_schema.deep_dup
+      schema["questions"][1]["step_group"] = "grouped"
+      schema["questions"] << {
+        "id" => "extra",
+        "label" => "Extra?",
+        "type" => "text",
+        "section" => "core",
+        "step_group" => "grouped",
+        "dimension_key" => "regulation.extra",
+        "concept_key" => "extra",
+        "time_window" => "typical_week",
+        "evidence_weight" => 0.3,
+        "visible_if" => { "question_id" => "trigger", "answered" => true }
+      }
+
+      template = build(:assessment_template, schema: schema)
+      runner = described_class.new(template: template, answers: { "trigger" => "sensory" })
+
+      grouped_step = runner.steps.find { |s| s["question_ids"].include?("severity") }
+
+      expect(grouped_step["id"]).to eq("q-severity")
+      expect(grouped_step["question_ids"]).to contain_exactly("severity", "extra")
+    end
+  end
+
+  describe "#active_question_ids" do
+    it "returns all visible question ids" do
+      template = build(
+        :assessment_template,
+        schema: {
+          "version" => 1,
+          "questions" => [
+            {
+              "id" => "a",
+              "label" => "A",
+              "type" => "text",
+              "dimension_key" => "d.a",
+              "concept_key" => "a",
+              "time_window" => "current",
+              "evidence_weight" => 0.5
+            },
+            {
+              "id" => "b",
+              "label" => "B",
+              "type" => "text",
+              "dimension_key" => "d.b",
+              "concept_key" => "b",
+              "time_window" => "current",
+              "evidence_weight" => 0.5,
+              "visible_if" => { "question_id" => "a", "answered" => true }
+            }
+          ]
+        }
+      )
+
+      runner_without = described_class.new(template: template, answers: {})
+      runner_with = described_class.new(template: template, answers: { "a" => "yes" })
+
+      expect(runner_without.active_question_ids).to eq([ "a" ])
+      expect(runner_with.active_question_ids).to eq([ "a", "b" ])
+    end
+  end
+
+  describe "#current_step" do
+    let(:template) do
+      build(
+        :assessment_template,
+        schema: {
+          "version" => 1,
+          "questions" => [
+            {
+              "id" => "first",
+              "label" => "First",
+              "type" => "text",
+              "dimension_key" => "d.first",
+              "concept_key" => "first",
+              "time_window" => "current",
+              "evidence_weight" => 0.5
+            },
+            {
+              "id" => "second",
+              "label" => "Second",
+              "type" => "text",
+              "dimension_key" => "d.second",
+              "concept_key" => "second",
+              "time_window" => "current",
+              "evidence_weight" => 0.5
+            }
+          ]
+        }
+      )
+    end
+
+    it "returns the requested step when the id is valid" do
+      runner = described_class.new(template: template, answers: {})
+      step = runner.current_step("q-second")
+
+      expect(step["id"]).to eq("q-second")
+    end
+
+    it "returns the default step when the id is unknown" do
+      runner = described_class.new(template: template, answers: {})
+      step = runner.current_step("q-nonexistent")
+
+      expect(step["id"]).to eq("q-first")
+    end
+
+    it "returns the default step when the id is nil" do
+      runner = described_class.new(template: template, answers: {})
+      step = runner.current_step(nil)
+
+      expect(step["id"]).to eq("q-first")
+    end
+
+    it "tolerates legacy positional step ids by falling back to default" do
+      runner = described_class.new(template: template, answers: {})
+      step = runner.current_step("section-questions-step-1")
+
+      expect(step["id"]).to eq("q-first")
     end
   end
 end

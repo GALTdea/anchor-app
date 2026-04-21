@@ -64,7 +64,7 @@ RSpec.describe "Child profile assessments", type: :request do
     it "merges the current step answers and advances through the runner" do
       patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
         params: {
-          current_step_id: "section-regulation-step-1",
+          current_step_id: "q-concern_level",
           submit_action: "next",
           assessment_response: {
             respondent_kind: "parent_proxy",
@@ -79,7 +79,7 @@ RSpec.describe "Child profile assessments", type: :request do
           space,
           child_profile,
           assessment,
-          step: "section-regulation-step-2"
+          step: "q-notes"
         )
       )
 
@@ -90,7 +90,7 @@ RSpec.describe "Child profile assessments", type: :request do
     it "stays on the same step when saving in place" do
       patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
         params: {
-          current_step_id: "section-regulation-step-2",
+          current_step_id: "q-notes",
           submit_action: "stay",
           assessment_response: {
             respondent_kind: "parent_proxy",
@@ -105,7 +105,7 @@ RSpec.describe "Child profile assessments", type: :request do
           space,
           child_profile,
           assessment,
-          step: "section-regulation-step-2"
+          step: "q-notes"
         )
       )
 

@@ -86,7 +86,7 @@ RSpec.describe "Onboarding flow", type: :request do
 
     it "saves a draft and stays on the assessment step" do
       patch onboarding_assessment_path, params: {
-        current_step_id: "section-regulation-step-1",
+        current_step_id: "q-concern_level",
         submit_action: "next",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
@@ -96,7 +96,7 @@ RSpec.describe "Onboarding flow", type: :request do
         }
       }
 
-      expect(response).to redirect_to(onboarding_assessment_path(step: "section-regulation-step-2"))
+      expect(response).to redirect_to(onboarding_assessment_path(step: "q-notes"))
       follow_redirect!
       expect(response.body).to include("Notes")
       expect(response.body).not_to include("What to expect")
@@ -109,7 +109,7 @@ RSpec.describe "Onboarding flow", type: :request do
 
     it "stays on the same step when saving in place" do
       patch onboarding_assessment_path, params: {
-        current_step_id: "section-regulation-step-2",
+        current_step_id: "q-notes",
         submit_action: "stay",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
@@ -119,7 +119,7 @@ RSpec.describe "Onboarding flow", type: :request do
         }
       }
 
-      expect(response).to redirect_to(onboarding_assessment_path(step: "section-regulation-step-2"))
+      expect(response).to redirect_to(onboarding_assessment_path(step: "q-notes"))
       expect(OnboardingSession.last.draft_answers).to include(
         "answers" => include("notes" => "Autosaved context")
       )
@@ -128,7 +128,7 @@ RSpec.describe "Onboarding flow", type: :request do
     it "continues to the account step when required answers are present" do
       patch onboarding_assessment_path, params: {
         submit_action: "continue",
-        current_step_id: "section-regulation-step-2",
+        current_step_id: "q-notes",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
           answers: {
