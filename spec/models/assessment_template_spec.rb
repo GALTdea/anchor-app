@@ -381,6 +381,97 @@ RSpec.describe AssessmentTemplate, type: :model do
         }
       )
     end
+
+    it "preserves existing section and question visible_if when editor params omit the field" do
+      template = build(
+        :assessment_template,
+        :draft,
+        schema: {
+          "version" => 1,
+          "sections" => [
+            {
+              "id" => "communication",
+              "title" => "Communication",
+              "description" => "How the child communicates",
+              "position" => 1,
+              "visible_if" => { "question_id" => "trigger", "equals" => "yes" }
+            }
+          ],
+          "questions" => [
+            {
+              "id" => "trigger",
+              "label" => "Is communication effortful?",
+              "type" => "select",
+              "required" => true,
+              "dimension_key" => "communication.trigger",
+              "concept_key" => "communication_trigger",
+              "time_window" => "typical_two_weeks",
+              "evidence_weight" => 0.8,
+              "position" => 1,
+              "options" => [ "yes", "no" ],
+              "section" => "communication"
+            },
+            {
+              "id" => "follow_up",
+              "label" => "What helps most?",
+              "type" => "text",
+              "required" => false,
+              "dimension_key" => "communication.support",
+              "concept_key" => "communication_support",
+              "time_window" => "typical_two_weeks",
+              "evidence_weight" => 0.6,
+              "position" => 2,
+              "section" => "communication",
+              "visible_if" => { "question_id" => "trigger", "equals" => "yes" }
+            }
+          ]
+        }
+      )
+
+      template.apply_schema_editor_attributes!(
+        schema_version: 1,
+        sections_attributes: [
+          {
+            "id" => "communication",
+            "title" => "Communication",
+            "description" => "How the child communicates",
+            "position" => "1",
+            "questions_attributes" => {
+              "0" => {
+                "id" => "trigger",
+                "label" => "Is communication effortful?",
+                "type" => "select",
+                "required" => "1",
+                "options_text" => "yes\nno",
+                "dimension_key" => "communication.trigger",
+                "concept_key" => "communication_trigger",
+                "time_window" => "typical_two_weeks",
+                "evidence_weight" => "0.8",
+                "position" => "1"
+              },
+              "1" => {
+                "id" => "follow_up",
+                "label" => "What helps most?",
+                "type" => "text",
+                "required" => "0",
+                "dimension_key" => "communication.support",
+                "concept_key" => "communication_support",
+                "time_window" => "typical_two_weeks",
+                "evidence_weight" => "0.6",
+                "position" => "2"
+              }
+            }
+          }
+        ]
+      )
+
+      expect(template.schema.dig("sections", 0, "visible_if")).to eq(
+        { "question_id" => "trigger", "equals" => "yes" }
+      )
+      expect(template.schema.dig("questions", 1, "visible_if")).to eq(
+        { "question_id" => "trigger", "equals" => "yes" }
+      )
+    end
   end
 
   describe "#build_next_version_draft" do

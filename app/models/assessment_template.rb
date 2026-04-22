@@ -149,9 +149,25 @@ class AssessmentTemplate < ApplicationRecord
 
   def apply_schema_editor_attributes!(sections_attributes:, schema_version: nil)
     @schema_editor_errors = []
+    schema_hash = schema.to_h.deep_stringify_keys
+    existing_section_visible_if_by_id = Array(schema_hash["sections"]).each_with_object({}) do |section, memo|
+      section = section.deep_stringify_keys
+      section_id = section["id"].to_s
+      memo[section_id] = section["visible_if"] if section_id.present? && section.key?("visible_if")
+    end
+    existing_question_visible_if_by_id = Array(schema_hash["questions"]).each_with_object({}) do |question, memo|
+      question = question.deep_stringify_keys
+      question_id = question["id"].to_s
+      memo[question_id] = question["visible_if"] if question_id.present? && question.key?("visible_if")
+    end
 
     normalized_sections = Array(sections_attributes).filter_map.with_index do |section_attributes, index|
-      normalize_editor_section(section_attributes, index)
+      normalize_editor_section(
+        section_attributes,
+        index,
+        existing_section_visible_if_by_id: existing_section_visible_if_by_id,
+        existing_question_visible_if_by_id: existing_question_visible_if_by_id
+      )
     end
 
     questions = normalized_sections.flat_map do |section|
@@ -240,7 +256,12 @@ class AssessmentTemplate < ApplicationRecord
     version_value.present? && version_value.positive? ? version_value : 1
   end
 
-  def normalize_editor_section(section_attributes, index)
+  def normalize_editor_section(
+    section_attributes,
+    index,
+    existing_section_visible_if_by_id: {},
+    existing_question_visible_if_by_id: {}
+  )
     section = section_attributes.to_h.deep_stringify_keys
     return if ActiveModel::Type::Boolean.new.cast(section["_destroy"])
 
@@ -248,17 +269,22 @@ class AssessmentTemplate < ApplicationRecord
     normalized.transform_values! { |value| value.is_a?(String) ? value.strip : value }
     normalized["position"] = normalize_position(section["position"], index)
     normalized["questions"] = Array(section["questions_attributes"]&.to_h&.values).filter_map.with_index do |question_attributes, question_index|
-      normalize_editor_question(question_attributes, question_index + 1)
+      normalize_editor_question(
+        question_attributes,
+        question_index + 1,
+        existing_question_visible_if_by_id: existing_question_visible_if_by_id
+      )
     end
     visible_if = normalize_visible_if_editor_value(
       section["visible_if"],
-      owner_label: "section #{section['id'].presence || index + 1}"
+      owner_label: "section #{section['id'].presence || index + 1}",
+      fallback_visible_if: existing_section_visible_if_by_id[normalized["id"].to_s]
     )
     normalized["visible_if"] = visible_if if visible_if.present?
     normalized
   end
 
-  def normalize_editor_question(question_attributes, index)
+  def normalize_editor_question(question_attributes, index, existing_question_visible_if_by_id: {})
     question = question_attributes.to_h.deep_stringify_keys
     return if ActiveModel::Type::Boolean.new.cast(question["_destroy"])
 
@@ -275,14 +301,16 @@ class AssessmentTemplate < ApplicationRecord
     normalized["options"] = question_options_from_editor(question)
     visible_if = normalize_visible_if_editor_value(
       question["visible_if"],
-      owner_label: "question #{question['id'].presence || index}"
+      owner_label: "question #{question['id'].presence || index}",
+      fallback_visible_if: existing_question_visible_if_by_id[normalized["id"].to_s]
     )
     normalized["visible_if"] = visible_if if visible_if.present?
 
     normalized.compact_blank
   end
 
-  def normalize_visible_if_editor_value(value, owner_label:)
+  def normalize_visible_if_editor_value(value, owner_label:, fallback_visible_if: nil)
+    return fallback_visible_if.deep_stringify_keys if value.nil? && fallback_visible_if.present?
     return nil if value.nil?
 
     if value.is_a?(String)
