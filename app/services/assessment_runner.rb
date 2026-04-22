@@ -37,6 +37,25 @@ class AssessmentRunner
     @active_question_ids ||= questions.map { |q| q["id"].to_s }
   end
 
+  # Returns the step's 1-based index and total step count within its own
+  # section, e.g. { index: 2, total: 4 } meaning "question 2 of 4 in
+  # Communication". Returns nil for an unknown step.
+  #
+  # Intended for conversational UX ("Communication — question 2 of 4")
+  # where a per-section counter is more meaningful than a global "step N of
+  # M" counter under branching.
+  def section_progress_for(step_or_id)
+    step = step_or_id.is_a?(Hash) ? step_or_id : find_step(step_or_id)
+    return nil if step.blank?
+
+    section_id = step["section_id"]
+    section_steps = steps.select { |candidate| candidate["section_id"] == section_id }
+    index = section_steps.index { |candidate| candidate["id"] == step["id"] }
+    return nil if index.nil?
+
+    { index: index + 1, total: section_steps.size }
+  end
+
   def current_step(step_id = nil)
     requested_step = find_step(step_id)
     return requested_step if requested_step.present?

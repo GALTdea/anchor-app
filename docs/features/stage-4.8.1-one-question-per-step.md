@@ -250,7 +250,7 @@ Manual QA:
 
 - [x] Step 0 — Pre-flight
 - [x] Step 1 — Runner one-question-per-step grouping
-- [ ] Step 2 — Section-scoped progress helper (optional)
+- [x] Step 2 — Section-scoped progress helper
 - [ ] Step 3 — View breadcrumbs
 - [ ] Step 4 — Seed `anchor_functional_profile_v3`
 - [ ] Step 5 — Spec updates for new grouping

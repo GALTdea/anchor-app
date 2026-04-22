@@ -259,6 +259,116 @@ RSpec.describe AssessmentRunner do
     end
   end
 
+  describe "#section_progress_for" do
+    let(:template) do
+      build(
+        :assessment_template,
+        schema: {
+          "version" => 1,
+          "sections" => [
+            { "id" => "communication", "title" => "Communication" },
+            { "id" => "regulation", "title" => "Regulation" }
+          ],
+          "questions" => [
+            {
+              "id" => "comm_one",
+              "label" => "C1",
+              "type" => "text",
+              "section" => "communication",
+              "dimension_key" => "d.c1",
+              "concept_key" => "c1",
+              "time_window" => "current",
+              "evidence_weight" => 0.5
+            },
+            {
+              "id" => "comm_two",
+              "label" => "C2",
+              "type" => "text",
+              "section" => "communication",
+              "dimension_key" => "d.c2",
+              "concept_key" => "c2",
+              "time_window" => "current",
+              "evidence_weight" => 0.5
+            },
+            {
+              "id" => "reg_one",
+              "label" => "R1",
+              "type" => "text",
+              "section" => "regulation",
+              "dimension_key" => "d.r1",
+              "concept_key" => "r1",
+              "time_window" => "current",
+              "evidence_weight" => 0.5
+            }
+          ]
+        }
+      )
+    end
+
+    it "returns 1-based index and total within the step's section" do
+      runner = described_class.new(template: template, answers: {})
+
+      expect(runner.section_progress_for("q-comm_one")).to eq(index: 1, total: 2)
+      expect(runner.section_progress_for("q-comm_two")).to eq(index: 2, total: 2)
+      expect(runner.section_progress_for("q-reg_one")).to eq(index: 1, total: 1)
+    end
+
+    it "accepts a step hash as well as a step id" do
+      runner = described_class.new(template: template, answers: {})
+      step = runner.current_step("q-comm_two")
+
+      expect(runner.section_progress_for(step)).to eq(index: 2, total: 2)
+    end
+
+    it "reflects branching-hidden questions in the section total" do
+      branching_template = build(
+        :assessment_template,
+        schema: {
+          "version" => 1,
+          "sections" => [ { "id" => "core", "title" => "Core" } ],
+          "questions" => [
+            {
+              "id" => "first",
+              "label" => "First",
+              "type" => "select",
+              "section" => "core",
+              "options" => [ "yes", "no" ],
+              "dimension_key" => "d.first",
+              "concept_key" => "first",
+              "time_window" => "current",
+              "evidence_weight" => 0.5
+            },
+            {
+              "id" => "follow_up",
+              "label" => "Follow up",
+              "type" => "text",
+              "section" => "core",
+              "dimension_key" => "d.follow",
+              "concept_key" => "follow",
+              "time_window" => "current",
+              "evidence_weight" => 0.5,
+              "visible_if" => { "question_id" => "first", "equals" => "yes" }
+            }
+          ]
+        }
+      )
+
+      without_follow = described_class.new(template: branching_template, answers: { "first" => "no" })
+      with_follow = described_class.new(template: branching_template, answers: { "first" => "yes" })
+
+      expect(without_follow.section_progress_for("q-first")).to eq(index: 1, total: 1)
+      expect(with_follow.section_progress_for("q-first")).to eq(index: 1, total: 2)
+      expect(with_follow.section_progress_for("q-follow_up")).to eq(index: 2, total: 2)
+    end
+
+    it "returns nil for an unknown step id" do
+      runner = described_class.new(template: template, answers: {})
+
+      expect(runner.section_progress_for("q-nonexistent")).to be_nil
+      expect(runner.section_progress_for(nil)).to be_nil
+    end
+  end
+
   describe "#current_step" do
     let(:template) do
       build(
