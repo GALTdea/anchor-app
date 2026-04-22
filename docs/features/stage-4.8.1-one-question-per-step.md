@@ -218,7 +218,12 @@ console.
 
 Add (or extend) a request spec that:
 
-1. Loads the `v3` onboarding template.
+1. Uses an onboarding template with the same branching contract as
+   `anchor_functional_profile_v3` (declarative `visible_if`), but with the
+   follow-up question **immediately after** the trigger in schema order.
+   (Seeded v3 appends follow-ups at the end of the question list, so the
+   next step after the trigger is not the follow-up; the isolated fixture
+   asserts the runner + UI contract without depending on seed load order.)
 2. Posts an answer that triggers a `visible_if` follow-up.
 3. Asserts the **very next** step rendered contains exactly one question
    and that it is the follow-up question, with `q-<follow_up_id>` in the
@@ -254,10 +259,12 @@ Manual QA:
 - [x] Step 3 — View breadcrumbs
 - [x] Step 4 — Seed `anchor_functional_profile_v3`
 - [x] Step 5 — Spec updates for new grouping
-- [ ] Step 6 — Full-stack branching spec
-- [ ] Step 7 — Full verification
+- [x] Step 6 — Full-stack branching spec
+- [x] Step 7 — Full verification
 
 **Last updated:** 2026-04-21
+
+**Stage complete:** All steps 0–7 done. Full suite: 370 examples, 0 failures.
 **Handoff note:** Follow-up to Stage 4.8. Delivery vehicle is a new
 published template version (`v3`) so `v2` stays immutable and any in-flight
 responses remain valid. `step_group` is retained in the schema allow-list

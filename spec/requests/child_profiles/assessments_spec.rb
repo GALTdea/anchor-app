@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rails_helper"
+require "nokogiri"
 
 RSpec.describe "Child profile assessments", type: :request do
   include ActiveJob::TestHelper
@@ -185,6 +186,100 @@ RSpec.describe "Child profile assessments", type: :request do
 
         expect(response).to redirect_to(space_child_profile_assessment_path(space, child_profile, assessment))
         expect(assessment_response.reload.answers["choice"]).to eq("first")
+      end
+    end
+
+    context "when the template branches to a follow-up on the next step (Stage 4.8.1)" do
+      let(:suffix) { SecureRandom.hex(3) }
+      let(:branching_schema) do
+        {
+          "version" => 1,
+          "sections" => [ { "id" => "s1", "title" => "Section one" } ],
+          "questions" => [
+            {
+              "id" => "branch_trigger",
+              "label" => "Branch trigger question",
+              "type" => "select",
+              "section" => "s1",
+              "dimension_key" => "e2e.branch_trigger",
+              "concept_key" => "branch_trigger",
+              "time_window" => "current_pattern",
+              "evidence_weight" => 0.8,
+              "required" => true,
+              "options" => [
+                { "label" => "Yes path", "value" => "yes_path" },
+                { "label" => "No path", "value" => "no_path" }
+              ]
+            },
+            {
+              "id" => "branch_follow_up",
+              "label" => "Follow-up only after yes_path",
+              "type" => "select",
+              "section" => "s1",
+              "dimension_key" => "e2e.branch_follow_up",
+              "concept_key" => "branch_follow_up",
+              "time_window" => "current_pattern",
+              "evidence_weight" => 0.7,
+              "required" => false,
+              "visible_if" => { "question_id" => "branch_trigger", "equals" => "yes_path" },
+              "options" => [
+                { "label" => "Option A", "value" => "a" },
+                { "label" => "Option B", "value" => "b" }
+              ]
+            },
+            {
+              "id" => "branch_wrap",
+              "label" => "After trigger answered",
+              "type" => "textarea",
+              "section" => "s1",
+              "dimension_key" => "e2e.branch_wrap",
+              "concept_key" => "branch_wrap",
+              "time_window" => "current_pattern",
+              "evidence_weight" => 0.5,
+              "required" => false,
+              "visible_if" => { "question_id" => "branch_trigger", "answered" => true }
+            }
+          ]
+        }
+      end
+      let(:branching_template) do
+        create(
+          :assessment_template,
+          title: "Branching e2e",
+          slug: "child-branch-one-q-e2e-#{suffix}",
+          template_key: "child_branch_one_q_e2e_#{suffix}",
+          schema: branching_schema
+        )
+      end
+      let(:assessment) { create(:assessment, child_profile: child_profile, assessment_template: branching_template) }
+      let!(:assessment_response) { create(:assessment_response, assessment: assessment, actor: user, answers: {}) }
+
+      it "redirects so the next step is only the follow-up question" do
+        patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+          params: {
+            current_step_id: "q-branch_trigger",
+            submit_action: "next",
+            assessment_response: {
+              respondent_kind: "parent_proxy",
+              answers: { "branch_trigger" => "yes_path" }
+            }
+          }
+
+        expect(response).to redirect_to(
+          edit_space_child_profile_assessment_assessment_response_path(
+            space,
+            child_profile,
+            assessment,
+            step: "q-branch_follow_up"
+          )
+        )
+
+        follow_redirect!
+
+        doc = Nokogiri::HTML(response.body)
+        expect(doc.css("fieldset.fieldset").size).to eq(1)
+        expect(doc.at_css("input#current_step_id")["value"]).to eq("q-branch_follow_up")
+        expect(response.body).to include("Follow-up only after yes_path")
       end
     end
   end
