@@ -402,6 +402,9 @@ onboarding run.
     `update`.
 - Model + service specs for the active-set submit paths and evidence
   extraction.
+- **Implemented:** shared schema `FRICTION_TRANSITION_E2E_SCHEMA` in
+  `spec/support/friction_transition_schema.rb` (real question ids aligned
+  with `anchor_functional_profile` v2).
 
 **Verify:** `bundle exec rspec`
 **Revert:** `git checkout -- spec`
@@ -431,13 +434,16 @@ active set.
 - [x] Step 6 — Evidence extractor active-set filter
 - [x] Step 7 — Seed `anchor_functional_profile_v2`
 - [x] Step 8 — Admin editor `visible_if` field (see `docs/features/stage-4.8.2-admin-visible-if-editor.md`)
-- [ ] Step 9 — Full-stack branching specs
+- [x] Step 9 — Full-stack branching specs
 - [ ] Step 10 — Full verification
 
 **Last updated:** 2026-04-22
-**Handoff note:** Stage brief authored against the Stage 4.5 / 4.7 schema
-contract. No new models or migrations. New template version (`v2`) is the
-delivery vehicle so published `v1` stays immutable and historical
-`AssessmentResponse` rows remain valid. Stage 4.9 (option-level follow-up
-sugar) and 4.10 (section salience / screener-driven ordering) build on this
-stage without altering its contract.
+**Handoff note:** Step 9 is complete. Shared template for `stop_start_friction` →
+`transition_recovery_time` lives in `spec/support/friction_transition_schema.rb`
+(`FRICTION_TRANSITION_E2E_SCHEMA`). Onboarding and child-profile request specs
+cover next-step navigation and submit without the hidden follow-up; the model
+validator and `AssessmentEvidenceExtractor` specs cover active-set behavior.
+**Next:** Step 10 — full `bundle exec rspec` + `bundle exec rubocop` and optional
+manual E2E. Original brief: Stage 4.5 / 4.7 schema contract; no new models.
+Stage 4.9 (option-level follow-up sugar) and 4.10 (section salience) build on
+this stage without altering its contract.

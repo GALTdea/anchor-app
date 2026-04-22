@@ -2,6 +2,7 @@
 
 require "rails_helper"
 require "nokogiri"
+require Rails.root.join("spec/support/friction_transition_schema")
 
 RSpec.describe "Child profile assessments", type: :request do
   include ActiveJob::TestHelper
@@ -280,6 +281,91 @@ RSpec.describe "Child profile assessments", type: :request do
         expect(doc.css("fieldset.fieldset").size).to eq(1)
         expect(doc.at_css("input#current_step_id")["value"]).to eq("q-branch_follow_up")
         expect(response.body).to include("Follow-up only after yes_path")
+      end
+    end
+
+    context "when using seed-style stop_start_friction → transition_recovery (Stage 4.8 Step 9)" do
+      let(:suffix) { SecureRandom.hex(3) }
+      let(:friction_template) do
+        create(
+          :assessment_template,
+          title: "Friction child e2e",
+          slug: "friction-child-e2e-#{suffix}",
+          template_key: "child_friction_e2e_#{suffix}",
+          schema: FRICTION_TRANSITION_E2E_SCHEMA
+        )
+      end
+      let(:assessment) { create(:assessment, child_profile: child_profile, assessment_template: friction_template) }
+      let!(:assessment_response) { create(:assessment_response, assessment: assessment, actor: user, answers: {}) }
+
+      it "goes to transition_recovery_time after emotional_collapse" do
+        patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+          params: {
+            current_step_id: "q-stop_start_friction",
+            submit_action: "next",
+            assessment_response: {
+              respondent_kind: "parent_proxy",
+              answers: { "stop_start_friction" => "emotional_collapse" }
+            }
+          }
+
+        expect(response).to redirect_to(
+          edit_space_child_profile_assessment_assessment_response_path(
+            space,
+            child_profile,
+            assessment,
+            step: "q-transition_recovery_time"
+          )
+        )
+        follow_redirect!
+        expect(response.body).to include("how long does it typically take")
+      end
+
+      it "skips transition_recovery_time when the answer is stalling" do
+        patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+          params: {
+            current_step_id: "q-stop_start_friction",
+            submit_action: "next",
+            assessment_response: {
+              respondent_kind: "parent_proxy",
+              answers: { "stop_start_friction" => "stalling" }
+            }
+          }
+
+        expect(response).to redirect_to(
+          edit_space_child_profile_assessment_assessment_response_path(
+            space,
+            child_profile,
+            assessment,
+            step: "q-friction_closing"
+          )
+        )
+        follow_redirect!
+        expect(response.body).to include("Anything else about transitions")
+        expect(response.body).not_to include("how long does it typically take")
+      end
+
+      it "submits without transition_recovery when the branch is hidden" do
+        expect {
+          patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
+            params: {
+              submit_action: "submit",
+              current_step_id: "q-friction_closing",
+              assessment_response: {
+                respondent_kind: "parent_proxy",
+                answers: {
+                  "stop_start_friction" => "stalling",
+                  "friction_closing" => "No extra notes"
+                }
+              }
+            }
+        }.to have_enqueued_job(AssessmentEvidenceExtractorJob).with(assessment_response.id)
+
+        expect(response).to redirect_to(space_child_profile_assessment_path(space, child_profile, assessment))
+        reloaded = assessment_response.reload
+        expect(reloaded.submitted_at).to be_present
+        expect(reloaded.answers["stop_start_friction"]).to eq("stalling")
+        expect(reloaded.answers.key?("transition_recovery_time")).to be(false)
       end
     end
   end

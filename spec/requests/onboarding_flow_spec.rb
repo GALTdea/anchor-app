@@ -2,6 +2,7 @@
 
 require "rails_helper"
 require "nokogiri"
+require Rails.root.join("spec/support/friction_transition_schema")
 
 RSpec.describe "Onboarding flow", type: :request do
   let!(:template) do
@@ -257,6 +258,63 @@ RSpec.describe "Onboarding flow", type: :request do
 
         session = OnboardingSession.last
         expect(session.draft_answers.dig("answers", "branch_trigger")).to eq("yes_path")
+      end
+    end
+
+    describe "stop_start_friction → transition_recovery_time (Stage 4.8 Step 9)" do
+      let!(:friction_onboarding_template) do
+        suffix = SecureRandom.hex(3)
+        create(
+          :assessment_template,
+          title: "Friction onboarding e2e",
+          slug: "friction-onboarding-e2e-#{suffix}",
+          template_key: "onboarding_friction_e2e_#{suffix}",
+          category: "onboarding",
+          schema: FRICTION_TRANSITION_E2E_SCHEMA
+        )
+      end
+
+      around do |example|
+        record = AppSettings.first_or_initialize
+        record.update!(settings: {}) if record.new_record?
+        previous = record.reload.settings["onboarding_assessment_template_id"]
+        AppSettings.write_setting!("onboarding_assessment_template_id", friction_onboarding_template.id.to_s)
+        example.run
+        new_settings = record.reload.settings.dup
+        new_settings.delete("onboarding_assessment_template_id")
+        new_settings["onboarding_assessment_template_id"] = previous if previous.present?
+        record.update!(settings: new_settings)
+      end
+
+      it "advances to transition_recovery_time after emotional_collapse" do
+        patch onboarding_assessment_path, params: {
+          current_step_id: "q-stop_start_friction",
+          submit_action: "next",
+          onboarding_assessment: {
+            respondent_kind: "parent_proxy",
+            answers: { stop_start_friction: "emotional_collapse" }
+          }
+        }
+
+        expect(response).to redirect_to(onboarding_assessment_path(step: "q-transition_recovery_time"))
+        follow_redirect!
+        expect(response.body).to include("how long does it typically take")
+      end
+
+      it "skips transition_recovery_time when the answer is stalling" do
+        patch onboarding_assessment_path, params: {
+          current_step_id: "q-stop_start_friction",
+          submit_action: "next",
+          onboarding_assessment: {
+            respondent_kind: "parent_proxy",
+            answers: { stop_start_friction: "stalling" }
+          }
+        }
+
+        expect(response).to redirect_to(onboarding_assessment_path(step: "q-friction_closing"))
+        follow_redirect!
+        expect(response.body).to include("Anything else about transitions")
+        expect(response.body).not_to include("how long does it typically take")
       end
     end
   end

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+require "ostruct"
 require "rails_helper"
+require Rails.root.join("spec/support/friction_transition_schema")
 
 RSpec.describe AssessmentAnswerValidator do
   let(:schema) do
@@ -139,6 +141,27 @@ RSpec.describe AssessmentAnswerValidator do
         schema: schema,
         answers: {},
         active_question_ids: []
+      )
+
+      expect(validator).to be_valid
+    end
+  end
+
+  describe "seed-shaped stop_start_friction / transition_recovery (Stage 4.8 Step 9)" do
+    it "does not require transition_recovery_time when the branch is hidden" do
+      answers = {
+        "stop_start_friction" => "stalling",
+        "friction_closing" => ""
+      }
+      runner = AssessmentRunner.new(
+        template: OpenStruct.new(schema: FRICTION_TRANSITION_E2E_SCHEMA),
+        answers: answers
+      )
+
+      validator = described_class.new(
+        schema: FRICTION_TRANSITION_E2E_SCHEMA,
+        answers: answers,
+        active_question_ids: runner.active_question_ids
       )
 
       expect(validator).to be_valid
