@@ -252,7 +252,7 @@ Manual QA:
 - [x] Step 1 — Runner one-question-per-step grouping
 - [x] Step 2 — Section-scoped progress helper
 - [x] Step 3 — View breadcrumbs
-- [ ] Step 4 — Seed `anchor_functional_profile_v3`
+- [x] Step 4 — Seed `anchor_functional_profile_v3`
 - [ ] Step 5 — Spec updates for new grouping
 - [ ] Step 6 — Full-stack branching spec
 - [ ] Step 7 — Full verification

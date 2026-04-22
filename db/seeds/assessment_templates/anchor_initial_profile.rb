@@ -337,5 +337,39 @@ anchor_onboarding_v2.assign_attributes(
 
 anchor_onboarding_v2.save! unless anchor_onboarding_v2.persisted?
 
-# Point AppSettings to v2
-AppSettings.write_setting!("onboarding_assessment_template_id", anchor_onboarding_v2.id.to_s)
+# V3: Same content as v2 with the deprecated `step_group` field stripped.
+# As of Stage 4.8.1 the runner renders one question per step and ignores
+# `step_group`, so removing it keeps published schemas tidy. v2 stays in
+# the database (archived below) so any historical responses validate.
+anchor_onboarding_v3 = AssessmentTemplate.find_or_initialize_by(
+  template_key: "anchor_functional_profile_v3"
+)
+
+v3_questions = anchor_onboarding_v2.schema["questions"].deep_dup.map do |question|
+  question.except("step_group")
+end
+
+anchor_onboarding_v3.assign_attributes(
+  "title" => "Anchor Functional Support Profile",
+  "slug" => "anchor-functional-profile-v3",
+  "template_key" => "anchor_functional_profile_v3",
+  "version" => 3,
+  "category" => "onboarding",
+  "respondent_types" => [ "parent_proxy" ],
+  "status" => "published",
+  "schema" => anchor_onboarding_v2.schema.deep_dup.merge(
+    "questions" => v3_questions
+  )
+)
+
+anchor_onboarding_v3.save! unless anchor_onboarding_v3.persisted?
+
+# Archive older versions so admin pickers and onboarding surfaces show only
+# the current published version. Idempotent: only transitions if the record
+# is still published.
+[ anchor_onboarding_v1, anchor_onboarding_v2 ].each do |prior_version|
+  prior_version.update!(status: :archived) if prior_version.published?
+end
+
+# Point AppSettings to v3
+AppSettings.write_setting!("onboarding_assessment_template_id", anchor_onboarding_v3.id.to_s)
