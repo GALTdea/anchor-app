@@ -36,19 +36,17 @@
       <section class="card bg-base-100 shadow-sm">
         <div class="card-body gap-6">
           <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/60">
-            <span>Section <%= @current_step["section_position"] %> of <%= @runner.sections.size %></span>
-            <span>Step <%= @current_step["position"] %> of <%= @runner.steps.count { |step| step["section_id"] == @current_step["section_id"] } %></span>
+            <span><%= @current_step["section_title"] %></span>
+            <% if @section_progress.present? && @section_progress[:total] > 1 %>
+              <span>Question <%= @section_progress[:index] %> of <%= @section_progress[:total] %></span>
+            <% end %>
           </div>
 
-          <% if @current_step["position"] == 1 %>
+          <% if @current_step["position"] == 1 && @current_step["section_description"].present? %>
             <div class="space-y-2">
               <h1 class="text-2xl font-semibold text-base-content"><%= @current_step["section_title"] %></h1>
-              <% if @current_step["section_description"].present? %>
-                <p class="text-base leading-7 text-base-content/75"><%= @current_step["section_description"] %></p>
-              <% end %>
+              <p class="text-base leading-7 text-base-content/75"><%= @current_step["section_description"] %></p>
             </div>
-          <% else %>
-            <p class="text-sm font-medium text-base-content/65"><%= @current_step["section_title"] %></p>
           <% end %>
 
           <div class="space-y-4">

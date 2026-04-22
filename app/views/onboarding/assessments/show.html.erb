@@ -68,15 +68,15 @@
         <div class="card-body gap-6">
           <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/60">
             <span><%= @current_step["section_title"] %></span>
-            <span>Step <%= @current_step["position"] %> of <%= @runner.steps.count { |step| step["section_id"] == @current_step["section_id"] } %></span>
+            <% if @section_progress.present? && @section_progress[:total] > 1 %>
+              <span>Question <%= @section_progress[:index] %> of <%= @section_progress[:total] %></span>
+            <% end %>
           </div>
 
-          <% if @current_step["position"] == 1 %>
+          <% if @current_step["position"] == 1 && @current_step["section_description"].present? %>
             <div class="space-y-2">
               <h2 class="text-2xl font-semibold text-base-content"><%= @current_step["section_title"] %></h2>
-              <% if @current_step["section_description"].present? %>
-                <p class="text-base leading-7 text-base-content/75"><%= @current_step["section_description"] %></p>
-              <% end %>
+              <p class="text-base leading-7 text-base-content/75"><%= @current_step["section_description"] %></p>
             </div>
           <% end %>
 

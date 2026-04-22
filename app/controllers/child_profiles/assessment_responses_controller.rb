@@ -101,6 +101,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     @current_step = @runner.current_step(step_id)
     @next_step = @runner.next_step_for(@current_step)
     @previous_step = @runner.previous_step_for(@current_step)
+    @section_progress = @runner.section_progress_for(@current_step)
     @progress = view_context.assessment_progress(@template, @answers)
   end
 
