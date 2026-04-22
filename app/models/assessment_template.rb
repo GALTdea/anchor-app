@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "set"
+require "json"
 
 # == Schema Information
 #
@@ -78,6 +79,7 @@ class AssessmentTemplate < ApplicationRecord
   validate :published_templates_have_valid_respondent_types, if: :published?
   validate :published_templates_have_valid_schema_contract, if: :published?
   validate :published_templates_are_immutable, on: :update
+  validate :schema_editor_visible_if_must_parse
 
   scope :published, -> { where(status: :published) }
 
@@ -146,6 +148,8 @@ class AssessmentTemplate < ApplicationRecord
   end
 
   def apply_schema_editor_attributes!(sections_attributes:, schema_version: nil)
+    @schema_editor_errors = []
+
     normalized_sections = Array(sections_attributes).filter_map.with_index do |section_attributes, index|
       normalize_editor_section(section_attributes, index)
     end
@@ -246,6 +250,11 @@ class AssessmentTemplate < ApplicationRecord
     normalized["questions"] = Array(section["questions_attributes"]&.to_h&.values).filter_map.with_index do |question_attributes, question_index|
       normalize_editor_question(question_attributes, question_index + 1)
     end
+    visible_if = normalize_visible_if_editor_value(
+      section["visible_if"],
+      owner_label: "section #{section['id'].presence || index + 1}"
+    )
+    normalized["visible_if"] = visible_if if visible_if.present?
     normalized
   end
 
@@ -264,8 +273,41 @@ class AssessmentTemplate < ApplicationRecord
     normalized["max"] = Integer(question["max"], exception: false) if type == "scale" && question["max"].present?
     normalized["evidence_weight"] = normalize_decimal(question["evidence_weight"])
     normalized["options"] = question_options_from_editor(question)
+    visible_if = normalize_visible_if_editor_value(
+      question["visible_if"],
+      owner_label: "question #{question['id'].presence || index}"
+    )
+    normalized["visible_if"] = visible_if if visible_if.present?
 
     normalized.compact_blank
+  end
+
+  def normalize_visible_if_editor_value(value, owner_label:)
+    return nil if value.nil?
+
+    if value.is_a?(String)
+      stripped = value.strip
+      return nil if stripped.blank?
+
+      parsed = JSON.parse(stripped)
+      return parsed.deep_stringify_keys if parsed.is_a?(Hash)
+
+      add_schema_editor_error("#{owner_label} visible_if must be a JSON object")
+      return nil
+    end
+
+    return value.deep_stringify_keys if value.is_a?(Hash)
+
+    add_schema_editor_error("#{owner_label} visible_if must be a JSON object")
+    nil
+  rescue JSON::ParserError => error
+    add_schema_editor_error("#{owner_label} visible_if is not valid JSON: #{error.message}")
+    nil
+  end
+
+  def add_schema_editor_error(message)
+    @schema_editor_errors ||= []
+    @schema_editor_errors << message
   end
 
   def question_options_from_editor(question)
@@ -481,5 +523,11 @@ class AssessmentTemplate < ApplicationRecord
 
   def immutable_version_record?
     persisted? && %w[published archived].include?(attribute_in_database("status"))
+  end
+
+  def schema_editor_visible_if_must_parse
+    return if @schema_editor_errors.blank?
+
+    @schema_editor_errors.each { |message| errors.add(:schema, message) }
   end
 end
