@@ -110,9 +110,12 @@ class AssessmentTemplate < ApplicationRecord
   def editor_sections
     schema_hash = schema.to_h.deep_stringify_keys
     sections = Array(schema_hash["sections"]).map.with_index do |section, index|
-      normalized = section.deep_stringify_keys.slice(*EDITOR_SECTION_FIELDS)
+      section_hash = section.deep_stringify_keys
+      normalized = section_hash.slice(*EDITOR_SECTION_FIELDS)
       normalized["position"] = index + 1
       normalized["questions"] = []
+      normalized["visible_if"] = section_hash["visible_if"] if section_hash["visible_if"].present?
+      normalized["visible_if_raw"] = section_hash["visible_if_raw"] if section_hash["visible_if_raw"].present?
       normalized
     end
 
@@ -280,7 +283,12 @@ class AssessmentTemplate < ApplicationRecord
       owner_label: "section #{section['id'].presence || index + 1}",
       fallback_visible_if: existing_section_visible_if_by_id[normalized["id"].to_s]
     )
-    normalized["visible_if"] = visible_if if visible_if.present?
+    if visible_if.present?
+      normalized["visible_if"] = visible_if
+    elsif @schema_editor_last_raw_visible_if.present?
+      normalized["visible_if_raw"] = @schema_editor_last_raw_visible_if
+    end
+    @schema_editor_last_raw_visible_if = nil
     normalized
   end
 
@@ -304,12 +312,20 @@ class AssessmentTemplate < ApplicationRecord
       owner_label: "question #{question['id'].presence || index}",
       fallback_visible_if: existing_question_visible_if_by_id[normalized["id"].to_s]
     )
-    normalized["visible_if"] = visible_if if visible_if.present?
+    if visible_if.present?
+      normalized["visible_if"] = visible_if
+    elsif @schema_editor_last_raw_visible_if.present?
+      normalized["visible_if_raw"] = @schema_editor_last_raw_visible_if
+    elsif question["visible_if_raw"].present?
+      normalized["visible_if_raw"] = question["visible_if_raw"].to_s
+    end
+    @schema_editor_last_raw_visible_if = nil
 
     normalized.compact_blank
   end
 
   def normalize_visible_if_editor_value(value, owner_label:, fallback_visible_if: nil)
+    @schema_editor_last_raw_visible_if = nil
     return fallback_visible_if.deep_stringify_keys if value.nil? && fallback_visible_if.present?
     return nil if value.nil?
 
@@ -317,19 +333,24 @@ class AssessmentTemplate < ApplicationRecord
       stripped = value.strip
       return nil if stripped.blank?
 
-      parsed = JSON.parse(stripped)
+      begin
+        parsed = JSON.parse(stripped)
+      rescue JSON::ParserError => error
+        add_schema_editor_error("#{owner_label} visible_if is not valid JSON: #{error.message}")
+        @schema_editor_last_raw_visible_if = stripped
+        return nil
+      end
+
       return parsed.deep_stringify_keys if parsed.is_a?(Hash)
 
       add_schema_editor_error("#{owner_label} visible_if must be a JSON object")
+      @schema_editor_last_raw_visible_if = stripped
       return nil
     end
 
     return value.deep_stringify_keys if value.is_a?(Hash)
 
     add_schema_editor_error("#{owner_label} visible_if must be a JSON object")
-    nil
-  rescue JSON::ParserError => error
-    add_schema_editor_error("#{owner_label} visible_if is not valid JSON: #{error.message}")
     nil
   end
 

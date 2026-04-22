@@ -199,4 +199,26 @@
               placeholder="Optional AI extraction guidance"><%= question["extraction_hint"] %></textarea>
     <p class="mt-1 text-sm text-base-content/60">Useful for free-text questions where the model should look for specific signals, themes, or examples.</p>
   </fieldset>
+
+  <div class="mt-6">
+    <div class="mb-3">
+      <h6 class="text-sm font-semibold text-base-content">Conditional visibility (visible_if)</h6>
+      <p class="text-sm text-base-content/60">
+        Optional JSON predicate. Leave blank to always show. When set, this question only appears if the predicate is true for the current answers.
+        Supported keys: <code>question_id</code> with one of <code>equals</code> / <code>in</code> / <code>answered</code>, or <code>all</code> / <code>any</code> / <code>not</code> for compositions.
+      </p>
+    </div>
+
+    <fieldset class="fieldset">
+      <label class="label sr-only" for="<%= "question_visible_if_#{section_index}_#{question_index}" %>">Visible if</label>
+      <textarea id="<%= "question_visible_if_#{section_index}_#{question_index}" %>"
+                name="<%= "#{field_name_prefix}[visible_if]" %>"
+                rows="4"
+                class="textarea textarea-bordered w-full font-mono text-sm"
+                placeholder='{"question_id": "trigger", "equals": "sensory"}'><%= visible_if_editor_value(question) %></textarea>
+      <p class="mt-1 text-sm text-base-content/60">
+        Example: <code>{"question_id": "stop_start_friction", "equals": "emotional_collapse"}</code>. Invalid JSON will block save with an inline error.
+      </p>
+    </fieldset>
+  </div>
 </div>
