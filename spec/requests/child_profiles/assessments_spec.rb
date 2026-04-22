@@ -175,7 +175,7 @@ RSpec.describe "Child profile assessments", type: :request do
           patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
             params: {
               submit_action: "submit",
-              current_step_id: "section-s1-step-1",
+              current_step_id: "q-choice",
               assessment_response: {
                 respondent_kind: "parent_proxy",
                 answers: { "choice" => "first" }

@@ -147,7 +147,7 @@ RSpec.describe "Onboarding flow", type: :request do
     it "shows validation errors when continuing without required answers" do
       patch onboarding_assessment_path, params: {
         submit_action: "continue",
-        current_step_id: "section-regulation-step-2",
+        current_step_id: "q-notes",
         onboarding_assessment: {
           respondent_kind: "parent_proxy",
           answers: {

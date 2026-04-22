@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe AssessmentRunner do
   describe "#steps" do
-    it "builds grouped question steps from schema metadata" do
+    it "builds one step per question and ignores step_group" do
       template = build(
         :assessment_template,
         schema: {
