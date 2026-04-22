@@ -387,6 +387,7 @@ onboarding run.
   it in the schema.
 - Surface parse errors via model validations (`errors.add(:schema, ...)`).
 - Add a textarea to the question and section editor partials.
+- Delivery brief: `docs/features/stage-4.8.2-admin-visible-if-editor.md`.
 
 **Verify:** `bundle exec rspec spec/requests/admin/assessment_templates_spec.rb`; manual QA.
 **Revert:** `git checkout -- app/models/assessment_template.rb app/views/admin`
