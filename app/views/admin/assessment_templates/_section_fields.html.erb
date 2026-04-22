@@ -60,6 +60,27 @@
               placeholder="Optional intro copy for this section"><%= section["description"] %></textarea>
   </fieldset>
 
+  <div class="mt-4">
+    <div class="mb-2">
+      <h4 class="text-sm font-semibold text-base-content">Conditional visibility (visible_if)</h4>
+      <p class="text-sm text-base-content/60">
+        Optional JSON predicate. Leave blank to always show this section. When set, the entire section (and every question inside it) is skipped until the predicate is true for the current answers.
+      </p>
+    </div>
+
+    <fieldset class="fieldset">
+      <label class="label sr-only" for="<%= "section_visible_if_#{section_index}" %>">Visible if</label>
+      <textarea id="<%= "section_visible_if_#{section_index}" %>"
+                name="<%= "#{field_name_prefix}[visible_if]" %>"
+                rows="4"
+                class="textarea textarea-bordered w-full font-mono text-sm"
+                placeholder='{"question_id": "needs_sensory_detail", "equals": "yes"}'><%= visible_if_editor_value(section) %></textarea>
+      <p class="mt-1 text-sm text-base-content/60">
+        Supported keys: <code>question_id</code> with one of <code>equals</code> / <code>in</code> / <code>answered</code>, or <code>all</code> / <code>any</code> / <code>not</code> for compositions. Invalid JSON will block save with an inline error.
+      </p>
+    </fieldset>
+  </div>
+
   <div class="mt-6 rounded-box border border-base-300 bg-base-100 p-4"
        data-controller="assessment-template-questions">
     <div class="flex flex-wrap items-center justify-between gap-3">

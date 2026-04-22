@@ -171,10 +171,10 @@ is implemented and verified.
 
 ## Status
 
-- [ ] Step 1 — Model normalization
-- [ ] Step 2 — Round-trip preservation
-- [ ] Step 3 — Question editor UI
-- [ ] Step 4 — Section editor UI
+- [x] Step 1 — Model normalization
+- [x] Step 2 — Round-trip preservation
+- [x] Step 3 — Question editor UI
+- [x] Step 4 — Section editor UI
 - [ ] Step 5 — Optional preview badge
 - [ ] Step 6 — Request specs
 - [ ] Step 7 — Full verification + Stage 4.8 sync
