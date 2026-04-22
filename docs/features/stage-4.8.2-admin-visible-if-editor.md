@@ -177,10 +177,12 @@ is implemented and verified.
 - [x] Step 4 — Section editor UI
 - [x] Step 5 — Optional preview badge
 - [x] Step 6 — Request specs
-- [ ] Step 7 — Full verification + Stage 4.8 sync
+- [x] Step 7 — Full verification + Stage 4.8 sync
 
 **Last updated:** 2026-04-22
-**Handoff note:** This stage closes the authoring gap left in Stage 4.8 by
-adding admin-facing `visible_if` editing. Runtime branching, validation, and
-evidence filtering already exist and stay unchanged. This is a content/editor
-stage to make branching manageable without seed edits.
+**Handoff note:** Stage 4.8.2 is complete. Admins can author `visible_if` on
+sections and questions in the template editor, with JSON parse errors and
+publish-time predicate checks surfaced. Admin preview uses
+`admin_preview_sections` so conditional items stay visible with a
+"Conditional" badge. Full suite: 374 examples, 0 failures; RuboCop clean.
+**Stage 4.8** Step 8 is marked done in `stage-4.8-adaptive-branching.md`.

@@ -430,11 +430,11 @@ active set.
 - [x] Step 5 — Wire validator active set into submit paths
 - [x] Step 6 — Evidence extractor active-set filter
 - [x] Step 7 — Seed `anchor_functional_profile_v2`
-- [ ] Step 8 — Admin editor `visible_if` field
+- [x] Step 8 — Admin editor `visible_if` field (see `docs/features/stage-4.8.2-admin-visible-if-editor.md`)
 - [ ] Step 9 — Full-stack branching specs
 - [ ] Step 10 — Full verification
 
-**Last updated:** 2026-04-18
+**Last updated:** 2026-04-22
 **Handoff note:** Stage brief authored against the Stage 4.5 / 4.7 schema
 contract. No new models or migrations. New template version (`v2`) is the
 delivery vehicle so published `v1` stays immutable and historical
