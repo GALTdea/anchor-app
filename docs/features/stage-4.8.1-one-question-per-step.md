@@ -248,8 +248,8 @@ Manual QA:
 
 ## Status
 
-- [ ] Step 0 — Pre-flight
-- [ ] Step 1 — Runner one-question-per-step grouping
+- [x] Step 0 — Pre-flight
+- [x] Step 1 — Runner one-question-per-step grouping
 - [ ] Step 2 — Section-scoped progress helper (optional)
 - [ ] Step 3 — View breadcrumbs
 - [ ] Step 4 — Seed `anchor_functional_profile_v3`
@@ -257,8 +257,30 @@ Manual QA:
 - [ ] Step 6 — Full-stack branching spec
 - [ ] Step 7 — Full verification
 
-**Last updated:** 2026-04-18
+**Last updated:** 2026-04-21
 **Handoff note:** Follow-up to Stage 4.8. Delivery vehicle is a new
 published template version (`v3`) so `v2` stays immutable and any in-flight
 responses remain valid. `step_group` is retained in the schema allow-list
 as a deprecated no-op; removal (if ever) should be its own stage.
+
+Pre-flight surfaced a pre-existing Stage 4.8 bug: when a section was hidden
+by `visible_if`, its child questions (with no `visible_if` of their own)
+remained in `AssessmentRunner#questions` and got routed to the fallback
+section, whose `"questions"` array was a live alias to the memoized
+`@questions`. The `<<` mutation caused an infinite loop in section
+iteration (the assessment-runner spec hung at the 6th example). Fix
+applied alongside Step 1:
+
+- `AssessmentRunner#questions` now propagates section visibility — a
+  question declaring a section that exists in the schema but is currently
+  hidden is dropped.
+- `fallback_section` clones the questions array defensively so any future
+  `<<` cannot mutate `@questions`.
+- `visible_schema_sections` extracted so `#questions` can consult section
+  visibility without re-entering `#sections` memoization.
+
+Both fixes are semantically aligned with Stage 4.8.1: hiding a section
+should hide its child questions.
+
+Step 1 also updated two coupled runner specs that assumed multi-question
+grouping (one question per step now, even when `step_group` is shared).

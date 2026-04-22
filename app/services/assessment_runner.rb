@@ -17,15 +17,7 @@ class AssessmentRunner
 
   def sections
     @sections ||= begin
-      schema_sections = Array(schema["sections"]).filter_map do |section|
-        next unless section.respond_to?(:stringify_keys)
-
-        normalized = section.stringify_keys
-        next if normalized["id"].blank?
-        next unless visible?(normalized)
-
-        normalized.merge("questions" => [])
-      end
+      schema_sections = visible_schema_sections
 
       if schema_sections.any?
         build_declared_sections(schema_sections)
@@ -87,6 +79,7 @@ class AssessmentRunner
       normalized = question.stringify_keys
       next if normalized["id"].blank?
       next unless visible?(normalized)
+      next if declared_section_hidden?(normalized)
 
       normalized["position"] = normalized_position(normalized["position"], index + 1)
       normalized
@@ -98,6 +91,44 @@ class AssessmentRunner
     return true if predicate.nil?
 
     evaluator.match?(predicate)
+  end
+
+  # Sections resolved from the schema that pass their own +visible_if+.
+  # Extracted so +questions+ can consult section visibility without forcing
+  # +#sections+ memoization (which depends on +#questions+).
+  def visible_schema_sections
+    @visible_schema_sections ||= Array(schema["sections"]).filter_map do |section|
+      next unless section.respond_to?(:stringify_keys)
+
+      normalized = section.stringify_keys
+      next if normalized["id"].blank?
+      next unless visible?(normalized)
+
+      normalized.merge("questions" => [])
+    end
+  end
+
+  def declared_section_ids
+    @declared_section_ids ||= Array(schema["sections"]).filter_map do |section|
+      next unless section.respond_to?(:[])
+      id = (section["id"] || section[:id]).to_s
+      id.presence
+    end.to_set
+  end
+
+  def visible_section_ids
+    @visible_section_ids ||= visible_schema_sections.map { |section| section["id"].to_s }.to_set
+  end
+
+  # A question is section-hidden when it declares a section that exists in the
+  # schema but whose +visible_if+ does not match. Questions that reference an
+  # unknown section id still fall through to the fallback section.
+  def declared_section_hidden?(question)
+    section_id = question["section"].to_s
+    return false if section_id.blank?
+    return false unless declared_section_ids.include?(section_id)
+
+    !visible_section_ids.include?(section_id)
   end
 
   def build_declared_sections(schema_sections)
@@ -128,11 +159,15 @@ class AssessmentRunner
     end
   end
 
+  # Each visible question becomes its own step. The +step_group+ field on a
+  # question schema is retained for backwards-compatibility with published v1
+  # and v2 templates but is ignored at runtime as of Stage 4.8.1 — the runner
+  # always surfaces one question per step to support the conversational,
+  # adaptive flow.
   def grouped_questions(section)
     Array(section["questions"])
       .sort_by { |question| normalized_position(question["position"], 9_999) }
-      .group_by { |question| question["step_group"].presence || question["id"].to_s }
-      .values
+      .map { |question| [ question ] }
   end
 
   def build_question_step(section, section_index, question_group, group_index)
@@ -159,7 +194,7 @@ class AssessmentRunner
       "id" => "questions",
       "title" => "Questions",
       "description" => nil,
-      "questions" => questions
+      "questions" => questions.dup
     }
   end
 

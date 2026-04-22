@@ -52,10 +52,13 @@ RSpec.describe AssessmentRunner do
         answers: { "overwhelm_frequency" => 3, "recovery_supports" => "quiet time" }
       ).steps
 
-      expect(steps.map { |step| step["kind"] }).to eq([ "questions" ])
-      expect(steps.map { |step| step["id"] }).to eq([ "q-overwhelm_frequency" ])
-      expect(steps.first["question_ids"]).to eq([ "overwhelm_frequency", "recovery_supports" ])
-      expect(steps.first["answered"]).to be(true)
+      expect(steps.map { |step| step["kind"] }).to eq([ "questions", "questions" ])
+      expect(steps.map { |step| step["id"] }).to eq([ "q-overwhelm_frequency", "q-recovery_supports" ])
+      expect(steps.map { |step| step["question_ids"] }).to eq([
+        [ "overwhelm_frequency" ],
+        [ "recovery_supports" ]
+      ])
+      expect(steps.map { |step| step["answered"] }).to eq([ true, true ])
       expect(steps.first["section_title"]).to eq("Regulation")
     end
 
@@ -190,7 +193,7 @@ RSpec.describe AssessmentRunner do
       expect(runner_after.steps.map { |s| s["id"] }).to eq([ "q-trigger", "q-severity", "q-sensory_specifics" ])
     end
 
-    it "generates stable step IDs based on first question id" do
+    it "generates one step per visible question, ignoring step_group" do
       schema = base_schema.deep_dup
       schema["questions"][1]["step_group"] = "grouped"
       schema["questions"] << {
@@ -209,10 +212,12 @@ RSpec.describe AssessmentRunner do
       template = build(:assessment_template, schema: schema)
       runner = described_class.new(template: template, answers: { "trigger" => "sensory" })
 
-      grouped_step = runner.steps.find { |s| s["question_ids"].include?("severity") }
+      severity_step = runner.steps.find { |s| s["question_ids"] == [ "severity" ] }
+      extra_step = runner.steps.find { |s| s["question_ids"] == [ "extra" ] }
 
-      expect(grouped_step["id"]).to eq("q-severity")
-      expect(grouped_step["question_ids"]).to contain_exactly("severity", "extra")
+      expect(severity_step["id"]).to eq("q-severity")
+      expect(extra_step["id"]).to eq("q-extra")
+      expect(runner.steps.map { |s| s["question_ids"].size }).to all(eq(1))
     end
   end
 
