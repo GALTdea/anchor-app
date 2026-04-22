@@ -6,6 +6,12 @@
       <span class="badge badge-error badge-outline">Required</span>
     <% end %>
     <span class="badge badge-ghost"><%= question["type"].to_s.humanize %></span>
+    <% if question["visible_if"].present? %>
+      <span class="badge badge-warning badge-outline"
+            title="<%= JSON.generate(question["visible_if"]) %>">
+        Conditional
+      </span>
+    <% end %>
   </div>
 
   <% if question["help_text"].present? %>

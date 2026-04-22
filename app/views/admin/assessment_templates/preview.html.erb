@@ -1,5 +1,5 @@
-<% sections = assessment_sections(@assessment_template) %>
-<% progress = assessment_progress(@assessment_template, {}) %>
+<% sections = admin_preview_sections(@assessment_template) %>
+<% total_questions = admin_preview_total_questions(@assessment_template) %>
 
 <% content_for :actions do %>
   <% if @assessment_template.draft_editable? %>
@@ -75,6 +75,12 @@
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="badge badge-ghost">Section <%= index + 1 %> of <%= sections.size %></span>
                   <span class="badge badge-outline"><%= Array(section["questions"]).size %> questions</span>
+                  <% if section["visible_if"].present? %>
+                    <span class="badge badge-warning badge-outline"
+                          title="<%= JSON.generate(section["visible_if"]) %>">
+                      Conditional
+                    </span>
+                  <% end %>
                 </div>
                 <div>
                   <h3 class="text-xl font-semibold text-base-content"><%= section["title"] %></h3>
@@ -101,7 +107,7 @@
           <div>
             <p class="text-sm font-medium text-base-content/60">Preview summary</p>
             <h3 class="mt-1 text-2xl font-semibold text-base-content">
-              <%= progress[:total] %> questions
+              <%= total_questions %> questions
             </h3>
           </div>
           <p class="text-sm text-base-content/70">
