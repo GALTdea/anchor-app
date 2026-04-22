@@ -150,6 +150,111 @@ RSpec.describe "Admin assessment templates", type: :request do
       expect(response).to redirect_to(admin_assessment_template_path(published_template))
       expect(flash[:alert]).to eq("Published templates cannot be edited in place.")
     end
+
+    context "visible_if in the schema editor" do
+      it "persists valid question and section visible_if JSON" do
+        sign_in admin
+
+        patch admin_assessment_template_path(draft_template), params: {
+          assessment_template: {
+            title: draft_template.title,
+            slug: draft_template.slug,
+            template_key: draft_template.template_key,
+            version: draft_template.version,
+            category: draft_template.category,
+            schema_version: 1,
+            respondent_types: [ "parent_proxy" ],
+            sections_attributes: {
+              "0" => {
+                id: "communication",
+                title: "Communication",
+                description: "How the child communicates",
+                position: 1,
+                visible_if: { "question_id" => "gate", "answered" => true }.to_json,
+                questions_attributes: {
+                  "0" => {
+                    id: "gate",
+                    label: "Is communication effortful?",
+                    type: "text",
+                    required: "0",
+                    dimension_key: "communication.gate",
+                    concept_key: "comm_gate",
+                    time_window: "typical_two_weeks",
+                    evidence_weight: "0.7",
+                    position: 1
+                  },
+                  "1" => {
+                    id: "expresses_needs",
+                    label: "How does your child express needs?",
+                    type: "text",
+                    required: "0",
+                    dimension_key: "communication.expression",
+                    concept_key: "expresses_needs",
+                    time_window: "typical_two_weeks",
+                    evidence_weight: "0.8",
+                    position: 2,
+                    visible_if: { "question_id" => "gate", "equals" => "yes" }.to_json
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        expect(response).to redirect_to(admin_assessment_template_path(draft_template))
+        schema = draft_template.reload.schema.deep_stringify_keys
+        expect(schema["sections"].first["visible_if"]).to eq(
+          { "question_id" => "gate", "answered" => true }
+        )
+        follow = schema["questions"].find { |q| q["id"] == "expresses_needs" }
+        expect(follow["visible_if"]).to eq(
+          { "question_id" => "gate", "equals" => "yes" }
+        )
+      end
+
+      it "re-renders edit on invalid JSON for visible_if" do
+        sign_in admin
+        bad = "{ not valid json"
+
+        patch admin_assessment_template_path(draft_template), params: {
+          assessment_template: {
+            title: draft_template.title,
+            slug: draft_template.slug,
+            template_key: draft_template.template_key,
+            version: draft_template.version,
+            category: draft_template.category,
+            schema_version: 1,
+            respondent_types: [ "parent_proxy" ],
+            sections_attributes: {
+              "0" => {
+                id: "communication",
+                title: "Communication",
+                description: "How the child communicates",
+                position: 1,
+                questions_attributes: {
+                  "0" => {
+                    id: "expresses_needs",
+                    label: "How does your child express needs?",
+                    type: "text",
+                    required: "0",
+                    dimension_key: "communication.expression",
+                    concept_key: "expresses_needs",
+                    time_window: "typical_two_weeks",
+                    evidence_weight: "0.8",
+                    position: 1,
+                    visible_if: bad
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(bad)
+        expect(draft_template.reload).to be_draft
+      end
+    end
   end
 
   describe "GET /admin/assessment_templates/:id/edit" do
@@ -198,6 +303,52 @@ RSpec.describe "Admin assessment templates", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("This draft must be fixed before it can be published.")
       expect(draft_template.reload).to be_draft
+    end
+
+    it "fails to publish when visible_if references an unknown question id" do
+      sign_in admin
+      bad_ref = create(
+        :assessment_template,
+        :draft,
+        title: "Visible-if ref draft",
+        template_key: "visible-if-bad-ref",
+        schema: {
+          "version" => 1,
+          "sections" => [ { "id" => "core", "title" => "Core" } ],
+          "questions" => [
+            {
+              "id" => "trigger",
+              "label" => "Trigger",
+              "type" => "text",
+              "section" => "core",
+              "dimension_key" => "a.b",
+              "concept_key" => "trigger",
+              "time_window" => "w",
+              "evidence_weight" => 0.5,
+              "required" => false
+            },
+            {
+              "id" => "follow",
+              "label" => "Follow",
+              "type" => "text",
+              "section" => "core",
+              "dimension_key" => "a.c",
+              "concept_key" => "follow",
+              "time_window" => "w",
+              "evidence_weight" => 0.5,
+              "required" => false,
+              "visible_if" => { "question_id" => "does_not_exist", "equals" => "x" }
+            }
+          ]
+        }
+      )
+
+      post publish_admin_assessment_template_path(bad_ref)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("This draft must be fixed before it can be published.")
+      expect(response.body).to include("prevented this template from saving")
+      expect(bad_ref.reload).to be_draft
     end
   end
 

@@ -176,7 +176,7 @@ is implemented and verified.
 - [x] Step 3 — Question editor UI
 - [x] Step 4 — Section editor UI
 - [x] Step 5 — Optional preview badge
-- [ ] Step 6 — Request specs
+- [x] Step 6 — Request specs
 - [ ] Step 7 — Full verification + Stage 4.8 sync
 
 **Last updated:** 2026-04-22
