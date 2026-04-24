@@ -68,6 +68,7 @@ bin/rails db:seed            # reload seed data
 |------|---------|
 | docs/AGENTS.md | AI agent entry point — read first |
 | docs/ARCHITECTURE.md | Domain model, layout system |
+| docs/assessment_templates.md | How to seed and version assessment templates |
 | docs/CONVENTIONS.md | Coding conventions, daisyUI patterns |
 | docs/SETUP.md | Detailed setup instructions |
 | docs/template/ | Template build history (ignore for app dev) |

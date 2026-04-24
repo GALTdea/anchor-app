@@ -20,6 +20,7 @@ Reference these when building features.
 | File | Contents |
 |------|----------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Domain model, layout system, request lifecycle, AppSettings, background jobs |
+| [assessment_templates.md](assessment_templates.md) | Step-by-step runbook for adding and versioning seeded assessment templates |
 | [CONVENTIONS.md](CONVENTIONS.md) | Coding conventions, UI patterns, daisyUI 5 class reference, form patterns |
 | [SETUP.md](SETUP.md) | First-time setup, prerequisites, credentials |
 
