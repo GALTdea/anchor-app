@@ -77,6 +77,7 @@ puts "  admin assigned owner role in #{space.name}"
 # Published templates are append-only. If the assessment changes in a meaningful way,
 # create a new version instead of mutating an older published version.
 load Rails.root.join("db/seeds/assessment_templates/anchor_initial_profile.rb")
+load Rails.root.join("db/seeds/assessment_templates/anchor_onboarding_5_8.rb")
 
 care_intake = AssessmentTemplate.find_or_initialize_by(template_key: "care-intake", version: 2)
   care_intake.assign_attributes(
