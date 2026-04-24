@@ -300,11 +300,11 @@ Update the `## Status` section and update `docs/ARCHITECTURE.md` only if the imp
 ## Status
 
 - [x] Step 1 — Decide result destination and page language
-- [ ] Step 2 — Add a child profile results presenter
+- [x] Step 2 — Add a child profile results presenter
 - [ ] Step 3 — Rebuild the child profile show page as the results home
 - [ ] Step 4 — Update onboarding results handoff
 - [ ] Step 5 — Add focused empty, processing, and authorization coverage
 - [ ] Step 6 — Post-build audit and docs
 
 **Last updated:** 2026-04-24
-**Handoff note:** Brief drafted from Stage 4.5/4.6/4.7 context. Product-language and onboarding-destination questions are resolved; build can proceed with Step 2.
+**Handoff note:** Child profile results presenter is implemented and covered by focused specs. Next build step is Step 3: rebuild the child profile show page as the results home.
