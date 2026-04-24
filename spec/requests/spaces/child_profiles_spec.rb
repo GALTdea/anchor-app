@@ -32,6 +32,53 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       get space_child_profile_url(space, child_profile)
       expect(response).to be_successful
     end
+
+    it "renders the child profile as the profile results home" do
+      child_profile = create(:child_profile, space: space, first_name: "Maya", last_name: "Rivera")
+      create(:current_profile, child_profile: child_profile, narrative: "Maya has a profile narrative.", summary: {
+        "dimensions" => {
+          "strengths.interests" => {
+            "latest_value" => "Dinosaurs",
+            "confidence" => 0.8,
+            "respondent_kind" => "parent_proxy",
+            "recorded_at" => Time.current.iso8601
+          },
+          "communication.expressive" => {
+            "latest_value" => "Uses short phrases",
+            "confidence" => 0.8,
+            "respondent_kind" => "parent_proxy",
+            "recorded_at" => Time.current.iso8601,
+            "evidence_count" => 1
+          }
+        }
+      })
+      snapshot = create(:profile_snapshot, child_profile: child_profile)
+      create(
+        :recommendation,
+        child_profile: child_profile,
+        source_profile_snapshot: snapshot,
+        title: "Use visual supports",
+        body: "Try one visual support during transitions.",
+        rationale: { "display_value" => "Uses short phrases" }
+      )
+      template = create(:assessment_template, title: "Anchor Onboarding Profile")
+      assessment = create(:assessment, child_profile: child_profile, assessment_template: template, status: :submitted)
+      create(:assessment_response, assessment: assessment, submitted_at: Time.current, processing_status: "completed")
+
+      get space_child_profile_url(space, child_profile)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Maya Rivera Profile")
+      expect(response.body).to include("Maya has a profile narrative.")
+      expect(response.body).to include("This profile is a support guide")
+      expect(response.body).to include("Strengths and motivators")
+      expect(response.body).to include("Dinosaurs")
+      expect(response.body).to include("Communication")
+      expect(response.body).to include("Uses short phrases")
+      expect(response.body).to include("Use visual supports")
+      expect(response.body).to include("Anchor Onboarding Profile")
+      expect(response.body).to include("View submitted answers")
+    end
   end
 
   describe "GET /new" do

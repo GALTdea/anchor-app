@@ -10,6 +10,13 @@ class Spaces::ChildProfilesController < ApplicationController
 
   def show
     authorize @child_profile
+    @results_presenter = ChildProfileResultsPresenter.new(@child_profile)
+    @current_profile = @results_presenter.current_profile
+    @recommendations = @results_presenter.active_recommendations
+    @latest_assessment_response = @results_presenter.latest_assessment_response
+
+    authorize @current_profile
+    authorize Recommendation.new(child_profile: @child_profile), :index?
   end
 
   def new

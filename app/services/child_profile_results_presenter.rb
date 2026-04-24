@@ -109,7 +109,7 @@ class ChildProfileResultsPresenter
   def latest_assessment_response
     @latest_assessment_response ||= AssessmentResponse
       .joins(:assessment)
-      .includes(:actor, assessment: :assessment_template)
+      .includes(assessment: :assessment_template)
       .where(assessments: { child_profile_id: child_profile.id })
       .where.not(submitted_at: nil)
       .order(submitted_at: :desc, id: :desc)
