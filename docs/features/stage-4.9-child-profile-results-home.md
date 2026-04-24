@@ -18,21 +18,21 @@ After completing the onboarding assessment, a parent should immediately see a cl
 
 Reference: `docs/features/_constraints.md`
 
-- [ ] Every controller action must call `authorize` through the existing Pundit policies.
-- [ ] Keep controllers thin; profile/result assembly belongs in presenters/helpers, not controller actions.
-- [ ] Preserve the existing Stage 4.5 second-brain architecture: `AssessmentResponse` remains the raw audit trail, `ProfileEvidence` remains the normalized signal layer, `CurrentProfile` remains the latest portrait, and `Recommendation` remains the action layer.
-- [ ] Do not introduce a separate `AutismProfile` model in this stage.
-- [ ] Use Tailwind CSS 4 + daisyUI 5 for rebuilt views.
-- [ ] Use the shared `page_header` partial where it fits the authenticated dashboard pattern.
-- [ ] Avoid diagnostic language. The UI should frame output as a working support profile, not as a diagnosis or clinical determination.
-- [ ] Existing specs must stay green.
-- [ ] RuboCop must stay clean.
+- [x] Every controller action must call `authorize` through the existing Pundit policies.
+- [x] Keep controllers thin; profile/result assembly belongs in presenters/helpers, not controller actions.
+- [x] Preserve the existing Stage 4.5 second-brain architecture: `AssessmentResponse` remains the raw audit trail, `ProfileEvidence` remains the normalized signal layer, `CurrentProfile` remains the latest portrait, and `Recommendation` remains the action layer.
+- [x] Do not introduce a separate `AutismProfile` model in this stage.
+- [x] Use Tailwind CSS 4 + daisyUI 5 for rebuilt views.
+- [x] Use the shared `page_header` partial where it fits the authenticated dashboard pattern.
+- [x] Avoid diagnostic language. The UI should frame output as a working support profile, not as a diagnosis or clinical determination.
+- [x] Existing specs must stay green.
+- [x] RuboCop must stay clean.
 
 ## Reference implementation
 
 - Model pattern: `app/models/child_profile.rb`, `app/models/current_profile.rb`, `app/models/recommendation.rb`
 - Controller pattern: `app/controllers/spaces/child_profiles_controller.rb`, `app/controllers/onboarding/results_controller.rb`, `app/controllers/child_profiles/current_profiles_controller.rb`
-- Presenter pattern: `app/services/onboarding_results_presenter.rb`
+- Presenter pattern: `app/services/child_profile_results_presenter.rb`, `app/services/onboarding_results_presenter.rb`
 - View pattern: `app/views/onboarding/results/show.html.erb`, `app/views/child_profiles/current_profiles/show.html.erb`, `app/views/spaces/child_profiles/show.html.erb`
 - Policy pattern: `app/policies/child_profile_policy.rb`, `app/policies/current_profile_policy.rb`, `app/policies/recommendation_policy.rb`
 
@@ -188,15 +188,15 @@ Internally, this feature can support autism-related care needs, but the parent-f
 
 ## Acceptance criteria
 
-- [ ] After onboarding finalization, the parent can reach a child profile page that shows the first support profile without needing to navigate through separate Current Profile and Recommendations cards.
-- [ ] The child profile show page displays the current profile narrative when available.
-- [ ] The page displays strengths/motivators from profile dimensions when available.
-- [ ] The page groups profile signals into parent-readable domains instead of exposing raw dimension keys as the primary structure.
-- [ ] The page displays active recommendations inline with enough rationale to feel grounded in the assessment.
+- [x] After onboarding finalization, the parent can reach a child profile page that shows the first support profile without needing to navigate through separate Current Profile and Recommendations cards.
+- [x] The child profile show page displays the current profile narrative when available.
+- [x] The page displays strengths/motivators from profile dimensions when available.
+- [x] The page groups profile signals into parent-readable domains instead of exposing raw dimension keys as the primary structure.
+- [x] The page displays active recommendations inline with enough rationale to feel grounded in the assessment.
 - [x] The page shows a clear empty/processing state when profile evidence or recommendations are not ready yet.
-- [ ] The page includes assessment provenance and links to assessment history or submitted answers where authorized.
-- [ ] The old current profile and recommendations pages still work as detail/history surfaces.
-- [ ] The page avoids diagnostic claims and frames output as a working support profile.
+- [x] The page includes assessment provenance and links to assessment history or submitted answers where authorized.
+- [x] The old current profile and recommendations pages still work as detail/history surfaces.
+- [x] The page avoids diagnostic claims and frames output as a working support profile.
 - [x] Request specs cover the child profile show page with and without generated profile data.
 - [x] Existing onboarding results specs are updated to match the chosen redirect or transitional results behavior.
 
@@ -297,6 +297,21 @@ Update the `## Status` section and update `docs/ARCHITECTURE.md` only if the imp
 
 ---
 
+## Post-build audit (Step 6)
+
+| Area | Finding |
+|------|---------|
+| **Controller authorization** | `Spaces::ChildProfilesController#show` calls `authorize` on `@child_profile`, `@current_profile`, and `Recommendation.new(child_profile: …)` for `:index?`. `Onboarding::ResultsController` scopes the session with `current_user.onboarding_sessions.find(…)` and authorizes on the non-redirect path. |
+| **Tenant scoping** | Child records are loaded only via `@space.child_profiles.friendly.find`; policies use `user.get_role_in_space(record.space)`. |
+| **N+1 risks** | `ChildProfileResultsPresenter#latest_assessment_response` uses `includes(assessment: :assessment_template)`. Recommendations are a single query; the show template does not traverse unloaded associations per row. |
+| **daisyUI 5** | Show view uses `card`, `badge`, `btn`, `rounded-box`, and dashboard layout; consistent with existing authenticated UI. |
+| **Diagnostic language** | Page frames content as a support profile; explicit non-diagnostic disclaimer in small body copy on the show page. |
+| **Empty states** | Covered in UI (dashed placeholders) and in request specs (no profile, no recommendations, queued/failed processing). |
+
+`docs/ARCHITECTURE.md` updated: onboarding funnel end state, new **Child profile results home (Stage 4.9)** subsection, feature stages row for 4.9.
+
+---
+
 ## Status
 
 - [x] Step 1 — Decide result destination and page language
@@ -304,7 +319,7 @@ Update the `## Status` section and update `docs/ARCHITECTURE.md` only if the imp
 - [x] Step 3 — Rebuild the child profile show page as the results home
 - [x] Step 4 — Update onboarding results handoff
 - [x] Step 5 — Add focused empty, processing, and authorization coverage
-- [ ] Step 6 — Post-build audit and docs
+- [x] Step 6 — Post-build audit and docs
 
 **Last updated:** 2026-04-24
-**Handoff note:** Child profile show and onboarding handoff have request coverage for empty states, processing badges, and access control. Next build step is Step 6: post-build audit and docs.
+**Handoff note:** Stage 4.9 build and audit are complete. Optional follow-ups: remove or repurpose the legacy `app/views/onboarding/results/show.html.erb` if the non-redirect path is never product-supported; add `authorize @space` if product policy later requires explicit workspace checks before `Space.find`.

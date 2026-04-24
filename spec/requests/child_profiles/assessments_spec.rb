@@ -132,7 +132,7 @@ RSpec.describe "Child profile assessments", type: :request do
           }
       }.to have_enqueued_job(AssessmentEvidenceExtractorJob).with(assessment_response.id)
 
-      expect(response).to redirect_to(space_child_profile_assessment_path(space, child_profile, assessment))
+      expect(response).to redirect_to(space_child_profile_path(space, child_profile))
       assessment.reload
       assessment_response.reload
       expect(assessment.status).to eq("submitted")
@@ -185,7 +185,7 @@ RSpec.describe "Child profile assessments", type: :request do
             }
         }.to have_enqueued_job(AssessmentEvidenceExtractorJob)
 
-        expect(response).to redirect_to(space_child_profile_assessment_path(space, child_profile, assessment))
+        expect(response).to redirect_to(space_child_profile_path(space, child_profile))
         expect(assessment_response.reload.answers["choice"]).to eq("first")
       end
     end
@@ -361,7 +361,7 @@ RSpec.describe "Child profile assessments", type: :request do
             }
         }.to have_enqueued_job(AssessmentEvidenceExtractorJob).with(assessment_response.id)
 
-        expect(response).to redirect_to(space_child_profile_assessment_path(space, child_profile, assessment))
+        expect(response).to redirect_to(space_child_profile_path(space, child_profile))
         reloaded = assessment_response.reload
         expect(reloaded.submitted_at).to be_present
         expect(reloaded.answers["stop_start_friction"]).to eq("stalling")
@@ -384,6 +384,16 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(response.body).to include("Continue")
       expect(response.body).not_to include("What to expect")
       expect(response.body).not_to include("prompt")
+    end
+
+    it "targets the final submit outside the runner frame" do
+      assessment_response.update!(answers: { "concern_level" => "3", "notes" => "Done" })
+
+      get edit_space_child_profile_assessment_assessment_response_path(space, child_profile, assessment, step: "q-notes")
+
+      expect(response).to be_successful
+      expect(response.body).to include("Submit onboarding assessment")
+      expect(response.body).to include('data-turbo-frame="_top"')
     end
   end
 

@@ -259,11 +259,25 @@ landing CTA
 -> account create/claim
 -> finalize User + Space + ChildProfile + Assessment + AssessmentResponse
 -> Stage 4.5 pipeline
--> onboarding results
+-> child profile show (primary parent-facing results home; `/onboarding/results` redirects here once the session is completed)
 ```
 
 Finalization currently runs the same Stage 4.5 jobs inline so the first results
 screen can immediately render a real `CurrentProfile` and `Recommendation` set.
+
+### Child profile results home (Stage 4.9)
+
+The **child profile show** page (`Spaces::ChildProfilesController#show`) is the
+durable, parent-readable **results home**: narrative, strengths, grouped profile
+signals, active recommendations, assessment provenance, and processing status in
+one view. Assembly and grouping live in **`ChildProfileResultsPresenter`**
+(`app/services/child_profile_results_presenter.rb`), not in the controller.
+The action authorizes **`ChildProfile`**, **`CurrentProfile`**, and list access
+for **`Recommendation`** (via a new record scoped to the child) before render.
+**Tenant scoping:** the profile is loaded with `@space.child_profiles.friendly.find`,
+so IDs cannot escape the workspace in the URL. **Queries:** latest submitted
+response is loaded with `includes(assessment: :assessment_template)` to avoid
+N+1 when rendering provenance.
 
 ### Second-brain pipeline
 
@@ -298,6 +312,7 @@ See `docs/features/` for detailed briefs per stage.
 | 4 | Assessments | AssessmentTemplate, Assessment, AssessmentResponse |
 | 4.5 | Second-brain foundation | ProfileEvidence, CurrentProfile, ProfileSnapshot, Recommendation |
 | 4.6 | First-time parent onboarding funnel | OnboardingSession |
+| 4.9 | Child profile results home (show page + presenter) | — |
 | 5 | External collaborators + child access | ChildAccess |
 | 6 | Consent tracking + audit trail | ConsentRecord, AuditLog |
 | 7 | Goals and progress tracking | TBD |

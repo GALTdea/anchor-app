@@ -62,7 +62,12 @@
             <% if @next_step.present? %>
               <%= button_tag "Continue", type: "submit", name: "submit_action", value: "next", class: "btn btn-primary" %>
             <% else %>
-              <%= button_tag "Submit onboarding assessment", type: "submit", name: "submit_action", value: "submit", class: "btn btn-primary" %>
+              <%= button_tag "Submit onboarding assessment",
+                type: "submit",
+                name: "submit_action",
+                value: "submit",
+                class: "btn btn-primary",
+                data: { turbo_frame: "_top" } %>
             <% end %>
             <p class="text-sm text-base-content/60" data-assessment-autosave-target="status">Saved</p>
           </div>

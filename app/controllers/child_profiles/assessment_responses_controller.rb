@@ -55,7 +55,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
 
       AssessmentEvidenceExtractorJob.perform_later(@assessment_response.id)
 
-      redirect_to space_child_profile_assessment_path(@space, @child_profile, @assessment),
+      redirect_to space_child_profile_path(@space, @child_profile),
         notice: "Assessment submitted."
     elsif @assessment_response.save
       redirect_to edit_space_child_profile_assessment_assessment_response_path(
