@@ -193,11 +193,11 @@ Internally, this feature can support autism-related care needs, but the parent-f
 - [ ] The page displays strengths/motivators from profile dimensions when available.
 - [ ] The page groups profile signals into parent-readable domains instead of exposing raw dimension keys as the primary structure.
 - [ ] The page displays active recommendations inline with enough rationale to feel grounded in the assessment.
-- [ ] The page shows a clear empty/processing state when profile evidence or recommendations are not ready yet.
+- [x] The page shows a clear empty/processing state when profile evidence or recommendations are not ready yet.
 - [ ] The page includes assessment provenance and links to assessment history or submitted answers where authorized.
 - [ ] The old current profile and recommendations pages still work as detail/history surfaces.
 - [ ] The page avoids diagnostic claims and frames output as a working support profile.
-- [ ] Request specs cover the child profile show page with and without generated profile data.
+- [x] Request specs cover the child profile show page with and without generated profile data.
 - [x] Existing onboarding results specs are updated to match the chosen redirect or transitional results behavior.
 
 ## Out of scope
@@ -303,8 +303,8 @@ Update the `## Status` section and update `docs/ARCHITECTURE.md` only if the imp
 - [x] Step 2 — Add a child profile results presenter
 - [x] Step 3 — Rebuild the child profile show page as the results home
 - [x] Step 4 — Update onboarding results handoff
-- [ ] Step 5 — Add focused empty, processing, and authorization coverage
+- [x] Step 5 — Add focused empty, processing, and authorization coverage
 - [ ] Step 6 — Post-build audit and docs
 
 **Last updated:** 2026-04-24
-**Handoff note:** Onboarding completion and `/onboarding/results` now land on `space_child_profile_path` (durable profile show). Next build step is Step 5: empty, processing, and authorization coverage.
+**Handoff note:** Child profile show and onboarding handoff have request coverage for empty states, processing badges, and access control. Next build step is Step 6: post-build audit and docs.

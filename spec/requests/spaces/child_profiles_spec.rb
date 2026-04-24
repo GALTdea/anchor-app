@@ -79,6 +79,83 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).to include("Anchor Onboarding Profile")
       expect(response.body).to include("View submitted answers")
     end
+
+    it "shows empty results-home placeholders when there is no current profile yet" do
+      child_profile = create(:child_profile, space: space, first_name: "Noah", last_name: "Lee")
+
+      get space_child_profile_url(space, child_profile)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Noah Lee Profile")
+      expect(response.body).to include("Strengths and motivators will appear here as the profile gathers more evidence.")
+      expect(response.body).to include("Profile signals will appear after assessment evidence has been processed.")
+      expect(response.body).to include("Recommendations will appear here when the profile has enough evidence for useful next steps.")
+      expect(response.body).to include("Assessment details will appear after the first response is submitted.")
+    end
+
+    it "shows the profile narrative but an empty recommendations area when there are no recommendations" do
+      child_profile = create(:child_profile, space: space, first_name: "Riley", last_name: "Kim")
+      create(:current_profile, child_profile: child_profile, narrative: "Riley narrative from the latest profile pass.", summary: {
+        "dimensions" => {
+          "communication.expressive" => {
+            "latest_value" => "Mostly single words",
+            "confidence" => 0.7,
+            "respondent_kind" => "parent_proxy",
+            "recorded_at" => Time.current.iso8601,
+            "evidence_count" => 1
+          }
+        }
+      })
+      template = create(:assessment_template, title: "Check-in survey")
+      assessment = create(:assessment, child_profile: child_profile, assessment_template: template, status: :submitted)
+      create(:assessment_response, assessment: assessment, actor: user, submitted_at: Time.current, processing_status: "completed")
+
+      get space_child_profile_url(space, child_profile)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Riley Kim Profile")
+      expect(response.body).to include("Riley narrative from the latest profile pass.")
+      expect(response.body).to include("Recommendations will appear here when the profile has enough evidence for useful next steps.")
+      expect(response.body).not_to include("Based on:")
+    end
+
+    it "surfaces queued assessment processing on the results home" do
+      child_profile = create(:child_profile, space: space, first_name: "Quinn", last_name: "Patel")
+      template = create(:assessment_template, title: "Queued template")
+      assessment = create(:assessment, child_profile: child_profile, assessment_template: template, status: :submitted)
+      create(
+        :assessment_response,
+        assessment: assessment,
+        actor: user,
+        submitted_at: Time.current,
+        processing_status: "queued"
+      )
+
+      get space_child_profile_url(space, child_profile)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Profile update queued")
+      expect(response.body).to include("We saved the assessment and are building this profile.")
+    end
+
+    it "surfaces failed assessment processing on the results home" do
+      child_profile = create(:child_profile, space: space, first_name: "Sky", last_name: "Nguyen")
+      template = create(:assessment_template, title: "Failed run template")
+      assessment = create(:assessment, child_profile: child_profile, assessment_template: template, status: :submitted)
+      create(
+        :assessment_response,
+        assessment: assessment,
+        actor: user,
+        submitted_at: Time.current,
+        processing_status: "failed"
+      )
+
+      get space_child_profile_url(space, child_profile)
+
+      expect(response).to be_successful
+      expect(response.body).to include("Profile update needs retry")
+      expect(response.body).to include("We saved the assessment, but the profile update needs attention before these results can be refreshed.")
+    end
   end
 
   describe "GET /new" do
@@ -211,7 +288,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       }.to raise_error(Pundit::NotAuthorizedError)
     end
 
-    it "denies access to show without role in space" do
+    it "denies access to show (results home) without role in space" do
       expect {
         get space_child_profile_url(space, child_profile)
       }.to raise_error(Pundit::NotAuthorizedError)

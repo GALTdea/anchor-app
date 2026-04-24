@@ -52,5 +52,13 @@ RSpec.describe "Onboarding results handoff", type: :request do
       get onboarding_results_path
       expect(response).to redirect_to(space_child_profile_path(onboarding_session.space, onboarding_session.child_profile))
     end
+
+    it "returns not found when the signed-in user has no onboarding browser session" do
+      sign_in create(:user)
+
+      get onboarding_results_path
+
+      expect(response).to have_http_status(:not_found)
+    end
   end
 end
