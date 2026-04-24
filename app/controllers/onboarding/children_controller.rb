@@ -33,7 +33,7 @@ class Onboarding::ChildrenController < ApplicationController
     return unless @onboarding_session&.completed?
 
     if user_signed_in? && @onboarding_session.user == current_user
-      redirect_to onboarding_results_path
+      redirect_to space_child_profile_path(@onboarding_session.space, @onboarding_session.child_profile)
     else
       session.delete(:onboarding_session_id)
       redirect_to new_onboarding_session_path, alert: "That onboarding session is already complete. Start a new profile to continue."

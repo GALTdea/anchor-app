@@ -2,6 +2,7 @@
 
 class Onboarding::ResultsController < ApplicationController
   before_action :set_onboarding_session
+  before_action :redirect_completed_onboarding_to_child_profile
   before_action :set_results_presenter
 
   def show
@@ -13,6 +14,13 @@ class Onboarding::ResultsController < ApplicationController
   end
 
   private
+
+  def redirect_completed_onboarding_to_child_profile
+    return unless @onboarding_session.completed?
+    return if @onboarding_session.space.blank? || @onboarding_session.child_profile.blank?
+
+    redirect_to space_child_profile_path(@onboarding_session.space, @onboarding_session.child_profile)
+  end
 
   def set_onboarding_session
     @onboarding_session = current_user.onboarding_sessions.find(session[:onboarding_session_id])

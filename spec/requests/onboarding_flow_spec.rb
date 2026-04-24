@@ -360,11 +360,11 @@ RSpec.describe "Onboarding flow", type: :request do
         .and change(CurrentProfile, :count).by(1)
         .and change(Recommendation, :count).by_at_least(1)
 
-      expect(response).to redirect_to(onboarding_results_path)
-      follow_redirect!
-      expect(response.body).to include("Maya Rivera's first support profile")
-
       onboarding_session = OnboardingSession.last
+      expect(response).to redirect_to(space_child_profile_path(onboarding_session.space, onboarding_session.child_profile))
+      follow_redirect!
+      expect(response.body).to include("Maya Rivera Profile")
+
       expect(onboarding_session).to be_completed
       expect(onboarding_session.assessment_response.processing_status).to eq("completed")
       expect(controller.current_user.email).to eq("ariana@example.com")
@@ -385,8 +385,9 @@ RSpec.describe "Onboarding flow", type: :request do
         }
       }.not_to change(User, :count)
 
-      expect(response).to redirect_to(onboarding_results_path)
-      expect(OnboardingSession.last.user).to eq(existing_user)
+      onboarding_session = OnboardingSession.last
+      expect(response).to redirect_to(space_child_profile_path(onboarding_session.space, onboarding_session.child_profile))
+      expect(onboarding_session.user).to eq(existing_user)
     end
 
     it "rejects an existing email with the wrong password" do
@@ -410,7 +411,7 @@ RSpec.describe "Onboarding flow", type: :request do
   end
 
   describe "completed onboarding session" do
-    it "redirects signed-in users from public onboarding steps back to results" do
+    it "redirects signed-in users from public onboarding steps back to the child profile" do
       post onboarding_session_path
       patch onboarding_child_path, params: {
         onboarding_session: {
@@ -441,7 +442,8 @@ RSpec.describe "Onboarding flow", type: :request do
 
       get onboarding_assessment_path
 
-      expect(response).to redirect_to(onboarding_results_path)
+      onboarding_session = OnboardingSession.last
+      expect(response).to redirect_to(space_child_profile_path(onboarding_session.space, onboarding_session.child_profile))
     end
   end
 end

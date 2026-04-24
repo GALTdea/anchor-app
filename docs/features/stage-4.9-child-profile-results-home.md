@@ -198,7 +198,7 @@ Internally, this feature can support autism-related care needs, but the parent-f
 - [ ] The old current profile and recommendations pages still work as detail/history surfaces.
 - [ ] The page avoids diagnostic claims and frames output as a working support profile.
 - [ ] Request specs cover the child profile show page with and without generated profile data.
-- [ ] Existing onboarding results specs are updated to match the chosen redirect or transitional results behavior.
+- [x] Existing onboarding results specs are updated to match the chosen redirect or transitional results behavior.
 
 ## Out of scope
 
@@ -302,9 +302,9 @@ Update the `## Status` section and update `docs/ARCHITECTURE.md` only if the imp
 - [x] Step 1 — Decide result destination and page language
 - [x] Step 2 — Add a child profile results presenter
 - [x] Step 3 — Rebuild the child profile show page as the results home
-- [ ] Step 4 — Update onboarding results handoff
+- [x] Step 4 — Update onboarding results handoff
 - [ ] Step 5 — Add focused empty, processing, and authorization coverage
 - [ ] Step 6 — Post-build audit and docs
 
 **Last updated:** 2026-04-24
-**Handoff note:** Child profile show now renders the results-home experience using `ChildProfileResultsPresenter`. Next build step is Step 4: redirect onboarding results to the durable child profile page.
+**Handoff note:** Onboarding completion and `/onboarding/results` now land on `space_child_profile_path` (durable profile show). Next build step is Step 5: empty, processing, and authorization coverage.
