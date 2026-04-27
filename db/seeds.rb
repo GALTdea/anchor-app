@@ -79,6 +79,10 @@ puts "  admin assigned owner role in #{space.name}"
 load Rails.root.join("db/seeds/assessment_templates/anchor_initial_profile.rb")
 load Rails.root.join("db/seeds/assessment_templates/anchor_onboarding_5_8.rb")
 
+# --- Analysis rubrics (Stage 6) ---
+# Published rubrics are versioned; create new `version` rows instead of mutating.
+load Rails.root.join("db/seeds/analysis_rubrics/anchor_child_profile_v1.rb")
+
 care_intake = AssessmentTemplate.find_or_initialize_by(template_key: "care-intake", version: 2)
   care_intake.assign_attributes(
     slug: "care-intake-v2",
@@ -125,6 +129,7 @@ care_intake = AssessmentTemplate.find_or_initialize_by(template_key: "care-intak
 care_intake.save!
 
 puts "  assessment templates: #{AssessmentTemplate.published.pluck(:slug).join(', ')}"
+puts "  analysis rubrics: #{AnalysisRubric.published.pluck(:rubric_key).join(', ')}"
 
 puts ""
 puts "Done! Seed data loaded."

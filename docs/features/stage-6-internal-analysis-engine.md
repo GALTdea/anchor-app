@@ -323,7 +323,7 @@ existing recommendation behavior when no completed analysis exists.
 ## Status
 
 - [x] Step 1 — `AnalysisRubric`, `AnalysisRun`, `AnalysisFinding` models, migration, associations, idempotency index, model specs, factories
-- [ ] Step 2
+- [x] Step 2 — Published seed rubric `anchor_child_profile_v1` (`db/seeds/analysis_rubrics/anchor_child_profile_v1.rb`), loaded from `db/seeds.rb`, seed spec
 - [ ] Step 3
 - [ ] Step 4
 - [ ] Step 5
