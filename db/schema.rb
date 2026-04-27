@@ -10,9 +10,62 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_08_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_27_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "analysis_findings", force: :cascade do |t|
+    t.bigint "analysis_run_id", null: false
+    t.float "confidence"
+    t.datetime "created_at", null: false
+    t.string "dimension_key", null: false
+    t.jsonb "evidence_refs", default: {}, null: false
+    t.string "finding_key", null: false
+    t.string "label"
+    t.jsonb "metadata", default: {}, null: false
+    t.float "score"
+    t.string "severity"
+    t.text "summary"
+    t.datetime "updated_at", null: false
+    t.index ["analysis_run_id", "dimension_key"], name: "index_analysis_findings_on_analysis_run_id_and_dimension_key"
+    t.index ["analysis_run_id", "finding_key"], name: "index_analysis_findings_on_analysis_run_id_and_finding_key", unique: true
+    t.index ["analysis_run_id"], name: "index_analysis_findings_on_analysis_run_id"
+  end
+
+  create_table "analysis_rubrics", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "published_at"
+    t.string "rubric_key", null: false
+    t.jsonb "schema", default: {}, null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "version", default: 1, null: false
+    t.index ["rubric_key", "version"], name: "index_analysis_rubrics_on_rubric_key_and_version", unique: true
+    t.index ["status"], name: "index_analysis_rubrics_on_status"
+  end
+
+  create_table "analysis_runs", force: :cascade do |t|
+    t.bigint "analysis_rubric_id", null: false
+    t.bigint "child_profile_id", null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.string "engine_version"
+    t.text "error_message"
+    t.string "input_digest"
+    t.bigint "profile_snapshot_id"
+    t.datetime "started_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["analysis_rubric_id"], name: "index_analysis_runs_on_analysis_rubric_id"
+    t.index ["child_profile_id", "analysis_rubric_id", "input_digest"], name: "index_analysis_runs_idempotency_completed", unique: true, where: "((status = 2) AND (input_digest IS NOT NULL))"
+    t.index ["child_profile_id", "analysis_rubric_id"], name: "index_analysis_runs_on_child_profile_id_and_analysis_rubric_id"
+    t.index ["child_profile_id", "created_at"], name: "index_analysis_runs_on_child_profile_id_and_created_at"
+    t.index ["child_profile_id"], name: "index_analysis_runs_on_child_profile_id"
+    t.index ["input_digest"], name: "index_analysis_runs_on_input_digest"
+    t.index ["profile_snapshot_id"], name: "index_analysis_runs_on_profile_snapshot_id"
+  end
 
   create_table "app_settings", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -254,6 +307,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_08_000000) do
     t.index ["slug"], name: "index_users_on_slug", unique: true
   end
 
+  add_foreign_key "analysis_findings", "analysis_runs"
+  add_foreign_key "analysis_runs", "analysis_rubrics"
+  add_foreign_key "analysis_runs", "child_profiles"
+  add_foreign_key "analysis_runs", "profile_snapshots"
   add_foreign_key "assessment_responses", "assessments"
   add_foreign_key "assessment_responses", "users", column: "actor_id"
   add_foreign_key "assessments", "assessment_templates"

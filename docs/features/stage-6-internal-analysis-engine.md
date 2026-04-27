@@ -322,7 +322,7 @@ existing recommendation behavior when no completed analysis exists.
 
 ## Status
 
-- [ ] Step 1
+- [x] Step 1 — `AnalysisRubric`, `AnalysisRun`, `AnalysisFinding` models, migration, associations, idempotency index, model specs, factories
 - [ ] Step 2
 - [ ] Step 3
 - [ ] Step 4

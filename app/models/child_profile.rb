@@ -34,6 +34,7 @@ class ChildProfile < ApplicationRecord
   has_one :current_profile, dependent: :destroy
   has_many :profile_snapshots, dependent: :destroy
   has_many :recommendations, dependent: :destroy
+  has_many :analysis_runs, dependent: :destroy
 
   enum :status, { active: 0, archived: 1 }, default: :active
 
