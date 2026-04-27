@@ -46,6 +46,20 @@
           <div class="rounded-box bg-base-200/70 p-4 text-sm leading-6 text-base-content/70">
             This is an early profile based on what has been shared so far. It should get more useful as Anchor learns more about what helps <%= @child_profile.first_name %>.
           </div>
+
+          <% if @latest_assessment_response.blank? && policy(Assessment.new(child_profile: @child_profile)).create? %>
+            <div class="rounded-box border border-primary/30 bg-primary/10 p-5">
+              <h3 class="text-base font-semibold text-base-content">Start with the onboarding assessment</h3>
+              <p class="mt-2 text-sm leading-6 text-base-content/75">
+                Answer a few guided questions so Anchor can build a clearer first profile for <%= @child_profile.first_name %>.
+              </p>
+              <div class="mt-4">
+                <%= link_to "Start onboarding assessment",
+                  new_space_child_profile_assessment_path(@space, @child_profile),
+                  class: "btn btn-primary" %>
+              </div>
+            </div>
+          <% end %>
         </div>
       </section>
 

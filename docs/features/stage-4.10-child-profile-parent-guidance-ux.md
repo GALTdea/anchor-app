@@ -322,5 +322,6 @@ benefit in plain language and avoid internal processing jargon where possible.
 **Handoff note:** Stage implemented for the child profile show page only. The
 page now renders the five MVP sections, uses current profile/recommendation data
 with safe fallback content, hides internal profile mechanics on the main page,
-and keeps existing detail/history routes available. Verification: `bundle exec
-rspec` and `bundle exec rubocop` both pass.
+shows a prominent onboarding assessment CTA in "Your Child at a Glance" when no
+submitted assessment exists, and keeps existing detail/history routes available.
+Verification: `bundle exec rspec` and `bundle exec rubocop` both pass.

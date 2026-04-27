@@ -103,8 +103,22 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).to include("May do best when the next step is clear.")
       expect(response.body).to include("Make uncertain moments more predictable")
       expect(response.body).to include("Preview one tricky transition")
+      expect(response.body).to include("Start onboarding assessment")
+      expect(response.body).to include(new_space_child_profile_assessment_path(space, child_profile))
       expect(response.body).to include("Profile records will appear after the first response is submitted.")
       expect(response.body).not_to include("Profile signals")
+    end
+
+    it "does not show the onboarding assessment CTA after a submitted assessment exists" do
+      child_profile = create(:child_profile, space: space, first_name: "Lena", last_name: "Park")
+      template = create(:assessment_template, title: "Submitted template")
+      assessment = create(:assessment, child_profile: child_profile, assessment_template: template, status: :submitted)
+      create(:assessment_response, assessment: assessment, actor: user, submitted_at: Time.current, processing_status: "completed")
+
+      get space_child_profile_url(space, child_profile)
+
+      expect(response).to be_successful
+      expect(response.body).not_to include("Start onboarding assessment")
     end
 
     it "shows the profile narrative with fallback weekly ideas when there are no recommendations" do
