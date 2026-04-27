@@ -72,3 +72,26 @@ The MVP delivers immediate value by helping parents:
 The MVP should not require the parent to understand internal app concepts like
 workspaces, assessments, evidence, snapshots, or recommendations before
 receiving value.
+
+---
+
+## Core User Journey
+
+The core MVP journey is a child-first onboarding flow that helps a parent move
+from uncertainty to initial clarity in one guided experience.
+
+The journey is:
+
+1. Parent lands on the app and clicks "Start your child's profile."
+2. Parent enters a few basic child details.
+3. Parent completes a guided onboarding assessment.
+4. Anchor creates the child's first profile behind the scenes.
+5. Parent receives an initial results experience, which may include:
+   - an initial profile summary
+   - an explanation of likely patterns
+   - a first set of recommendations or next steps
+6. Parent continues using the app to refine that profile over time through
+   future assessments and, post-MVP, observations.
+
+The exact contents and presentation of the first results experience should be
+defined in a dedicated feature brief before implementation.
