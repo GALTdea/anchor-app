@@ -324,7 +324,8 @@ existing recommendation behavior when no completed analysis exists.
 
 - [x] Step 1 — `AnalysisRubric`, `AnalysisRun`, `AnalysisFinding` models, migration, associations, idempotency index, model specs, factories
 - [x] Step 2 — Published seed rubric `anchor_child_profile_v1` (`db/seeds/analysis_rubrics/anchor_child_profile_v1.rb`), loaded from `db/seeds.rb`, seed spec
-- [ ] Step 3
+- [x] Step 3 — `Analysis::InputBuilder` (canonical payload + SHA-256 digest), `Analysis::RubricEvaluator` (domain findings from evidence + rubric schema), `Analysis::RunCreator` (persist run + findings, idempotent completed), service specs
+- [ ] Step 4
 - [ ] Step 4
 - [ ] Step 5
 - [ ] Step 6
