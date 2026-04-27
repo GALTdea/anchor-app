@@ -19,6 +19,7 @@ Reference these when building features.
 
 | File | Contents |
 |------|----------|
+| [PRODUCT_BRIEF.md](PRODUCT_BRIEF.md) | Product goal, target user, and MVP promise |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Domain model, layout system, request lifecycle, AppSettings, background jobs |
 | [assessment_templates.md](assessment_templates.md) | Step-by-step runbook for adding and versioning seeded assessment templates |
 | [CONVENTIONS.md](CONVENTIONS.md) | Coding conventions, UI patterns, daisyUI 5 class reference, form patterns |

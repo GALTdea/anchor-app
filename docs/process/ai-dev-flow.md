@@ -20,7 +20,12 @@ and keep the codebase consistent.
 
 ### Phase 1 — Feature Brief (Ask mode)
 
-Before any code, create a feature brief in `docs/features/`.
+Before creating or reviewing a feature brief, read `docs/PRODUCT_BRIEF.md` to
+ground product scope, target user, and MVP promise. During implementation,
+re-read it only when the work affects product framing, parent-facing UX,
+recommendations, onboarding, or MVP scope.
+
+Create feature briefs in `docs/features/`.
 
 Use the **full template** (`_template-full.md`) when the stage introduces
 new models, controllers, migrations, policies, or routes.
@@ -110,21 +115,23 @@ Fix anything found before moving on.
 ### Starting a session
 
 1. AI reads `docs/AGENTS.md` (stack, key files, constraints).
-2. AI reads the current feature brief from `docs/features/`.
-3. You tell it which step you're on.
-4. AI runs the pre-flight check.
+2. AI reads `docs/PRODUCT_BRIEF.md` when planning a new feature, reviewing a
+   brief, or working on product-facing UX/copy.
+3. AI reads the current feature brief from `docs/features/`.
+4. You tell it which step you're on.
+5. AI runs the pre-flight check.
 
 ### During a session
 
-5. AI executes one step at a time in Agent mode.
-6. You verify after each step.
-7. Commit at natural boundaries.
+6. AI executes one step at a time in Agent mode.
+7. You verify after each step.
+8. Commit at natural boundaries.
 
 ### Ending a session
 
-8. Update the brief's `## Status` section with progress.
-9. Update `docs/ARCHITECTURE.md` if the domain model changed.
-10. Commit doc changes.
+9. Update the brief's `## Status` section with progress.
+10. Update `docs/ARCHITECTURE.md` if the domain model changed.
+11. Commit doc changes.
 
 ---
 

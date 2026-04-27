@@ -41,6 +41,7 @@ to work effectively on this Rails application.
 | config/initializers/pagy.rb | pagination config |
 | config/initializers/friendly_id.rb | slug config |
 | config/initializers/meta_tags.rb | SEO config |
+| docs/PRODUCT_BRIEF.md | product goal, target user, MVP promise |
 | docs/ARCHITECTURE.md | domain model, layout system |
 | docs/CONVENTIONS.md | coding conventions, UI patterns |
 
@@ -68,6 +69,7 @@ When rebuilding these, follow docs/CONVENTIONS.md
 UI patterns and daisyUI 5 class reference.
 
 ## Further reading
+- docs/PRODUCT_BRIEF.md — product goal, target user, MVP promise
 - docs/ARCHITECTURE.md — domain model, request lifecycle
 - docs/CONVENTIONS.md — conventions + daisyUI 5 cheatsheet
 - docs/SETUP.md — first-time setup instructions
