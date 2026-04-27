@@ -26,6 +26,14 @@ class ProfileSnapshotBuilderJob < ApplicationJob
     return if snapshot.blank?
 
     enqueue_next_job(
+      AnalysisRunJob,
+      child_profile.id,
+      profile_snapshot_id: snapshot.id,
+      trigger_source_type: trigger_source_type,
+      trigger_source_id: trigger_source_id,
+      run_inline: run_inline
+    )
+    enqueue_next_job(
       RecommendationGeneratorJob,
       child_profile.id,
       source_profile_snapshot_id: snapshot.id,

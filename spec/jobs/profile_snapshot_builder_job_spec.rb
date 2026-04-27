@@ -20,7 +20,7 @@ RSpec.describe ProfileSnapshotBuilderJob, type: :job do
     ActiveJob::Base.queue_adapter = original_adapter
   end
 
-  it "creates a snapshot and enqueues recommendation generation" do
+  it "creates a snapshot and enqueues analysis and recommendation jobs" do
     expect {
       described_class.perform_now(
         current_profile.id,
@@ -28,6 +28,12 @@ RSpec.describe ProfileSnapshotBuilderJob, type: :job do
         trigger_source_id: assessment_response.id
       )
     }.to change(ProfileSnapshot, :count).by(1)
+      .and have_enqueued_job(AnalysisRunJob).with(
+        child_profile.id,
+        profile_snapshot_id: kind_of(Integer),
+        trigger_source_type: "AssessmentResponse",
+        trigger_source_id: assessment_response.id
+      )
       .and have_enqueued_job(RecommendationGeneratorJob).with(
         child_profile.id,
         source_profile_snapshot_id: kind_of(Integer),
@@ -60,6 +66,12 @@ RSpec.describe ProfileSnapshotBuilderJob, type: :job do
       )
     }.not_to change(ProfileSnapshot, :count)
 
+    expect(AnalysisRunJob).to have_been_enqueued.with(
+      child_profile.id,
+      profile_snapshot_id: kind_of(Integer),
+      trigger_source_type: "AssessmentResponse",
+      trigger_source_id: assessment_response.id
+    )
     expect(RecommendationGeneratorJob).to have_been_enqueued.with(
       child_profile.id,
       source_profile_snapshot_id: kind_of(Integer),
