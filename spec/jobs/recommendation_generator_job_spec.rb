@@ -68,4 +68,40 @@ RSpec.describe RecommendationGeneratorJob, type: :job do
       )
     }.to change(Recommendation, :count).by(1)
   end
+
+  context "when a completed analysis run exists for the same snapshot" do
+    let(:rubric) { create(:analysis_rubric, :published) }
+    let!(:analysis_run) do
+      create(
+        :analysis_run, :completed,
+        child_profile: child_profile,
+        analysis_rubric: rubric,
+        profile_snapshot: profile_snapshot
+      )
+    end
+    let!(:regulation_finding) do
+      create(
+        :analysis_finding,
+        analysis_run: analysis_run,
+        dimension_key: "regulation",
+        finding_key: "reg_baseline"
+      )
+    end
+
+    it "persists analysis grounding in each recommendation rationale" do
+      described_class.perform_now(
+        child_profile.id,
+        source_profile_snapshot_id: profile_snapshot.id,
+        trigger_source_type: "AssessmentResponse",
+        trigger_source_id: assessment_response.id
+      )
+
+      child_profile.recommendations.each do |rec|
+        expect(rec.rationale["analysis_run_id"]).to eq(analysis_run.id)
+        expect(rec.rationale["analysis_finding_id"]).to eq(regulation_finding.id)
+        expect(rec.rationale["analysis_finding_key"]).to eq("reg_baseline")
+        expect(rec.rationale["analysis_rubric_key"]).to eq(rubric.rubric_key)
+      end
+    end
+  end
 end

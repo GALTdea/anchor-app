@@ -9,9 +9,18 @@ class RecommendationGeneratorJob < ApplicationJob
     source_profile_snapshot = child_profile.profile_snapshots.find(source_profile_snapshot_id)
     return if current_profile.blank?
 
+    analysis_run = AnalysisRun
+      .includes(:analysis_rubric, :analysis_findings)
+      .find_by(
+        child_profile_id: child_profile_id,
+        profile_snapshot_id: source_profile_snapshot_id,
+        status: :completed
+      )
+
     recommendations = RecommendationBuilder.new(
       current_profile: current_profile,
-      source_profile_snapshot: source_profile_snapshot
+      source_profile_snapshot: source_profile_snapshot,
+      analysis_run: analysis_run
     ).call
 
     Recommendation.transaction do
