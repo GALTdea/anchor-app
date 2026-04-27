@@ -326,7 +326,7 @@ existing recommendation behavior when no completed analysis exists.
 - [x] Step 2 — Published seed rubric `anchor_child_profile_v1` (`db/seeds/analysis_rubrics/anchor_child_profile_v1.rb`), loaded from `db/seeds.rb`, seed spec
 - [x] Step 3 — `Analysis::InputBuilder` (canonical payload + SHA-256 digest), `Analysis::RubricEvaluator` (domain findings from evidence + rubric schema), `Analysis::RunCreator` (persist run + findings, idempotent completed), service specs
 - [x] Step 4 — `AnalysisRunJob` (runs `RunCreator` for every published rubric) enqueued from `ProfileSnapshotBuilderJob` after a snapshot is resolved, before `RecommendationGeneratorJob`; idempotency via `RunCreator` + digest
-- [ ] Step 5
+- [x] Step 5 — `ChildProfileResultsPresenter` exposes latest completed run + `parent_analysis_rows` (confidence + evidence copy); shared `child_profiles/shared/_analysis_insights` on space child profile show and current profile show; parent-safe wording
 - [ ] Step 6
 
 **Last updated:** 2026-04-27

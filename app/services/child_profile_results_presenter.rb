@@ -5,8 +5,12 @@ class ChildProfileResultsPresenter
   DrivingExplanation = Struct.new(:behavior_context, :possible_meaning, :support_implication, keyword_init: true)
   SupportPriority = Struct.new(:title, :body, keyword_init: true)
   WeeklyIdea = Struct.new(:title, :why_it_may_help, :how_to_try_it, :estimated_time, keyword_init: true)
+  ParentAnalysisRow = Struct.new(
+    :title, :summary, :confidence_phrase, :evidence_note, :low_confidence, keyword_init: true
+  )
 
   MVP_LIMIT = 3
+  STRENGTHS_DOMAIN_KEYS = [ "strengths_and_motivators" ].freeze
   STRENGTH_PREFIXES = [ "strengths." ].freeze
   DOMAIN_GROUPS = [
     {
@@ -178,6 +182,26 @@ class ChildProfileResultsPresenter
     current_profile.persisted? && profile_dimensions.present?
   end
 
+  def latest_completed_analysis_run
+    @latest_completed_analysis_run ||= child_profile.analysis_runs
+      .completed
+      .includes(:analysis_findings)
+      .order(completed_at: :desc, id: :desc)
+      .first
+  end
+
+  def show_analysis_insights?
+    latest_completed_analysis_run.present? && latest_completed_analysis_run.analysis_findings.any?
+  end
+
+  def parent_analysis_rows
+    run = latest_completed_analysis_run
+    return [].freeze if run.blank? || run.analysis_findings.empty?
+
+    ordered_findings = run.analysis_findings.sort_by { |f| [ finding_display_rank(f), f.dimension_key, f.finding_key ] }
+    ordered_findings.map { |f| build_parent_analysis_row(f) }
+  end
+
   def display_value(details)
     details.to_h["metadata"].to_h["selected_option_label"].presence || details.to_h["latest_value"]
   end
@@ -204,6 +228,40 @@ class ChildProfileResultsPresenter
 
   def fill_to_limit(items, fallback_items)
     (items + fallback_items).first(MVP_LIMIT)
+  end
+
+  def finding_display_rank(finding)
+    return 0 if STRENGTHS_DOMAIN_KEYS.include?(finding.dimension_key.to_s)
+    return 0 if finding.metadata["rubric_domain"].to_s == "strengths_and_motivators"
+
+    1
+  end
+
+  def build_parent_analysis_row(finding)
+    ids = Array(finding.evidence_refs["profile_evidence_ids"])
+    n = ids.size
+    evidence_note = if n.positive?
+      "Drawn from #{n} saved observation#{'s' if n != 1} in your answers and profile."
+    else
+      "Drawn from your saved profile responses."
+    end
+
+    conf = finding.confidence
+    low = conf.present? && conf < 0.4
+    ParentAnalysisRow.new(
+      title: finding.label,
+      summary: finding.summary,
+      confidence_phrase: analysis_confidence_phrase(conf),
+      evidence_note:,
+      low_confidence: low
+    )
+  end
+
+  def analysis_confidence_phrase(confidence)
+    return "Anchor is still building confidence in this read." if confidence.blank?
+
+    pct = (confidence.to_f * 100).round
+    "Anchor is about #{pct}% confident in this read — a working pattern, not a diagnosis."
   end
 
   def driving_meaning_for(group)

@@ -1,0 +1,29 @@
+<% presenter = local_assigns[:presenter] %>
+<% if presenter.is_a?(ChildProfileResultsPresenter) && presenter.show_analysis_insights? %>
+  <section class="card bg-base-100 shadow-sm" id="analysis-insights">
+    <div class="card-body gap-5">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">What Anchor is noticing</h2>
+        <p class="mt-1 text-sm leading-6 text-base-content/70">
+          These are support signals from your answers and profile — working patterns to explore, not a diagnosis. When confidence is lower, it means Anchor is less certain, not that something is less important.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <% presenter.parent_analysis_rows.each do |row| %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <h3 class="text-base font-semibold text-base-content"><%= row.title %></h3>
+              <% if row.low_confidence %>
+                <span class="badge badge-ghost">Lower confidence</span>
+              <% end %>
+            </div>
+            <p class="mt-2 text-sm leading-6 text-base-content/80"><%= row.summary %></p>
+            <p class="mt-3 text-sm text-base-content/70"><%= row.confidence_phrase %></p>
+            <p class="mt-1 text-sm text-base-content/60"><%= row.evidence_note %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>

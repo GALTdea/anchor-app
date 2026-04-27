@@ -6,6 +6,7 @@ class ChildProfiles::CurrentProfilesController < ApplicationController
   before_action :set_current_profile
 
   def show
+    @results_presenter = ChildProfileResultsPresenter.new(@child_profile)
     authorize @current_profile
   end
 

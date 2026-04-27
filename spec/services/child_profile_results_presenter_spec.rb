@@ -152,6 +152,58 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
     end
   end
 
+  describe "#parent_analysis_rows" do
+    it "returns parent-facing rows from the latest completed analysis run" do
+      rubric = create(:analysis_rubric, :published, rubric_key: "presenter_ar", version: 1, schema: { "version" => 1, "domains" => [] })
+      run = create(:analysis_run, :completed, child_profile: child_profile, analysis_rubric: rubric)
+      create(
+        :analysis_finding,
+        analysis_run: run,
+        dimension_key: "communication",
+        finding_key: "communication.support_signal",
+        label: "Communication support",
+        summary: "A working pattern from saved answers.",
+        confidence: 0.75,
+        evidence_refs: { "profile_evidence_ids" => [ 1, 2 ] }
+      )
+
+      rows = described_class.new(child_profile).parent_analysis_rows
+
+      expect(rows.size).to eq(1)
+      expect(rows.first.title).to eq("Communication support")
+      expect(rows.first.evidence_note).to include("2 saved observations")
+    end
+
+    it "orders strengths domain findings before other domains" do
+      rubric = create(:analysis_rubric, :published, rubric_key: "presenter_ar2", version: 1, schema: { "version" => 1, "domains" => [] })
+      run = create(:analysis_run, :completed, child_profile: child_profile, analysis_rubric: rubric)
+      create(
+        :analysis_finding,
+        analysis_run: run,
+        dimension_key: "communication",
+        finding_key: "communication.support_signal",
+        label: "Other",
+        summary: "B",
+        confidence: 0.8,
+        evidence_refs: { "profile_evidence_ids" => [ 1 ] }
+      )
+      create(
+        :analysis_finding,
+        analysis_run: run,
+        dimension_key: "strengths_and_motivators",
+        finding_key: "strengths_and_motivators.support_signal",
+        label: "Strengths first",
+        summary: "A",
+        confidence: 0.8,
+        evidence_refs: { "profile_evidence_ids" => [ 2 ] }
+      )
+
+      titles = described_class.new(child_profile).parent_analysis_rows.map(&:title)
+
+      expect(titles.first).to eq("Strengths first")
+    end
+  end
+
   describe "#profile_ready?" do
     it "is true when a persisted current profile has dimensions" do
       create(:current_profile, child_profile: child_profile, summary: profile_summary)

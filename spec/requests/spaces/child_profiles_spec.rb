@@ -65,9 +65,30 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       assessment = create(:assessment, child_profile: child_profile, assessment_template: template, status: :submitted)
       create(:assessment_response, assessment: assessment, submitted_at: Time.current, processing_status: "completed")
 
+      analysis_rubric = create(
+        :analysis_rubric, :published,
+        rubric_key: "page_show_test",
+        version: 1,
+        schema: { "version" => 1, "domains" => [] }
+      )
+      analysis_run = create(:analysis_run, :completed, child_profile: child_profile, analysis_rubric: analysis_rubric)
+      create(
+        :analysis_finding,
+        analysis_run: analysis_run,
+        dimension_key: "communication",
+        finding_key: "communication.support_signal",
+        label: "Communication support signal",
+        summary: "This is a deterministic support signal shown on the profile home.",
+        confidence: 0.72,
+        evidence_refs: { "profile_evidence_ids" => [ 1 ] }
+      )
+
       get space_child_profile_url(space, child_profile)
 
       expect(response).to be_successful
+      expect(response.body).to include("What Anchor is noticing")
+      expect(response.body).to include("Communication support signal")
+      expect(response.body).to include("deterministic support signal")
       expect(response.body).to include("Maya Rivera Profile")
       expect(response.body).to include("Your Child at a Glance")
       expect(response.body).to include("What May Be Driving This")
