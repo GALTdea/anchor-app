@@ -312,13 +312,15 @@ benefit in plain language and avoid internal processing jargon where possible.
 
 ## Status
 
-- [ ] Step 1
-- [ ] Step 2
-- [ ] Step 3
-- [ ] Step 4
-- [ ] Step 5
+- [x] Step 1
+- [x] Step 2
+- [x] Step 3
+- [x] Step 4
+- [x] Step 5
 
 **Last updated:** 2026-04-27
-**Handoff note:** Phase 1 brief created. Next step is Phase 2 design review
-against `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, and existing code before
-any implementation.
+**Handoff note:** Stage implemented for the child profile show page only. The
+page now renders the five MVP sections, uses current profile/recommendation data
+with safe fallback content, hides internal profile mechanics on the main page,
+and keeps existing detail/history routes available. Verification: `bundle exec
+rspec` and `bundle exec rubocop` both pass.

@@ -66,6 +66,77 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
     end
   end
 
+  describe "#profile_traits" do
+    it "returns parent-readable values from current profile dimensions" do
+      create(:current_profile, child_profile: child_profile, summary: profile_summary)
+
+      traits = described_class.new(child_profile).profile_traits
+
+      expect(traits).to include("Dinosaurs", "Uses short phrases", "Sound sensitive")
+      expect(traits).not_to include("None reported")
+    end
+
+    it "uses safe fallback traits when profile dimensions are not ready" do
+      traits = described_class.new(child_profile).profile_traits
+
+      expect(traits).to include("May do best when the next step is clear.")
+    end
+  end
+
+  describe "#driving_explanations" do
+    it "returns up to three uncertain behavior explanations" do
+      create(:current_profile, child_profile: child_profile, summary: profile_summary)
+
+      explanations = described_class.new(child_profile).driving_explanations
+
+      expect(explanations.length).to eq(3)
+      expect(explanations.map(&:behavior_context).join).to include("Communication")
+      expect(explanations.map(&:possible_meaning).join).to match(/may|might|could/)
+    end
+  end
+
+  describe "#support_priorities" do
+    it "returns no more than three focus areas from recommendations" do
+      snapshot = create(:profile_snapshot, child_profile: child_profile)
+      4.times do
+        create(:recommendation, child_profile: child_profile, source_profile_snapshot: snapshot, category: "regulation")
+      end
+
+      priorities = described_class.new(child_profile).support_priorities
+
+      expect(priorities.length).to eq(3)
+      expect(priorities.map(&:title)).to all(eq("Support recovery after hard moments"))
+    end
+  end
+
+  describe "#weekly_ideas" do
+    it "returns no more than three ideas from recommendations" do
+      snapshot = create(:profile_snapshot, child_profile: child_profile)
+      4.times do |index|
+        create(
+          :recommendation,
+          child_profile: child_profile,
+          source_profile_snapshot: snapshot,
+          title: "Try support #{index}",
+          body: "Use support #{index}."
+        )
+      end
+
+      ideas = described_class.new(child_profile).weekly_ideas
+
+      expect(ideas.length).to eq(3)
+      expect(ideas.map(&:title)).to all(include("Try support"))
+      expect(ideas.map(&:estimated_time)).to all(eq("5-10 minutes"))
+    end
+
+    it "uses safe fallback ideas when recommendations are not ready" do
+      ideas = described_class.new(child_profile).weekly_ideas
+
+      expect(ideas.length).to eq(3)
+      expect(ideas.first.title).to eq("Preview one tricky transition")
+    end
+  end
+
   describe "#latest_assessment_response" do
     it "returns the latest submitted response and exposes its processing status" do
       older_response = submitted_response(submitted_at: 2.days.ago, processing_status: "completed")
