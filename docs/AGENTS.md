@@ -70,7 +70,8 @@ UI patterns and daisyUI 5 class reference.
 
 ## Further reading
 - docs/PRODUCT_BRIEF.md — product goal, target user, MVP promise
-- docs/ARCHITECTURE.md — domain model, request lifecycle
+- docs/ARCHITECTURE.md — domain model, request lifecycle, second-brain + analysis pipeline overview
+- docs/modules/internal_analysis_engine.md — deterministic rubric, `anchor_child_profile_v1`, jobs, idempotency
 - docs/CONVENTIONS.md — conventions + daisyUI 5 cheatsheet
 - docs/SETUP.md — first-time setup instructions
 - docs/template/ — template build history (ignore for app dev)

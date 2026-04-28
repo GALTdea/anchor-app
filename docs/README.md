@@ -21,6 +21,7 @@ Reference these when building features.
 |------|----------|
 | [PRODUCT_BRIEF.md](PRODUCT_BRIEF.md) | Product goal, target user, and MVP promise |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Domain model, layout system, request lifecycle, AppSettings, background jobs |
+| [modules/internal_analysis_engine.md](modules/internal_analysis_engine.md) | Deterministic analysis: rubric schema, `anchor_child_profile_v1`, evaluation, jobs, UI + recommendation grounding |
 | [assessment_templates.md](assessment_templates.md) | Step-by-step runbook for adding and versioning seeded assessment templates |
 | [CONVENTIONS.md](CONVENTIONS.md) | Coding conventions, UI patterns, daisyUI 5 class reference, form patterns |
 | [SETUP.md](SETUP.md) | First-time setup, prerequisites, credentials |
@@ -54,8 +55,7 @@ at the start of every AI coding session.
 | [features/stage-4.6-first-time-parent-onboarding.md](features/stage-4.6-first-time-parent-onboarding.md) | Stage 4.6 — First-time parent onboarding funnel *(draft proposal)* |
 | [features/stage-4.7-guided-assessment-runner.md](features/stage-4.7-guided-assessment-runner.md) | Stage 4.7 — Guided assessment runner *(draft proposal)* |
 | [features/stage-4.9-child-profile-results-home.md](features/stage-4.9-child-profile-results-home.md) | Stage 4.9 — Child profile results home *(draft proposal)* |
-
----
+| [features/stage-6-internal-analysis-engine.md](features/stage-6-internal-analysis-engine.md) | Stage 6 — Internal analysis engine (deterministic rubric) |
 
 ## Optional modules
 

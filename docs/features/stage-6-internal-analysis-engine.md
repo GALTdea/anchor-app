@@ -1,6 +1,8 @@
 # Stage 6 - Internal Analysis Engine
 
 > Full brief. Introduces Anchor's own rubric and deterministic analysis system.
+> **Developer reference (algorithms, domains, pipeline):** [docs/modules/internal_analysis_engine.md](../modules/internal_analysis_engine.md)
+
 > This stage deliberately does not call external AI. The goal is to make the app
 > capable of producing evidence-backed, testable analysis before adding AI
 > synthesis in a later stage.

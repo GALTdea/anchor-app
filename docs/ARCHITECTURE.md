@@ -1,6 +1,6 @@
 # Architecture
 
-Domain model, layout system, request lifecycle, AppSettings, and background jobs. See docs/AGENTS.md for stack and key files.
+Domain model, layout system, request lifecycle, AppSettings, and background jobs. See docs/AGENTS.md for stack and key files. **Focused subsystems:** `docs/modules/` — for example the deterministic rubric pipeline in [**Internal analysis engine**](modules/internal_analysis_engine.md).
 
 ---
 
@@ -194,9 +194,9 @@ User/Space/Role foundation with child-centered models.
 | **CurrentProfile** | 4.5 ✅ | `child_profile_id`, `summary`, `narrative`, `generated_at`, `profile_version` | ChildProfile |
 | **ProfileSnapshot** | 4.5 ✅ | `child_profile_id`, `summary`, `narrative`, `generated_at`, `trigger_source_type`, `trigger_source_id` | ChildProfile |
 | **Recommendation** | 4.5 ✅ | `child_profile_id`, `status`, `category`, `title`, `body`, `rationale`, `generated_at` | ChildProfile, ProfileSnapshot |
-| **AnalysisRubric** | 6 (Step 1) | `name`, `rubric_key`, `version`, `status`, `description`, `schema` (jsonb), `published_at` | — |
-| **AnalysisRun** | 6 (Step 1) | `child_profile_id`, `analysis_rubric_id`, `profile_snapshot_id` (optional), `status`, `started_at`, `completed_at`, `error_message`, `input_digest`, `engine_version` | ChildProfile, AnalysisRubric, ProfileSnapshot (optional) |
-| **AnalysisFinding** | 6 (Step 1) | `analysis_run_id`, `dimension_key`, `finding_key`, `score`, `confidence`, `severity`, `label`, `summary`, `evidence_refs` (jsonb), `metadata` (jsonb) | AnalysisRun |
+| **AnalysisRubric** | 6 ✅ | `name`, `rubric_key`, `version`, `status`, `description`, `schema` (jsonb), `published_at` | — |
+| **AnalysisRun** | 6 ✅ | `child_profile_id`, `analysis_rubric_id`, `profile_snapshot_id` (optional), `status`, `started_at`, `completed_at`, `error_message`, `input_digest`, `engine_version` | ChildProfile, AnalysisRubric, ProfileSnapshot (optional) |
+| **AnalysisFinding** | 6 ✅ | `analysis_run_id`, `dimension_key`, `finding_key`, `score`, `confidence`, `severity`, `label`, `summary`, `evidence_refs` (jsonb), `metadata` (jsonb) | AnalysisRun |
 | **OnboardingSession** | 4.6 ✅ | `status`, `email`, `parent_name`, `child_first_name`, `child_last_name`, `child_date_of_birth`, `draft_answers`, `started_at`, `completed_at`, optional finalized foreign keys | AssessmentTemplate, optional User/Space/ChildProfile/Assessment/AssessmentResponse |
 
 ### Planned models (not yet built)
@@ -289,19 +289,26 @@ N+1 when rendering provenance.
 
 ### Second-brain pipeline
 
-The second-brain layer now follows this shared pattern:
+The second-brain layer follows this shared pattern:
 
 ```text
 caregiver-authored source record
 -> normalized ProfileEvidence
 -> CurrentProfile rebuild
 -> ProfileSnapshot if profile changed
--> Recommendation refresh
+-> deterministic AnalysisRun (+ AnalysisFinding per rubric domain), if published rubrics exist
+-> Recommendation refresh (optionally grounded in completed AnalysisRun)
 ```
 
 Today the implemented source record is `AssessmentResponse`.
 When Stage 3 observations are built, `Observation` should feed this same pipeline
 rather than creating a parallel AI memory path.
+
+### Internal analysis engine (deterministic rubric)
+
+Anchor evaluates **published** `AnalysisRubric` rows against a canonical payload built from `ProfileEvidence`, `CurrentProfile`, and the relevant `ProfileSnapshot`. **`Analysis::RunCreator`** fingerprints inputs with **`Analysis::InputBuilder.digest`** so completed runs are **idempotent** per child, rubric, and digest. **`Analysis::RubricEvaluator`** maps evidence into rubric domains (no external AI). Findings appear in the child profile UI via **`ChildProfileResultsPresenter`** / `_analysis_insights`, and **`Recommendation`** rows can carry `analysis_*` keys in **`rationale`** when a completed run exists for the same snapshot.
+
+**Developer reference:** [docs/modules/internal_analysis_engine.md](modules/internal_analysis_engine.md) (algorithms, `anchor_child_profile_v1` domains, jobs, tests). Product checklist: [docs/features/stage-6-internal-analysis-engine.md](features/stage-6-internal-analysis-engine.md).
 
 ### Feature stages
 
@@ -321,6 +328,8 @@ See `docs/features/` for detailed briefs per stage.
 | 4.5 | Second-brain foundation | ProfileEvidence, CurrentProfile, ProfileSnapshot, Recommendation |
 | 4.6 | First-time parent onboarding funnel | OnboardingSession |
 | 4.9 | Child profile results home (show page + presenter) | — |
+| 4.10 | Child profile parent-guidance UX | — |
 | 5 | External collaborators + child access | ChildAccess |
-| 6 | Consent tracking + audit trail | ConsentRecord, AuditLog |
-| 7 | Goals and progress tracking | TBD |
+| 6 | Internal analysis engine (deterministic rubric) | AnalysisRubric, AnalysisRun, AnalysisFinding |
+| 7 | Consent tracking + audit trail | ConsentRecord, AuditLog |
+| 8 | Goals and progress tracking | TBD |
