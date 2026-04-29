@@ -1,0 +1,17 @@
+development:
+  enabled: false
+  provider: stub
+  default_model: stub-mini
+  timeout_seconds: 30
+
+test:
+  enabled: true
+  provider: stub
+  default_model: stub-mini
+  timeout_seconds: 5
+
+production:
+  enabled: false
+  provider: stub
+  default_model: stub-mini
+  timeout_seconds: 30
