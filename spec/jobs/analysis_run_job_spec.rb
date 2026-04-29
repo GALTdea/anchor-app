@@ -48,10 +48,12 @@ RSpec.describe AnalysisRunJob, type: :job do
         child.id,
         profile_snapshot_id: snap.id,
         trigger_source_type: "AssessmentResponse",
-        trigger_source_id: 0
+        trigger_source_id: 0,
+        run_inline: true
       )
     }.to change { AnalysisRun.where(child_profile: child, status: :completed).count }.by(1)
       .and change(AnalysisFinding, :count).by(1)
+      .and change(AiSynthesisRun, :count).by(1)
   end
 
   it "no-ops when the snapshot is missing" do

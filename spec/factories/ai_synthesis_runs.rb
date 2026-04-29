@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :ai_synthesis_run do
-    analysis_run factory: [ :analysis_run, :completed ]
+    analysis_run factory: %i[analysis_run completed]
     purpose { "parent_guidance_v1" }
     status { :pending }
     provider { nil }
@@ -27,7 +27,14 @@ FactoryBot.define do
       prompt_version { "parent_guidance@v1" }
       started_at { 2.minutes.ago }
       completed_at { Time.current }
-      output { { "summary" => "Test synthesis summary" } }
+      output do
+        {
+          "summary_plain" =>
+            "Anchor synthesized this passage in deterministic stub mode (audit digest placeholder).",
+          "synthesis_schema_version" => "anchor_synthesis_v1",
+          "finding_refs" => []
+        }
+      end
     end
 
     trait :failed do

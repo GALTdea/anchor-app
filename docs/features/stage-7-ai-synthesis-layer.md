@@ -308,7 +308,7 @@ is unavailable or failed.
 - [x] Step 2
 - [x] Step 3
 - [x] Step 4
-- [ ] Step 5
+- [x] Step 5
 - [ ] Step 6
 
 **Last updated:** 2026-04-28

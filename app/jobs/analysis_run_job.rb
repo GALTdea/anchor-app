@@ -4,18 +4,19 @@ class AnalysisRunJob < ApplicationJob
   queue_as :default
 
   # `run_inline` is accepted for a consistent call shape with other second-brain jobs.
-  def perform(child_profile_id, profile_snapshot_id:, trigger_source_type: nil, trigger_source_id: nil, run_inline: false) # rubocop:disable Lint/UnusedMethodArgument
+  def perform(child_profile_id, profile_snapshot_id:, trigger_source_type: nil, trigger_source_id: nil, run_inline: false)
     child_profile = ChildProfile.find(child_profile_id)
     snapshot = child_profile.profile_snapshots.find_by(id: profile_snapshot_id)
     return if snapshot.blank?
     return if child_profile.current_profile.blank?
 
     AnalysisRubric.published.find_each do |rubric|
-      Analysis::RunCreator.new(
+      run = Analysis::RunCreator.new(
         child_profile:,
         analysis_rubric: rubric,
         profile_snapshot: snapshot
       ).call
+      enqueue_ai_synthesis(run, run_inline: run_inline) if run&.completed?
     end
   rescue ActiveRecord::RecordNotFound
     nil
@@ -36,5 +37,13 @@ class AnalysisRunJob < ApplicationJob
       processing_status: "failed",
       last_processing_error: error.message
     )
+  end
+
+  def enqueue_ai_synthesis(analysis_run, run_inline:)
+    if run_inline
+      AiSynthesisJob.perform_now(analysis_run.id)
+    else
+      AiSynthesisJob.perform_later(analysis_run.id)
+    end
   end
 end
