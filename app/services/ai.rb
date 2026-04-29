@@ -10,6 +10,17 @@ module Ai
   # Provider is selected but not implemented yet.
   class UnsupportedProviderError < Error; end
 
+  # HTTP or response-shape failure from a live provider (OpenAI, future adapters).
+  class ProviderError < Error
+    attr_reader :retryable, :metadata
+
+    def initialize(message, retryable:, metadata: {})
+      super(message)
+      @retryable = retryable
+      @metadata = metadata
+    end
+  end
+
   class << self
     def configuration
       @configuration ||= Configuration.load

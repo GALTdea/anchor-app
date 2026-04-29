@@ -354,15 +354,41 @@ bundle exec rspec
 
 ---
 
+### Local live-mode smoke test (development)
+
+Set these in the environment (use your real secret only locally; never commit it):
+
+```text
+ANCHOR_AI_ENABLED=true
+ANCHOR_AI_PROVIDER=openai
+ANCHOR_AI_DEFAULT_MODEL=<a model id that supports POST /v1/responses and json_object output>
+ANCHOR_AI_API_KEY=<your OpenAI API key>
+# Optional:
+# ANCHOR_AI_API_BASE_URL=https://api.openai.com/v1
+# ANCHOR_AI_TIMEOUT_SECONDS=60
+```
+
+Then from `bin/rails console`:
+
+```ruby
+run = AnalysisRun.completed.order(created_at: :desc).first
+AiSynthesisJob.perform_now(run.id, force: true)
+run.ai_synthesis_runs.order(created_at: :desc).first.slice(
+  :status, :provider, :model, :prompt_version, :error_message
+)
+```
+
+With synthesis disabled or `ANCHOR_AI_PROVIDER=stub`, the same job exercises the deterministic stub path without calling OpenAI.
+
+---
+
 ## Status
 
-- [ ] Step 1
-- [ ] Step 2
-- [ ] Step 3
-- [ ] Step 4
-- [ ] Step 5
+- [x] Step 1
+- [x] Step 2
+- [x] Step 3
+- [x] Step 4
+- [x] Step 5
 
 **Last updated:** 2026-04-29
-**Handoff note:** Brief created from Stage 7 completion follow-up. Stage 7 has
-the synthesis pipeline and stub provider; this stage adds the first live OpenAI
-adapter while preserving stub mode and deterministic fallback.
+**Handoff note:** OpenAI Responses API adapter ships as `Ai::OpenaiResponsesAdapter` (Net::HTTP); `Ai::Client` routes `provider: openai` when enabled and `ANCHOR_AI_API_KEY` is set. `Ai::ProviderError` captures retry classification and safe metadata; `Ai::SynthesisRunner` persists failed runs for provider errors. Specs: `spec/services/ai/openai_responses_adapter_spec.rb`, extended `client_spec` / `synthesis_runner_spec`. Stub remains default in `config/ai.yml`.

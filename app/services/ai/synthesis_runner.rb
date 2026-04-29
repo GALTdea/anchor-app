@@ -42,7 +42,13 @@ module Ai
         return Result.new(success: true, skipped: true, synthesis_run: winner, error_message: nil)
       end
 
-      completion = @client.complete(prompt: render.prompt, model: nil)
+      completion =
+        begin
+          @client.complete(prompt: render.prompt, model: nil)
+        rescue Ai::ProviderError => e
+          return persist_provider_failure(run, render, e)
+        end
+
       raw_text = @configuration.stub? ? SynthesisStubText.from_prompt_result(render) : completion.fetch(:text)
 
       validation = StructuredOutputValidator.new(
@@ -90,6 +96,34 @@ module Ai
     end
 
     private
+
+    def persist_provider_failure(run, render, error)
+      upstream = (error.metadata || {}).deep_stringify_keys
+      request = request_payload(render)
+      response = {
+        "upstream" => upstream,
+        "raw_model_text_truncated" => "",
+        "validation_errors" => []
+      }
+      base_attrs = {
+        analysis_run: run,
+        purpose: render.purpose,
+        prompt_version: render.prompt_version,
+        request_payload: request,
+        response_payload: response,
+        started_at: Time.current,
+        completed_at: Time.current,
+        provider: upstream["provider"].presence || @configuration.provider.to_s,
+        model: upstream["model"].presence || @configuration.default_model.to_s
+      }
+      synthesis = AiSynthesisRun.new(base_attrs.merge(
+        status: :failed,
+        error_message: error.message.to_s.truncate(10_000),
+        output: {}
+      ))
+      synthesis.save!(validate: false)
+      Result.new(success: false, skipped: false, synthesis_run: synthesis, error_message: synthesis.error_message)
+    end
 
     def duplicate_completed?(analysis_run_id, purpose, prompt_version)
       AiSynthesisRun.exists?(

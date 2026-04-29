@@ -47,6 +47,101 @@ RSpec.describe Ai::SynthesisRunner do
     expect(AiSynthesisRun.where(analysis_run:, status: :completed).count).to eq(2)
   end
 
+  it "records failed synthesis with safe provider metadata when the client raises ProviderError" do
+    secret = "sk-test-#{SecureRandom.hex(16)}"
+    cfg = Ai::Configuration.new(
+      enabled: true,
+      provider: "openai",
+      default_model: "gpt-x",
+      timeout_seconds: 5,
+      api_base_url: nil,
+      api_key: secret
+    )
+    adapter = instance_double(Ai::OpenaiResponsesAdapter)
+    allow(adapter).to receive(:complete).and_raise(
+      Ai::ProviderError.new(
+        "upstream failed",
+        retryable: true,
+        metadata: {
+          "provider" => "openai",
+          "model" => "gpt-x",
+          "http_status" => 503,
+          "latency_ms" => 12,
+          "retry_classification" => "retryable"
+        }
+      )
+    )
+    client = Ai::Client.new(configuration: cfg, openai_adapter: adapter)
+
+    result = described_class.new(analysis_run:, client:, configuration: cfg).call
+
+    expect(result.success).to be false
+    syn = result.synthesis_run
+    expect(syn).to be_failed
+    leaked = syn.response_payload.merge(syn.request_payload).to_json
+    expect(leaked).not_to include(secret)
+    expect(syn.response_payload["upstream"]["retry_classification"]).to eq("retryable")
+    expect(syn.response_payload["upstream"]["latency_ms"]).to eq(12)
+  end
+
+  it "validates live provider JSON text; upstream metadata does not bypass the validator" do
+    cfg = Ai::Configuration.new(
+      enabled: true,
+      provider: "openai",
+      default_model: "gpt-x",
+      timeout_seconds: 5,
+      api_base_url: nil,
+      api_key: "sk-test-fixed"
+    )
+    adapter = instance_double(Ai::OpenaiResponsesAdapter)
+    allow(adapter).to receive(:complete).and_return(
+      text: "{}",
+      provider: "openai",
+      model: "gpt-x",
+      response_payload: { "would_be_valid" => true, "latency_ms" => 1 }
+    )
+    client = Ai::Client.new(configuration: cfg, openai_adapter: adapter)
+
+    result = described_class.new(analysis_run:, client:, configuration: cfg).call
+
+    expect(result.success).to be false
+    expect(result.synthesis_run.failed?).to be true
+    expect(result.synthesis_run.response_payload["validation_errors"]).not_to be_empty
+  end
+
+  it "writes completed synthesis using live provider text when it passes validation" do
+    cfg = Ai::Configuration.new(
+      enabled: true,
+      provider: "openai",
+      default_model: "gpt-x",
+      timeout_seconds: 5,
+      api_base_url: nil,
+      api_key: "sk-test-fixed"
+    )
+    live_text = {
+      "synthesis_schema_version" => "anchor_synthesis_v1",
+      "summary_plain" =>
+        "Anchor noticed patterns in the profile worth summarizing for parents in plain language with enough length here.",
+      "confidence_note" => nil,
+      "what_to_watch" => [ "Day to day" ],
+      "finding_refs" => [ { "finding_key" => "communication.x.support_signal", "summary_gist" => nil } ]
+    }.to_json
+    adapter = instance_double(Ai::OpenaiResponsesAdapter)
+    allow(adapter).to receive(:complete).and_return(
+      text: live_text,
+      provider: "openai",
+      model: "gpt-x",
+      response_payload: { "latency_ms" => 33, "openai_response_id" => "resp_1" }
+    )
+    client = Ai::Client.new(configuration: cfg, openai_adapter: adapter)
+
+    result = described_class.new(analysis_run:, client:, configuration: cfg).call
+
+    expect(result.success).to be true
+    expect(result.synthesis_run.output["summary_plain"]).to include("Anchor noticed")
+    expect(result.synthesis_run.response_payload["upstream"]["latency_ms"]).to eq(33)
+  end
+
   it "records failed synthesis when validator rejects model text (non-stub path)" do
     cfg = Ai::Configuration.new(
       enabled: true,
