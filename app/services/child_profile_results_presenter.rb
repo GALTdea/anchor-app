@@ -8,8 +8,10 @@ class ChildProfileResultsPresenter
   ParentAnalysisRow = Struct.new(
     :title, :summary, :confidence_phrase, :evidence_note, :low_confidence, keyword_init: true
   )
+  AiGuidancePanel = Struct.new(:summary_plain, :confidence_note, :what_to_watch, keyword_init: true)
 
   MVP_LIMIT = 3
+  AI_SYNTHESIS_PURPOSE_PARENT = "parent_guidance_v1".freeze
   STRENGTHS_DOMAIN_KEYS = [ "strengths_and_motivators" ].freeze
   STRENGTH_PREFIXES = [ "strengths." ].freeze
   DOMAIN_GROUPS = [
@@ -185,9 +187,22 @@ class ChildProfileResultsPresenter
   def latest_completed_analysis_run
     @latest_completed_analysis_run ||= child_profile.analysis_runs
       .completed
-      .includes(:analysis_findings)
+      .includes(:analysis_findings, :ai_synthesis_runs)
       .order(completed_at: :desc, id: :desc)
       .first
+  end
+
+  # Uses the latest successful parent-guidance Ai synthesis for this profile's freshest completed run only.
+  def ai_guidance_panel
+    return @ai_guidance_panel if instance_variable_defined?(:@ai_guidance_panel)
+
+    run = latest_completed_analysis_run
+    synthesis = run && latest_parent_ai_synthesis_for(run)
+    @ai_guidance_panel = synthesis&.completed? ? build_ai_guidance_panel(synthesis) : nil
+  end
+
+  def show_ai_guidance?
+    ai_guidance_panel.present?
   end
 
   def show_analysis_insights?
@@ -207,6 +222,31 @@ class ChildProfileResultsPresenter
   end
 
   private
+
+  def latest_parent_ai_synthesis_for(analysis_run)
+    Array(analysis_run.ai_synthesis_runs)
+      .select { |syn| syn.purpose.to_s == AI_SYNTHESIS_PURPOSE_PARENT && syn.completed? }
+      .max_by(&:id)
+  end
+
+  def build_ai_guidance_panel(synthesis)
+    out = synthesis.output.to_h
+    summary_plain = out["summary_plain"].to_s.strip
+    return nil if summary_plain.blank?
+
+    watch = Array(out["what_to_watch"]).filter_map do |item|
+      s = item.to_s.strip
+      next if s.blank?
+
+      s
+    end
+
+    AiGuidancePanel.new(
+      summary_plain:,
+      confidence_note: out["confidence_note"].presence,
+      what_to_watch: watch
+    )
+  end
 
   def select_dimensions_by_prefix(prefixes)
     profile_dimensions.select do |dimension_key, _details|

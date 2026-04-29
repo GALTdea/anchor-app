@@ -82,10 +82,26 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
         confidence: 0.72,
         evidence_refs: { "profile_evidence_ids" => [ 1 ] }
       )
+      ai_unique = "UNIQUEAISUMMARYSNIPPET_RESULTS_HOME_VISIBILITY"
+      create(
+        :ai_synthesis_run, :completed,
+        analysis_run: analysis_run,
+        purpose: ChildProfileResultsPresenter::AI_SYNTHESIS_PURPOSE_PARENT,
+        output: {
+          "summary_plain" =>
+            "#{ai_unique} Extra words so deterministic analysis remains the grounding source for Anchor's profile views here.",
+          "synthesis_schema_version" => "anchor_synthesis_v1",
+          "confidence_note" => "Stub certainty still tracks low sample size for some signals.",
+          "what_to_watch" => [ "How communication shifts between calm and hurried moments." ],
+          "finding_refs" => []
+        }
+      )
 
       get space_child_profile_url(space, child_profile)
 
       expect(response).to be_successful
+      expect(response.body).to include(ai_unique)
+      expect(response.body).to include("Plain-language summary")
       expect(response.body).to include("What Anchor is noticing")
       expect(response.body).to include("Communication support signal")
       expect(response.body).to include("deterministic support signal")

@@ -204,6 +204,41 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
     end
   end
 
+  describe "#ai_guidance_panel" do
+    it "exposes structured copy when completed parent synthesis exists for the latest run" do
+      rubric = create(:analysis_rubric, :published, rubric_key: "presenter_syn", version: 1, schema: { "version" => 1, "domains" => [] })
+      run = create(:analysis_run, :completed, child_profile: child_profile, analysis_rubric: rubric)
+      create(:analysis_finding, analysis_run: run, dimension_key: "communication", finding_key: "communication.sig", label: "C", summary: ".", confidence: 0.8)
+
+      unique = "UNIQUESYNPRESENTERAISUMMARYBODYPHRASE"
+      create(
+        :ai_synthesis_run, :completed,
+        analysis_run: run,
+        purpose: ChildProfileResultsPresenter::AI_SYNTHESIS_PURPOSE_PARENT,
+        output: {
+          "summary_plain" =>
+            "#{unique} Padding text so Anchor parent guidance summaries meet minimum length hints here.",
+          "synthesis_schema_version" => "anchor_synthesis_v1",
+          "finding_refs" => []
+        }
+      )
+
+      panel = described_class.new(child_profile).ai_guidance_panel
+
+      expect(panel.summary_plain).to include(unique)
+    end
+
+    it "returns nil when no successful AiSynthesisRun exists yet" do
+      rubric = create(:analysis_rubric, :published, rubric_key: "presenter_no_syn", version: 1, schema: { "version" => 1, "domains" => [] })
+      run = create(:analysis_run, :completed, child_profile: child_profile, analysis_rubric: rubric)
+      create(:analysis_finding, analysis_run: run, dimension_key: "communication", finding_key: "communication.sig")
+
+      presenter = described_class.new(child_profile)
+
+      expect(presenter.ai_guidance_panel).to be_nil
+    end
+  end
+
   describe "#profile_ready?" do
     it "is true when a persisted current profile has dimensions" do
       create(:current_profile, child_profile: child_profile, summary: profile_summary)
