@@ -45,6 +45,9 @@ Proposed changes:
 - Send the existing rendered prompt as text input.
 - Request JSON-compatible output that is still validated by
   `Ai::StructuredOutputValidator`.
+- Treat provider JSON as untrusted text until Anchor validates it. The provider
+  may be asked for JSON, but only `Ai::StructuredOutputValidator` decides
+  whether the output is usable.
 - Keep `ANCHOR_AI_ENABLED=false` and `provider: stub` as safe defaults.
 - Configure live mode only through environment variables:
   - `ANCHOR_AI_ENABLED=true`
@@ -56,10 +59,87 @@ Proposed changes:
 - Do not store API keys in code, YAML, database records, logs, request payloads,
   response payloads, or `AiSynthesisRun`.
 - Store safe provider metadata in `AiSynthesisRun#response_payload`, such as
-  upstream response id, status, model, usage, and finish/output metadata when
-  available.
+  upstream response id, status, model, usage, latency, retry classification, and
+  finish/output metadata when available.
 - Preserve the existing stub provider for deterministic specs and local
   no-network development.
+
+### Provider adapter contract
+
+Every provider adapter must normalize its response into the same stable
+`Ai::Client#complete` contract:
+
+```ruby
+{
+  text: String,
+  provider: String,
+  model: String,
+  response_payload: Hash
+}
+```
+
+Contract rules:
+
+- `text` is the only provider field passed to `Ai::StructuredOutputValidator`.
+- `response_payload` is observational metadata only.
+- `response_payload` must never decide synthesis correctness.
+- Provider-native structured fields may inform `text` extraction, but they are
+  not trusted as validated Anchor output.
+- Provider-specific metadata must be normalized and safe to persist.
+- Future providers must use this same contract rather than bypassing validation.
+
+### Failure classification
+
+Provider failures should be classified even if full retry/backoff tuning remains
+out of scope for this stage.
+
+Retryable failures:
+
+- HTTP 429
+- HTTP 408
+- request timeout
+- connection reset or transient network failure
+- HTTP 5xx
+
+Non-retryable failures:
+
+- HTTP 400
+- HTTP 401
+- HTTP 403
+- malformed provider response
+- empty output
+- invalid schema output after `Ai::StructuredOutputValidator`
+
+The adapter or runner should record the classification in safe metadata when
+available so future job retry behavior can use it.
+
+### Logging and redaction rules
+
+Never log or persist:
+
+- authorization headers
+- API keys or bearer tokens
+- raw request bodies
+- full raw response bodies in production logs
+- prompts containing child-specific content at info/error level
+
+Allowed operational metadata:
+
+- provider
+- model
+- upstream request/response id
+- HTTP status
+- latency or duration in milliseconds
+- token usage when available
+- retry classification
+- truncated error class/message
+
+### Model compatibility
+
+The configured model must support the OpenAI Responses API and the
+JSON-compatible output constraints expected by this adapter. Model selection
+stays in environment configuration; business logic should not hard-code a model
+id.
 
 Reference docs used for planning:
 
@@ -84,6 +164,11 @@ Reference: `docs/features/_constraints.md`
       safety-sensitive conclusions.
 - [ ] AI output must still pass `Ai::StructuredOutputValidator` before display.
 - [ ] API keys and bearer tokens must never be persisted or logged.
+- [ ] Provider response JSON is untrusted until Anchor validates it.
+- [ ] Safe metadata can be persisted, but it must never determine synthesis
+      correctness.
+- [ ] Provider failures should be classified as retryable or non-retryable.
+- [ ] Logs must not include child-specific prompts or raw provider payloads.
 - [ ] Keep `stub` as the default provider for tests and local development.
 - [ ] Existing specs must stay green.
 - [ ] RuboCop must stay clean.
@@ -118,6 +203,9 @@ Reference: `docs/features/_constraints.md`
 - The default model should be configured through `ANCHOR_AI_DEFAULT_MODEL`
   instead of hard-coded into business logic. Development examples may use a
   currently supported lower-cost OpenAI model.
+- Provider output always flows through text extraction, Anchor validation, and
+  structured parse before display.
+- Record request latency as safe operational metadata.
 
 ## Steps
 
@@ -133,6 +221,7 @@ Build a request to the Responses API with:
 - authorization header from `ANCHOR_AI_API_KEY`
 
 Keep unsupported providers raising `Ai::UnsupportedProviderError`.
+The adapter must return the stable provider contract documented above.
 
 **Verify:** `bundle exec rspec spec/services/ai/client_spec.rb`
 **Revert:** Remove the OpenAI branch/adapter and restore the previous
@@ -153,7 +242,9 @@ Map the OpenAI response into the hash expected by `Ai::SynthesisRunner`:
 
 Handle missing output text, malformed JSON, non-2xx responses, rate limits,
 timeouts, and transport errors by raising or returning errors that
-`Ai::SynthesisRunner` records as failed synthesis attempts.
+`Ai::SynthesisRunner` records as failed synthesis attempts. Classify failures as
+retryable or non-retryable according to this brief and include the classification
+in safe metadata when possible.
 
 **Verify:** `bundle exec rspec spec/services/ai/client_spec.rb spec/services/ai/synthesis_runner_spec.rb`
 **Revert:** Remove response parsing/error handling changes.
@@ -169,6 +260,10 @@ Add WebMock-style or stubbed `Net::HTTP` specs for:
 - timeout/transport error
 - response body with no usable output text
 - no API key leakage into persisted payloads
+- provider JSON is still passed through Anchor validation
+- response payload metadata does not determine synthesis correctness
+- retryable vs non-retryable failure classification
+- latency metadata is captured
 
 If the project does not already use an HTTP stubbing gem, keep specs at the
 adapter boundary with injected fake HTTP behavior rather than adding a new gem
@@ -192,6 +287,8 @@ run.ai_synthesis_runs.order(created_at: :desc).first.slice(
 
 The note should also show the required environment variables without including
 real secrets.
+It should mention that the configured model must support the Responses API and
+JSON-compatible output expected by the adapter.
 
 **Verify:** Manual smoke test in development with a real key, if available.
 If no key is available, verify stub mode still works with
