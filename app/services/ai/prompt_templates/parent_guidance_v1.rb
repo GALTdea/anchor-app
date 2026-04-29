@@ -19,7 +19,21 @@ module Ai
           Structured analysis (JSON). Treat this as the only source of truth for findings:
           %{structured_json}
 
-          Respond in a single JSON object only (no markdown fences), matching the schema your caller describes.
+          Respond with a single JSON object only (no markdown fences). Use this shape exactly
+          (keys allowed: synthesis_schema_version, summary_plain, confidence_note, what_to_watch, finding_refs):
+
+          {
+            "synthesis_schema_version": "anchor_synthesis_v1",
+            "summary_plain": "…",
+            "confidence_note": null,
+            "what_to_watch": ["…"],
+            "finding_refs": [
+              {
+                "finding_key": "(must match a finding_key from the structured analysis)",
+                "summary_gist": null
+              }
+            ]
+          }
         PROMPT
       end
     end
