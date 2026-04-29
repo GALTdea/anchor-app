@@ -28,6 +28,15 @@ RSpec.describe Ai::SynthesisRunner do
     expect(synthesis.response_payload["validation_errors"]).to eq([])
   end
 
+  it "persists model_routing on each synthesis attempt" do
+    result = described_class.new(analysis_run:, purpose: Ai::PromptRenderer::DEFAULT_PURPOSE).call
+
+    expect(result.synthesis_run.request_payload["model_routing"]).to include(
+      "tier" => "default",
+      "requested_model" => "stub-mini"
+    )
+  end
+
   it "skips work when an identical prompt_version already succeeded" do
     described_class.new(analysis_run:, purpose: Ai::PromptRenderer::DEFAULT_PURPOSE).call
 
@@ -45,6 +54,51 @@ RSpec.describe Ai::SynthesisRunner do
     expect(forced.skipped).to be false
     expect(forced.success).to be true
     expect(AiSynthesisRun.where(analysis_run:, status: :completed).count).to eq(2)
+  end
+
+  it "retries once with escalation model when validation fails and escalation is enabled" do
+    valid = {
+      "synthesis_schema_version" => "anchor_synthesis_v1",
+      "summary_plain" =>
+        "Anchor noticed patterns in the profile worth summarizing for parents in plain language with enough length here.",
+      "confidence_note" => nil,
+      "what_to_watch" => [ "Day to day" ],
+      "finding_refs" => [ { "finding_key" => "communication.x.support_signal", "summary_gist" => nil } ]
+    }.to_json
+
+    cfg = Ai::Configuration.new(
+      enabled: true,
+      provider: "test",
+      default_model: "first-model",
+      escalation_model: "second-model",
+      validation_retry_model: "",
+      escalation_enabled: true,
+      timeout_seconds: 5,
+      api_base_url: nil,
+      api_key: nil
+    )
+
+    client = instance_double(Ai::Client)
+    allow(client).to receive(:complete) do |args|
+      case args[:model]
+      when "first-model"
+        { text: "{}", provider: "fixture", model: "first-model", response_payload: {} }
+      when "second-model"
+        { text: valid, provider: "fixture", model: "second-model", response_payload: {} }
+      else
+        raise "unexpected model #{args[:model].inspect}"
+      end
+    end
+
+    result = described_class.new(analysis_run:, client:, configuration: cfg).call
+
+    expect(result.success).to be true
+    rows = analysis_run.ai_synthesis_runs.order(:id)
+    expect(rows.count).to eq(2)
+    expect(rows.first).to be_failed
+    expect(rows.first.model).to eq("first-model")
+    expect(rows.last).to be_completed
+    expect(rows.last.model).to eq("second-model")
   end
 
   it "records failed synthesis with safe provider metadata when the client raises ProviderError" do

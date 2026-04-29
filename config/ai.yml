@@ -2,16 +2,25 @@ development:
   enabled: false
   provider: stub
   default_model: stub-mini
+  escalation_model: ""
+  validation_retry_model: ""
+  escalation_enabled: false
   timeout_seconds: 30
 
 test:
   enabled: true
   provider: stub
   default_model: stub-mini
+  escalation_model: ""
+  validation_retry_model: ""
+  escalation_enabled: false
   timeout_seconds: 5
 
 production:
   enabled: false
   provider: stub
   default_model: stub-mini
+  escalation_model: ""
+  validation_retry_model: ""
+  escalation_enabled: false
   timeout_seconds: 30

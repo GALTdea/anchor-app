@@ -42,52 +42,43 @@ module Ai
         return Result.new(success: true, skipped: true, synthesis_run: winner, error_message: nil)
       end
 
-      completion =
-        begin
-          @client.complete(prompt: render.prompt, model: nil)
-        rescue Ai::ProviderError => e
-          return persist_provider_failure(run, render, e)
-        end
-
-      raw_text = @configuration.stub? ? SynthesisStubText.from_prompt_result(render) : completion.fetch(:text)
-
-      validation = StructuredOutputValidator.new(
-        prompt_version: render.prompt_version,
-        raw_text: raw_text,
-        structured_analysis_payload: render.structured_payload
+      initial_route = ModelRouter.new(
+        configuration: @configuration,
+        structured_payload: render.structured_payload,
+        validation_retry: false
       ).call
 
-      request = request_payload(render)
-      response = response_payload(completion, raw_text, validation)
+      first_attempt = complete_and_validate(render, initial_route.model)
+      if first_attempt[:provider_error]
+        return persist_provider_failure(run, render, first_attempt[:provider_error], initial_route)
+      end
 
-      base_attrs = {
-        analysis_run: run,
-        purpose: render.purpose,
-        prompt_version: render.prompt_version,
-        request_payload: request,
-        response_payload: response,
-        started_at: Time.current,
-        provider: completion[:provider].to_s,
-        model: completion[:model].to_s
-      }
+      if first_attempt[:validation].success
+        return persist_success(run, render, first_attempt, initial_route)
+      end
 
-      if validation.success
-        synthesis = AiSynthesisRun.create!(base_attrs.merge(
-          status: :completed,
-          completed_at: Time.current,
-          output: validation.output,
-          error_message: nil
-        ))
-        Result.new(success: true, skipped: false, synthesis_run: synthesis, error_message: nil)
+      retry_route = ModelRouter.new(
+        configuration: @configuration,
+        structured_payload: render.structured_payload,
+        validation_retry: true,
+        prior_attempt_model: first_attempt[:completion][:model].to_s
+      ).call
+
+      if retry_route.tier == "validation_retry"
+        persist_validation_failure(run, render, first_attempt, initial_route)
+
+        second_attempt = complete_and_validate(render, retry_route.model)
+        if second_attempt[:provider_error]
+          return persist_provider_failure(run, render, second_attempt[:provider_error], retry_route)
+        end
+
+        if second_attempt[:validation].success
+          persist_success(run, render, second_attempt, retry_route)
+        else
+          persist_validation_failure(run, render, second_attempt, retry_route)
+        end
       else
-        synthesis = AiSynthesisRun.new(base_attrs.merge(
-          status: :failed,
-          completed_at: Time.current,
-          error_message: validation.errors.first(120).join(" | ").truncate(10_000),
-          output: {}
-        ))
-        synthesis.save!(validate: false)
-        Result.new(success: false, skipped: false, synthesis_run: synthesis, error_message: synthesis.error_message)
+        persist_validation_failure(run, render, first_attempt, initial_route)
       end
     rescue ActiveRecord::RecordInvalid => e
       Result.new(success: false, skipped: false, synthesis_run: e.record, error_message: e.message)
@@ -97,9 +88,70 @@ module Ai
 
     private
 
-    def persist_provider_failure(run, render, error)
+    def complete_and_validate(render, model)
+      completion = @client.complete(prompt: render.prompt, model: model)
+      raw_text = @configuration.stub? ? SynthesisStubText.from_prompt_result(render) : completion.fetch(:text)
+      validation = StructuredOutputValidator.new(
+        prompt_version: render.prompt_version,
+        raw_text: raw_text,
+        structured_analysis_payload: render.structured_payload
+      ).call
+      { completion: completion, raw_text: raw_text, validation: validation, provider_error: nil }
+    rescue Ai::ProviderError => e
+      { completion: nil, raw_text: nil, validation: nil, provider_error: e }
+    end
+
+    def persist_success(run, render, attempt, routing)
+      completion = attempt[:completion]
+      raw_text = attempt[:raw_text]
+      validation = attempt[:validation]
+      request = request_payload(render, routing)
+      response = response_payload(completion, raw_text, validation)
+
+      base_attrs = synthesis_base_attrs(run, render, request, response, completion)
+      synthesis = AiSynthesisRun.create!(base_attrs.merge(
+        status: :completed,
+        completed_at: Time.current,
+        output: validation.output,
+        error_message: nil
+      ))
+      Result.new(success: true, skipped: false, synthesis_run: synthesis, error_message: nil)
+    end
+
+    def persist_validation_failure(run, render, attempt, routing)
+      completion = attempt[:completion]
+      raw_text = attempt[:raw_text]
+      validation = attempt[:validation]
+      request = request_payload(render, routing)
+      response = response_payload(completion, raw_text, validation)
+
+      base_attrs = synthesis_base_attrs(run, render, request, response, completion)
+      synthesis = AiSynthesisRun.new(base_attrs.merge(
+        status: :failed,
+        completed_at: Time.current,
+        error_message: validation.errors.first(120).join(" | ").truncate(10_000),
+        output: {}
+      ))
+      synthesis.save!(validate: false)
+      Result.new(success: false, skipped: false, synthesis_run: synthesis, error_message: synthesis.error_message)
+    end
+
+    def synthesis_base_attrs(run, render, request, response, completion)
+      {
+        analysis_run: run,
+        purpose: render.purpose,
+        prompt_version: render.prompt_version,
+        request_payload: request,
+        response_payload: response,
+        started_at: Time.current,
+        provider: completion[:provider].to_s,
+        model: completion[:model].to_s
+      }
+    end
+
+    def persist_provider_failure(run, render, error, routing)
       upstream = (error.metadata || {}).deep_stringify_keys
-      request = request_payload(render)
+      request = request_payload(render, routing)
       response = {
         "upstream" => upstream,
         "raw_model_text_truncated" => "",
@@ -114,7 +166,7 @@ module Ai
         started_at: Time.current,
         completed_at: Time.current,
         provider: upstream["provider"].presence || @configuration.provider.to_s,
-        model: upstream["model"].presence || @configuration.default_model.to_s
+        model: upstream["model"].presence || routing.model.to_s
       }
       synthesis = AiSynthesisRun.new(base_attrs.merge(
         status: :failed,
@@ -134,13 +186,19 @@ module Ai
       )
     end
 
-    def request_payload(render)
+    def request_payload(render, routing)
       {
         "purpose" => render.purpose,
         "prompt_version" => render.prompt_version,
         "structured_payload" => render.structured_payload,
         "prompt_sha256" => Digest::SHA256.hexdigest(render.prompt),
-        "prompt_bytesize" => render.prompt.bytesize
+        "prompt_bytesize" => render.prompt.bytesize,
+        "model_routing" => {
+          "tier" => routing.tier,
+          "routing_reason" => routing.routing_reason,
+          "requested_model" => routing.model,
+          "signals" => routing.signals.deep_stringify_keys
+        }
       }
     end
 

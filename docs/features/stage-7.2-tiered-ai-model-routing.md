@@ -249,17 +249,32 @@ bundle exec rspec
 
 ---
 
+### Local routing smoke checks (development)
+
+- **Default routing:** leave `ANCHOR_AI_ESCALATION_ENABLED` unset or `false`; run `AiSynthesisJob.perform_now` and inspect `request_payload["model_routing"]["tier"]` (expect `default`).
+- **Escalation:** set `ANCHOR_AI_ESCALATION_ENABLED=true`, set `ANCHOR_AI_ESCALATION_MODEL` to a real model id, and use a completed run whose findings produce packet signals (e.g. mark a finding `metadata: { "anchor_routing_complex" => true }` in console for a one-off test), then check `tier` / `requested_model`.
+- **Validation retry:** enable escalation; force a first completion that returns invalid JSON (only in a test or stub client); second attempt should use `ANCHOR_AI_VALIDATION_RETRY_MODEL` or the escalation model.
+- **Stub:** default `config/ai.yml` remains `provider: stub`; routing metadata is still persisted on `request_payload`.
+
+```ruby
+run = AnalysisRun.completed.order(created_at: :desc).first
+AiSynthesisJob.perform_now(run.id, force: true)
+synthesis = run.ai_synthesis_runs.order(created_at: :desc).first
+synthesis.slice(:status, :provider, :model, :prompt_version, :error_message)
+synthesis.request_payload["model_routing"]
+```
+
+---
+
 ## Status
 
-- [ ] Step 1
-- [ ] Step 2
-- [ ] Step 3
-- [ ] Step 4
-- [ ] Step 5
-- [ ] Step 6
-- [ ] Step 7
+- [x] Step 1
+- [x] Step 2
+- [x] Step 3
+- [x] Step 4
+- [x] Step 5
+- [x] Step 6
+- [x] Step 7
 
 **Last updated:** 2026-04-29
-**Handoff note:** Brief created after Stage 7.1 planning. This stage adds
-tiered model selection and escalation while preserving the compact synthesis
-packet boundary and deterministic validation/fallback behavior.
+**Handoff note:** `Ai::Configuration` exposes escalation env/YAML keys. `Ai::ModelRouter` selects `default`, `escalated`, or `validation_retry` from `packet_meta` only. `Ai::PromptRenderer` adds `packet_meta` aggregates (counts, confidence, conflict signals, etc.). `Ai::SynthesisRunner` passes the routed model to `Client#complete`, stores `request_payload["model_routing"]`, and on validation failure retries once with the escalation/retry model when enabled. Specs: `configuration_spec`, `model_router_spec`, extended renderer/synthesis_runner specs.

@@ -74,8 +74,82 @@ module Ai
           "version" => run.analysis_rubric.version,
           "name" => run.analysis_rubric.name
         },
-        "findings" => findings
+        "findings" => findings,
+        "packet_meta" => packet_meta_for(findings)
       }
+    end
+
+    def packet_meta_for(findings)
+      rows = Array(findings)
+      confidences = rows.filter_map { |f| f["confidence"] }
+      avg = confidences.empty? ? nil : (confidences.sum.to_f / confidences.size).round(4)
+      min_c = confidences.empty? ? nil : confidences.map(&:to_f).min
+      low_thr = Ai::ModelRouter::LOW_CONF_FINDING_THRESHOLD
+      low_conf_count = rows.count do |f|
+        f["confidence"].is_a?(Numeric) && f["confidence"] < low_thr
+      end
+
+      severity_counts = rows.group_by { |f| f["severity"].to_s.presence || "unknown" }.transform_values(&:count)
+      nonblank_summary_count = rows.count { |f| f["summary"].to_s.strip.present? }
+      summary_total_bytes = rows.sum { |f| f["summary"].to_s.bytesize }
+      conflict_signal_count = rows.sum { |f| conflict_signal_score(f) }
+      marked_complex = rows.any? { |f| packet_flag_complex?(f) }
+
+      {
+        "finding_count" => rows.size,
+        "average_confidence" => avg,
+        "min_confidence" => min_c,
+        "low_confidence_finding_count" => low_conf_count,
+        "severity_counts" => severity_counts,
+        "nonblank_summary_count" => nonblank_summary_count,
+        "summary_total_bytes" => summary_total_bytes,
+        "conflict_signal_count" => conflict_signal_count,
+        "marked_complex" => marked_complex
+      }
+    end
+
+    def packet_flag_complex?(finding)
+      m = finding["metadata"]
+      return false unless m.is_a?(Hash)
+
+      ActiveModel::Type::Boolean.new.cast(m["anchor_routing_complex"]) ||
+        ActiveModel::Type::Boolean.new.cast(m["complex_case"])
+    end
+
+    def conflict_signal_score(finding)
+      score = 0
+      m = finding["metadata"]
+      if m.is_a?(Hash)
+        score += 1 if truthy_conflict_meta?(m)
+        score += 1 if deep_string_match?(m, /conflict|contradict/i)
+      end
+      score += 1 if finding["summary"].to_s.match?(/conflict|contradictory|inconsistent/i)
+      score += 1 if finding["label"].to_s.match?(/conflict|contradict/i)
+      ev = finding["evidence_refs"]
+      score += 1 if ev.is_a?(Hash) && deep_string_match?(ev, /conflict|contradict/i)
+      score
+    end
+
+    def truthy_conflict_meta?(h)
+      keys = %w[conflict evidence_conflict conflicting_positions]
+      keys.any? do |key|
+        next false unless h.key?(key)
+
+        ActiveModel::Type::Boolean.new.cast(h[key]) || (h[key].is_a?(Numeric) && !h[key].zero?)
+      end
+    end
+
+    def deep_string_match?(obj, pattern)
+      case obj
+      when Hash
+        obj.any? { |_, v| deep_string_match?(v, pattern) }
+      when Array
+        obj.any? { |v| deep_string_match?(v, pattern) }
+      when String
+        obj.match?(pattern)
+      else
+        false
+      end
     end
 
     def serialize_child_profile_stub(profile)

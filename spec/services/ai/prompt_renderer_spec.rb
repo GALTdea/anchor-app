@@ -41,6 +41,20 @@ RSpec.describe Ai::PromptRenderer do
       expect(stub["first_name"]).to eq("Sam")
     end
 
+    it "includes packet_meta aggregates for model routing" do
+      result = described_class.new(analysis_run:).call
+      meta = result.structured_payload["packet_meta"]
+      expect(meta["finding_count"]).to eq(1)
+      expect(meta["average_confidence"]).to eq(0.8)
+      expect(meta["min_confidence"]).to eq(0.8)
+      expect(meta["low_confidence_finding_count"]).to eq(0)
+      expect(meta["severity_counts"]).to include("low" => 1)
+      expect(meta["nonblank_summary_count"]).to eq(1)
+      expect(meta["summary_total_bytes"]).to be_positive
+      expect(meta["conflict_signal_count"]).to eq(0)
+      expect(meta["marked_complex"]).to be false
+    end
+
     it "supports an explicit purpose" do
       result = described_class.new(analysis_run:, purpose: "parent_guidance_v1").call
 
