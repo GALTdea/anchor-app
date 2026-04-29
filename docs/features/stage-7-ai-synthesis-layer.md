@@ -306,7 +306,7 @@ is unavailable or failed.
 
 - [x] Step 1
 - [x] Step 2
-- [ ] Step 3
+- [x] Step 3
 - [ ] Step 4
 - [ ] Step 5
 - [ ] Step 6
