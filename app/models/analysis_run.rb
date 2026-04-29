@@ -41,6 +41,7 @@ class AnalysisRun < ApplicationRecord
   belongs_to :profile_snapshot, optional: true
 
   has_many :analysis_findings, dependent: :destroy
+  has_many :ai_synthesis_runs, dependent: :destroy
 
   enum :status, { pending: 0, running: 1, completed: 2, failed: 3 }, default: :pending
 

@@ -166,6 +166,7 @@ User/Space/Role foundation with child-centered models.
 - **AnalysisRubric** = versioned, Anchor-owned rubric definition (scoring and labeling rules) for deterministic analysis.
 - **AnalysisRun** = one execution of a rubric against structured profile inputs, optionally tied to a snapshot.
 - **AnalysisFinding** = a single rubric output (score, confidence, evidence refs) from a run.
+- **AiSynthesisRun** = one attempt at external AI synthesis on top of a completed deterministic `AnalysisRun` (parent-facing copy, audit metadata; not a source of rubric scores).
 - **Recommendation** = generated guidance tied to a profile snapshot.
 
 ### Three-tier role system
@@ -197,6 +198,7 @@ User/Space/Role foundation with child-centered models.
 | **AnalysisRubric** | 6 ✅ | `name`, `rubric_key`, `version`, `status`, `description`, `schema` (jsonb), `published_at` | — |
 | **AnalysisRun** | 6 ✅ | `child_profile_id`, `analysis_rubric_id`, `profile_snapshot_id` (optional), `status`, `started_at`, `completed_at`, `error_message`, `input_digest`, `engine_version` | ChildProfile, AnalysisRubric, ProfileSnapshot (optional) |
 | **AnalysisFinding** | 6 ✅ | `analysis_run_id`, `dimension_key`, `finding_key`, `score`, `confidence`, `severity`, `label`, `summary`, `evidence_refs` (jsonb), `metadata` (jsonb) | AnalysisRun |
+| **AiSynthesisRun** | 7 (in progress) | `analysis_run_id`, `status`, `purpose`, `provider`, `model`, `prompt_version`, `request_payload` (jsonb), `response_payload` (jsonb), `output` (jsonb), `started_at`, `completed_at`, `error_message` | AnalysisRun |
 | **OnboardingSession** | 4.6 ✅ | `status`, `email`, `parent_name`, `child_first_name`, `child_last_name`, `child_date_of_birth`, `draft_answers`, `started_at`, `completed_at`, optional finalized foreign keys | AssessmentTemplate, optional User/Space/ChildProfile/Assessment/AssessmentResponse |
 
 ### Planned models (not yet built)
@@ -237,6 +239,8 @@ User/Space/Role foundation with child-centered models.
                     ▼                                    ▼
             AnalysisRun ──► AnalysisFinding      Recommendation
             (AnalysisRubric)
+                    │
+                    └──► AiSynthesisRun (external AI synthesis; optional)
 ```
 
 ### Respondent provenance (assessments)
@@ -330,6 +334,6 @@ See `docs/features/` for detailed briefs per stage.
 | 4.9 | Child profile results home (show page + presenter) | — |
 | 4.10 | Child profile parent-guidance UX | — |
 | 5 | External collaborators + child access | ChildAccess |
-| 6 | Internal analysis engine (deterministic rubric) | AnalysisRubric, AnalysisRun, AnalysisFinding |
+| 6 | Internal analysis engine (deterministic rubric; optional AI synthesis on completed runs) | AnalysisRubric, AnalysisRun, AnalysisFinding, AiSynthesisRun |
 | 7 | Consent tracking + audit trail | ConsentRecord, AuditLog |
 | 8 | Goals and progress tracking | TBD |

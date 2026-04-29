@@ -10,9 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_27_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_28_202543) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "ai_synthesis_runs", force: :cascade do |t|
+    t.bigint "analysis_run_id", null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "model"
+    t.jsonb "output", default: {}, null: false
+    t.string "prompt_version"
+    t.string "provider"
+    t.string "purpose", null: false
+    t.jsonb "request_payload", default: {}, null: false
+    t.jsonb "response_payload", default: {}, null: false
+    t.datetime "started_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["analysis_run_id", "purpose", "prompt_version"], name: "index_ai_synthesis_runs_analysis_purpose_prompt"
+    t.index ["analysis_run_id"], name: "index_ai_synthesis_runs_on_analysis_run_id"
+  end
 
   create_table "analysis_findings", force: :cascade do |t|
     t.bigint "analysis_run_id", null: false
@@ -307,6 +326,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_27_120000) do
     t.index ["slug"], name: "index_users_on_slug", unique: true
   end
 
+  add_foreign_key "ai_synthesis_runs", "analysis_runs"
   add_foreign_key "analysis_findings", "analysis_runs"
   add_foreign_key "analysis_runs", "analysis_rubrics"
   add_foreign_key "analysis_runs", "child_profiles"
