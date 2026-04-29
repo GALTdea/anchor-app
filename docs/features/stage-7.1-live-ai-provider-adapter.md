@@ -42,7 +42,9 @@ Proposed changes:
 
 - Add an OpenAI adapter path inside or under `Ai::Client`.
 - Use the Responses API as the first live endpoint.
-- Send the existing rendered prompt as text input.
+- Send only the existing rendered prompt and compact structured synthesis packet
+  from `Ai::PromptRenderer`; never send raw ActiveRecord objects, full child
+  records, full assessment responses, or unrelated profile history.
 - Request JSON-compatible output that is still validated by
   `Ai::StructuredOutputValidator`.
 - Treat provider JSON as untrusted text until Anchor validates it. The provider
@@ -87,6 +89,35 @@ Contract rules:
   not trusted as validated Anchor output.
 - Provider-specific metadata must be normalized and safe to persist.
 - Future providers must use this same contract rather than bypassing validation.
+
+### AI synthesis packet safety boundary
+
+The live provider adapter must receive only a compact AI synthesis packet created
+upstream by `Ai::PromptRenderer` or a future packet builder. The packet is the
+maximum data boundary for external AI calls.
+
+Allowed packet contents:
+
+- `analysis_run_id`
+- rubric key/version/schema version
+- finding keys, labels, summaries, scores, confidence, severity, and evidence
+  counts
+- compact evidence references such as ids/counts, not full source records
+- short, already-curated excerpts only when explicitly included by the renderer
+- non-diagnostic wording constraints and expected output schema
+
+Disallowed packet contents:
+
+- raw `ChildProfile` records
+- full `AssessmentResponse.answers`
+- full `ProfileEvidence` rows
+- full free-text history
+- unrelated family, user, space, billing, or access-control data
+- secrets, tokens, internal ids beyond the minimum references needed for audit
+
+If synthesis needs more context later, that context should be deliberately added
+to the packet builder with truncation, redaction, and tests. The provider adapter
+must not reach back into the database to gather more child data.
 
 ### Failure classification
 
@@ -163,6 +194,8 @@ Reference: `docs/features/_constraints.md`
 - [ ] AI must not create rubric scores, findings, clinical claims, or
       safety-sensitive conclusions.
 - [ ] AI output must still pass `Ai::StructuredOutputValidator` before display.
+- [ ] Live provider calls must use only the compact AI synthesis packet; never
+      raw child records or full database objects.
 - [ ] API keys and bearer tokens must never be persisted or logged.
 - [ ] Provider response JSON is untrusted until Anchor validates it.
 - [ ] Safe metadata can be persisted, but it must never determine synthesis
@@ -196,6 +229,8 @@ Reference: `docs/features/_constraints.md`
 - The first live provider is OpenAI.
 - The adapter should use OpenAI's Responses API.
 - The adapter should live behind the existing `Ai::Client` boundary.
+- Live provider calls use only compact synthesis packets generated before the
+  provider boundary.
 - `stub` remains the default provider in `config/ai.yml`.
 - Live provider mode is enabled only with environment variables.
 - The implementation should prefer a small HTTP adapter using Ruby stdlib
@@ -216,6 +251,7 @@ Build a request to the Responses API with:
 
 - configured model
 - rendered prompt as text input
+- compact structured synthesis packet only
 - JSON-oriented response instructions compatible with the existing validator
 - request timeout
 - authorization header from `ANCHOR_AI_API_KEY`
@@ -262,6 +298,7 @@ Add WebMock-style or stubbed `Net::HTTP` specs for:
 - no API key leakage into persisted payloads
 - provider JSON is still passed through Anchor validation
 - response payload metadata does not determine synthesis correctness
+- no raw child/profile/assessment objects are sent to the provider adapter
 - retryable vs non-retryable failure classification
 - latency metadata is captured
 
