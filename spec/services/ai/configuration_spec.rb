@@ -52,6 +52,7 @@ RSpec.describe Ai::Configuration do
 
     it "merges ANCHOR_AI_ESCALATION_* and ANCHOR_AI_VALIDATION_RETRY_MODEL from ENV over yaml" do
       allow(Rails.application).to receive(:config_for).with(:ai).and_return(yaml_base)
+      allow(described_class).to receive(:credentials_openai_api_key).and_return(nil)
       saved = ENV.to_h
       begin
         ENV.replace(saved.merge(
@@ -63,6 +64,36 @@ RSpec.describe Ai::Configuration do
         expect(cfg.escalation_model).to eq("esc-from-env")
         expect(cfg.validation_retry_model).to eq("retry-from-env")
         expect(cfg.escalation_enabled?).to be true
+      ensure
+        ENV.replace(saved)
+      end
+    end
+
+    it "uses the OpenAI API key from credentials when ENV is blank" do
+      allow(Rails.application).to receive(:config_for).with(:ai).and_return(yaml_base)
+      allow(described_class).to receive(:credentials_openai_api_key).and_return("sk-from-credentials")
+      saved = ENV.to_h
+      begin
+        ENV.replace(saved.except("ANCHOR_AI_API_KEY"))
+
+        cfg = described_class.load
+
+        expect(cfg.api_key).to eq("sk-from-credentials")
+      ensure
+        ENV.replace(saved)
+      end
+    end
+
+    it "prefers ANCHOR_AI_API_KEY over credentials" do
+      allow(Rails.application).to receive(:config_for).with(:ai).and_return(yaml_base)
+      allow(described_class).to receive(:credentials_openai_api_key).and_return("sk-from-credentials")
+      saved = ENV.to_h
+      begin
+        ENV.replace(saved.merge("ANCHOR_AI_API_KEY" => "sk-from-env"))
+
+        cfg = described_class.load
+
+        expect(cfg.api_key).to eq("sk-from-env")
       ensure
         ENV.replace(saved)
       end

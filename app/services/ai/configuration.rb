@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module Ai
-  # Loads YAML (`config/ai.yml`) merged with ENV. API keys belong in ENV only.
+  # Loads YAML (`config/ai.yml`) merged with ENV. API keys prefer ENV and fall back
+  # to Rails credentials for local/private deployments.
   class Configuration
     attr_reader :enabled,
                 :provider,
@@ -24,8 +25,12 @@ module Ai
         escalation_enabled: cast_bool(ENV["ANCHOR_AI_ESCALATION_ENABLED"], fallback: yaml[:escalation_enabled]),
         timeout_seconds: Integer(ENV["ANCHOR_AI_TIMEOUT_SECONDS"].presence || yaml[:timeout_seconds] || 30),
         api_base_url: ENV["ANCHOR_AI_API_BASE_URL"].presence || yaml[:api_base_url],
-        api_key: ENV["ANCHOR_AI_API_KEY"].presence
+        api_key: ENV["ANCHOR_AI_API_KEY"].presence || credentials_openai_api_key
       )
+    end
+
+    def self.credentials_openai_api_key
+      Rails.application.credentials.dig(:openai, :api_key).presence
     end
 
     def self.cast_bool(env_value, fallback:)
