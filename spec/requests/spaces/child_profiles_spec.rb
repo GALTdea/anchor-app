@@ -101,25 +101,25 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
 
       expect(response).to be_successful
       expect(response.body).to include(ai_unique)
-      expect(response.body).to include("Plain-language summary")
-      expect(response.body).to include("What Anchor is noticing")
-      expect(response.body).to include("Communication support signal")
-      expect(response.body).to include("deterministic support signal")
+      expect(response.body).to include("Plain-language Summary")
+      expect(response.body).to include("What Anchor Is Noticing")
       expect(response.body).to include("Maya Rivera Profile")
-      expect(response.body).to include("Your Child at a Glance")
-      expect(response.body).to include("What May Be Driving This")
+      expect(response.body).to include("Child Snapshot")
       expect(response.body).to include("What to Focus on Right Now")
       expect(response.body).to include("Try This This Week")
       expect(response.body).to include("What We're Still Learning")
-      expect(response.body).to include("Maya has a profile narrative.")
       expect(response.body).to include("Dinosaurs")
       expect(response.body).to include("Uses short phrases")
       expect(response.body).to include("Use visual supports")
       expect(response.body).to include("Why it may help")
       expect(response.body).to include("How to try it")
       expect(response.body).to include("Anchor Onboarding Profile")
-      expect(response.body).to include("View submitted answers")
+      expect(response.body).to include("Full profile")
+      expect(response.body).to include("View all recommendations")
       expect(response.body).to include("may")
+      expect(response.body).not_to include("Communication support signal")
+      expect(response.body).not_to include("deterministic support signal")
+      expect(response.body).not_to include("What May Be Driving This")
       expect(response.body).not_to include("Profile signals")
       expect(response.body).not_to include("confidence score")
       expect(response.body).not_to include("evidence count")
@@ -136,13 +136,14 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
 
       expect(response).to be_successful
       expect(response.body).to include("Noah Lee Profile")
-      expect(response.body).to include("Your Child at a Glance")
+      expect(response.body).to include("Child Snapshot")
+      expect(response.body).to include("Plain-language Summary")
+      expect(response.body).to include("What Anchor Is Noticing")
       expect(response.body).to include("May do best when the next step is clear.")
       expect(response.body).to include("Make uncertain moments more predictable")
       expect(response.body).to include("Preview one tricky transition")
       expect(response.body).to include("Start onboarding assessment")
       expect(response.body).to include(new_space_child_profile_assessment_path(space, child_profile))
-      expect(response.body).to include("Profile records will appear after the first response is submitted.")
       expect(response.body).not_to include("Profile signals")
     end
 
@@ -230,8 +231,8 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
 
       expect(response).to be_successful
       expect(response.body).to include("Profile update queued")
-      expect(response.body).to include("We saved the assessment and are building this profile.")
-      expect(response.body).to include("For now, here are gentle starting points")
+      expect(response.body).to include("We saved what has been shared so far and are building this profile.")
+      expect(response.body).to include("gentle starting points")
     end
 
     it "surfaces failed assessment processing on the results home" do

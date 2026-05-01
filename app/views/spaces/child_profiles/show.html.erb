@@ -1,253 +1,203 @@
 <% processing_status = @results_presenter.processing_status %>
-<% profile_traits = @results_presenter.profile_traits %>
-<% driving_explanations = @results_presenter.driving_explanations %>
+<% updated_at = @results_presenter.child_snapshot_updated_at %>
+<% observations = @results_presenter.anchor_observations %>
 <% support_priorities = @results_presenter.support_priorities %>
 <% weekly_ideas = @results_presenter.weekly_ideas %>
+<% learning_areas = @results_presenter.learning_areas %>
 
 <div class="mx-auto max-w-6xl space-y-6">
   <%= render "shared/page_header",
     title: @results_presenter.page_title,
-    subtitle: "Here is what we currently understand about #{@child_profile.first_name}, why it may be happening, and what may help next." %>
+    subtitle: "A compact picture of what Anchor understands right now, what may matter most, and what to try next." %>
 
-  <div class="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_20rem]">
-    <div class="space-y-6">
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-5">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="badge badge-primary badge-outline">Support profile</span>
-            <% if processing_status.present? %>
-              <span class="<%= assessment_processing_badge_class(processing_status) %>">
-                <%= assessment_processing_status_label(processing_status) %>
-              </span>
-            <% end %>
+  <div class="flex flex-wrap gap-2">
+    <%= link_to "Full profile",
+      space_child_profile_current_profile_path(@space, @child_profile),
+      class: "btn btn-outline btn-sm" %>
+    <%= link_to "Recommendations",
+      space_child_profile_recommendations_path(@space, @child_profile),
+      class: "btn btn-outline btn-sm" %>
+    <%= link_to "Assessments",
+      space_child_profile_assessments_path(@space, @child_profile),
+      class: "btn btn-ghost btn-sm" %>
+    <% if policy(@child_profile).update? %>
+      <%= link_to "Edit child details",
+        edit_space_child_profile_path(@space, @child_profile),
+        class: "btn btn-ghost btn-sm" %>
+    <% end %>
+  </div>
+
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary badge-outline"><%= @results_presenter.profile_state_label %></span>
+        <% if processing_status.present? %>
+          <span class="<%= assessment_processing_badge_class(processing_status) %>">
+            <%= assessment_processing_status_label(processing_status) %>
+          </span>
+        <% end %>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">Child Snapshot</h2>
+        <dl class="mt-4 grid gap-4 text-sm md:grid-cols-4">
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <dt class="text-base-content/60">Name</dt>
+            <dd class="mt-1 font-medium text-base-content"><%= @child_profile.name %></dd>
           </div>
-
-          <div>
-            <h2 class="text-lg font-semibold text-base-content">Your Child at a Glance</h2>
-            <p class="mt-3 text-base leading-7 text-base-content/80">
-              <% if @results_presenter.profile_ready? %>
-                <%= @current_profile.narrative %>
-              <% elsif processing_status == "failed" %>
-                We saved the assessment, but the profile update needs attention before these results can be refreshed.
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <dt class="text-base-content/60">Age</dt>
+            <dd class="mt-1 font-medium text-base-content">
+              <%= @child_profile.date_of_birth.present? ? "#{@child_profile.age} years" : "Not added yet" %>
+            </dd>
+          </div>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <dt class="text-base-content/60">Last updated</dt>
+            <dd class="mt-1 font-medium text-base-content"><%= l(updated_at.to_date, format: :long) %></dd>
+          </div>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <dt class="text-base-content/60">Freshness</dt>
+            <dd class="mt-1 font-medium text-base-content">
+              <% if updated_at.to_date == Date.current %>
+                Updated today
               <% else %>
-                We saved the assessment and are building this profile. For now, here are gentle starting points that may help while Anchor learns more.
+                Updated <%= time_ago_in_words(updated_at) %> ago
               <% end %>
-            </p>
+            </dd>
           </div>
+        </dl>
+      </div>
 
-          <div class="grid gap-3 md:grid-cols-3">
-            <% profile_traits.first(5).each do |trait| %>
-              <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-                <p class="text-sm leading-6 text-base-content/75"><%= trait %></p>
-              </div>
-            <% end %>
-          </div>
-
-          <div class="rounded-box bg-base-200/70 p-4 text-sm leading-6 text-base-content/70">
-            This is an early profile based on what has been shared so far. It should get more useful as Anchor learns more about what helps <%= @child_profile.first_name %>.
-          </div>
-
-          <% if @latest_assessment_response.blank? && policy(Assessment.new(child_profile: @child_profile)).create? %>
-            <div class="rounded-box border border-primary/30 bg-primary/10 p-5">
-              <h3 class="text-base font-semibold text-base-content">Start with the onboarding assessment</h3>
-              <p class="mt-2 text-sm leading-6 text-base-content/75">
-                Answer a few guided questions so Anchor can build a clearer first profile for <%= @child_profile.first_name %>.
-              </p>
-              <div class="mt-4">
-                <%= link_to "Start onboarding assessment",
-                  new_space_child_profile_assessment_path(@space, @child_profile),
-                  class: "btn btn-primary" %>
-              </div>
-            </div>
-          <% end %>
-        </div>
-      </section>
-
-      <%= render "child_profiles/shared/analysis_insights", presenter: @results_presenter %>
-
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-5">
-          <div>
-            <h2 class="text-lg font-semibold text-base-content">What May Be Driving This</h2>
-            <p class="mt-1 text-sm leading-6 text-base-content/70">
-              These are working ideas to help make behavior easier to understand, not fixed conclusions.
-            </p>
-          </div>
-
-          <div class="grid gap-4 md:grid-cols-3">
-            <% driving_explanations.each do |explanation| %>
-              <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-base-content/50">Behavior or context</p>
-                <h3 class="mt-2 text-sm font-semibold text-base-content"><%= explanation.behavior_context %></h3>
-                <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-base-content/50">Possible meaning</p>
-                <p class="mt-1 text-sm leading-6 text-base-content/75"><%= explanation.possible_meaning %></p>
-                <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-base-content/50">Support implication</p>
-                <p class="mt-1 text-sm leading-6 text-base-content/75"><%= explanation.support_implication %></p>
-              </div>
-            <% end %>
+      <% if @latest_assessment_response.present? %>
+        <% assessment = @latest_assessment_response.assessment %>
+        <p class="rounded-box bg-base-200/70 p-4 text-sm leading-6 text-base-content/70">
+          Profile updated from <%= assessment.assessment_template.title %> <%= time_ago_in_words(@latest_assessment_response.submitted_at) %> ago.
+        </p>
+      <% elsif policy(Assessment.new(child_profile: @child_profile)).create? %>
+        <div class="rounded-box border border-primary/30 bg-primary/10 p-5">
+          <h3 class="text-base font-semibold text-base-content">Start with the onboarding assessment</h3>
+          <p class="mt-2 text-sm leading-6 text-base-content/75">
+            Answer a few guided questions so Anchor can build a clearer first profile for <%= @child_profile.first_name %>.
+          </p>
+          <div class="mt-4">
+            <%= link_to "Start onboarding assessment",
+              new_space_child_profile_assessment_path(@space, @child_profile),
+              class: "btn btn-primary" %>
           </div>
         </div>
-      </section>
-
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-5">
-          <div>
-            <h2 class="text-lg font-semibold text-base-content">What to Focus on Right Now</h2>
-            <p class="mt-1 text-sm leading-6 text-base-content/70">
-              Choose one focus area at a time. The goal is steadier support, not a longer task list.
-            </p>
-          </div>
-
-          <div class="grid gap-3 md:grid-cols-3">
-            <% support_priorities.each do |priority| %>
-              <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-                <h3 class="text-sm font-semibold text-base-content"><%= priority.title %></h3>
-                <p class="mt-2 text-sm leading-6 text-base-content/75"><%= priority.body %></p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </section>
-
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-5">
-          <div>
-            <h2 class="text-lg font-semibold text-base-content">Try This This Week</h2>
-            <p class="mt-1 text-sm leading-6 text-base-content/70">
-              Small experiments can make support feel more practical. Try one idea, then notice what changes.
-            </p>
-          </div>
-
-          <div class="space-y-4">
-            <% weekly_ideas.each do |idea| %>
-              <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                  <h3 class="text-base font-semibold text-base-content"><%= idea.title %></h3>
-                  <span class="badge badge-primary badge-outline"><%= idea.estimated_time %></span>
-                </div>
-                <div class="mt-3 grid gap-3 md:grid-cols-2">
-                  <div>
-                    <p class="text-xs font-semibold uppercase tracking-wide text-base-content/50">Why it may help</p>
-                    <p class="mt-1 text-sm leading-6 text-base-content/75"><%= idea.why_it_may_help %></p>
-                  </div>
-                  <div>
-                    <p class="text-xs font-semibold uppercase tracking-wide text-base-content/50">How to try it</p>
-                    <p class="mt-1 text-sm leading-6 text-base-content/75"><%= idea.how_to_try_it %></p>
-                  </div>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </section>
-
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-5">
-          <div>
-            <h2 class="text-lg font-semibold text-base-content">What We're Still Learning</h2>
-            <p class="mt-1 text-sm leading-6 text-base-content/70">
-              You do not need to track everything. A few small observations can help this profile become more useful over time.
-            </p>
-          </div>
-
-          <div class="grid gap-3 md:grid-cols-2">
-            <div class="rounded-box border border-base-300/70 bg-base-100 p-4 text-sm leading-6 text-base-content/75">
-              What usually happens right before the behavior?
-            </div>
-            <div class="rounded-box border border-base-300/70 bg-base-100 p-4 text-sm leading-6 text-base-content/75">
-              What helps <%= @child_profile.first_name %> recover or reconnect?
-            </div>
-            <div class="rounded-box border border-base-300/70 bg-base-100 p-4 text-sm leading-6 text-base-content/75">
-              Do patterns change with fatigue, transitions, sensory input, or task difficulty?
-            </div>
-            <div class="rounded-box border border-base-300/70 bg-base-100 p-4 text-sm leading-6 text-base-content/75">
-              Does a support make the moment easier, shorter, or less intense?
-            </div>
-          </div>
-        </div>
-      </section>
+      <% end %>
     </div>
+  </section>
 
-    <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-3">
-          <h2 class="text-base font-semibold text-base-content"><%= @child_profile.first_name %> at a glance</h2>
-          <dl class="space-y-3 text-sm">
-            <div>
-              <dt class="text-base-content/60">Name</dt>
-              <dd><%= @child_profile.name %></dd>
-            </div>
-            <% if @child_profile.date_of_birth.present? %>
-              <div>
-                <dt class="text-base-content/60">Age</dt>
-                <dd><%= @child_profile.age %> years</dd>
-              </div>
-            <% end %>
-            <div>
-              <dt class="text-base-content/60">Status</dt>
-              <dd>
-                <span class="badge <%= @child_profile.active? ? 'badge-success' : 'badge-ghost' %>">
-                  <%= @child_profile.status.capitalize %>
-                </span>
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </section>
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-3">
+      <h2 class="text-lg font-semibold text-base-content">Plain-language Summary</h2>
+      <p class="text-base leading-7 text-base-content/80">
+        <%= @results_presenter.plain_language_summary %>
+      </p>
+      <p class="text-sm leading-6 text-base-content/65">
+        This is a working support picture. It should get more useful as Anchor learns more about what helps <%= @child_profile.first_name %>.
+      </p>
+    </div>
+  </section>
 
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-3">
-          <h2 class="text-base font-semibold text-base-content">Profile records</h2>
-          <% if @latest_assessment_response.present? %>
-            <% assessment = @latest_assessment_response.assessment %>
-            <p class="text-sm leading-6 text-base-content/70">
-              Last updated from <%= assessment.assessment_template.title %> on <%= l(@latest_assessment_response.submitted_at.to_date, format: :long) %>.
-            </p>
-            <div class="mt-2 flex flex-col gap-2">
-              <%= link_to "View submitted answers",
-                space_child_profile_assessment_assessment_response_path(@space, @child_profile, assessment),
-                class: "btn btn-outline btn-sm" %>
-              <%= link_to "Assessment history",
-                space_child_profile_assessments_path(@space, @child_profile),
-                class: "btn btn-ghost btn-sm" %>
-            </div>
-          <% else %>
-            <p class="text-sm leading-6 text-base-content/70">
-              Profile records will appear after the first response is submitted.
-            </p>
-          <% end %>
-        </div>
-      </section>
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">What Anchor Is Noticing</h2>
+        <p class="mt-1 text-sm leading-6 text-base-content/70">
+          Short, behavior-based patterns Anchor can currently use to guide support.
+        </p>
+      </div>
 
-      <section class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-3">
-          <h2 class="text-base font-semibold text-base-content">Manage profile</h2>
-          <div class="flex flex-col gap-2">
-            <% if policy(@child_profile).update? %>
-              <%= link_to "Edit child details",
-                edit_space_child_profile_path(@space, @child_profile),
-                class: "btn btn-outline btn-sm" %>
-            <% end %>
-            <%= link_to "Back to profiles", space_child_profiles_path(@space), class: "btn btn-ghost btn-sm" %>
+      <div class="grid gap-3 md:grid-cols-2">
+        <% observations.each do |observation| %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <p class="text-sm leading-6 text-base-content/75"><%= observation %></p>
           </div>
-        </div>
-      </section>
+        <% end %>
+      </div>
+    </div>
+  </section>
 
-      <% if @child_profile.notes.present? %>
-        <section class="card bg-base-100 shadow-sm">
-          <div class="card-body gap-3">
-            <h2 class="text-base font-semibold text-base-content">Notes</h2>
-            <p class="whitespace-pre-wrap text-sm leading-6 text-base-content/75"><%= @child_profile.notes %></p>
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">What to Focus on Right Now</h2>
+        <p class="mt-1 text-sm leading-6 text-base-content/70">
+          Choose one focus area at a time. The goal is steadier support, not a longer task list.
+        </p>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-3">
+        <% support_priorities.each do |priority| %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <h3 class="text-sm font-semibold text-base-content"><%= priority.title %></h3>
+            <p class="mt-2 text-sm leading-6 text-base-content/75"><%= priority.body %></p>
+            <p class="mt-3 text-sm leading-6 text-base-content/65"><%= priority.why_now %></p>
           </div>
-        </section>
-      <% end %>
+        <% end %>
+      </div>
+    </div>
+  </section>
 
-      <% if policy(@child_profile).destroy? && @child_profile.active? %>
-        <%= button_to "Archive profile", space_child_profile_path(@space, @child_profile),
-          method: :delete,
-          form: { data: { turbo_confirm: "Archive #{@child_profile.name}? This can be undone later." } },
-          class: "btn btn-error btn-sm w-full" %>
-      <% end %>
-    </aside>
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold text-base-content">Try This This Week</h2>
+          <p class="mt-1 text-sm leading-6 text-base-content/70">
+            Small experiments can make support feel more practical. Try one idea, then notice what changes.
+          </p>
+        </div>
+        <%= link_to "View all recommendations",
+          space_child_profile_recommendations_path(@space, @child_profile),
+          class: "btn btn-ghost btn-sm" %>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-3">
+        <% weekly_ideas.each do |idea| %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h3 class="text-base font-semibold text-base-content"><%= idea.title %></h3>
+              <span class="badge badge-primary badge-outline"><%= idea.estimated_time %></span>
+            </div>
+            <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-base-content/50">Why it may help</p>
+            <p class="mt-1 text-sm leading-6 text-base-content/75"><%= idea.why_it_may_help %></p>
+            <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-base-content/50">How to try it</p>
+            <p class="mt-1 text-sm leading-6 text-base-content/75"><%= idea.how_to_try_it %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">What We're Still Learning</h2>
+        <p class="mt-1 text-sm leading-6 text-base-content/70">
+          These are working hypotheses to watch gently as the profile evolves.
+        </p>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-2">
+        <% learning_areas.each do |area| %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4 text-sm leading-6 text-base-content/75">
+            <%= area.body %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <%= link_to "Back to profiles", space_child_profiles_path(@space), class: "btn btn-ghost btn-sm" %>
+    <% if policy(@child_profile).destroy? && @child_profile.active? %>
+      <%= button_to "Archive profile", space_child_profile_path(@space, @child_profile),
+        method: :delete,
+        form: { data: { turbo_confirm: "Archive #{@child_profile.name}? This can be undone later." } },
+        class: "btn btn-error btn-sm" %>
+    <% end %>
   </div>
 </div>

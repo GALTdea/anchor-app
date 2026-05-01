@@ -357,14 +357,17 @@ green within the session.
 
 ## Status
 
-- [ ] Step 1
-- [ ] Step 2
-- [ ] Step 3
-- [ ] Step 4
-- [ ] Step 5
-- [ ] Step 6
+- [x] Step 1
+- [x] Step 2
+- [x] Step 3
+- [x] Step 4
+- [x] Step 5
+- [x] Step 6
 
 **Last updated:** 2026-04-30
-**Handoff note:** Brief created. Next session should start with Phase 2 design
-review against `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, and existing
-child profile/current profile/recommendation/assessment code before building.
+**Handoff note:** Stage implemented. The child profile show page now renders the
+six parent-dashboard blocks, uses a compact snapshot with freshness/profile
+state, routes deeper profile/recommendation/assessment content to existing
+surfaces, hides analysis/evidence mechanics from the default parent dashboard,
+and keeps top-level guidance bounded to parent-actionable content. Verification:
+`bundle exec rspec` and `bundle exec rubocop` pass.

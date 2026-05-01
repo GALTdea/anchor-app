@@ -3,8 +3,9 @@
 class ChildProfileResultsPresenter
   DomainGroup = Struct.new(:key, :title, :dimensions, keyword_init: true)
   DrivingExplanation = Struct.new(:behavior_context, :possible_meaning, :support_implication, keyword_init: true)
-  SupportPriority = Struct.new(:title, :body, keyword_init: true)
+  SupportPriority = Struct.new(:title, :body, :why_now, keyword_init: true)
   WeeklyIdea = Struct.new(:title, :why_it_may_help, :how_to_try_it, :estimated_time, keyword_init: true)
+  LearningArea = Struct.new(:body, keyword_init: true)
   ParentAnalysisRow = Struct.new(
     :title, :summary, :confidence_phrase, :evidence_note, :low_confidence, keyword_init: true
   )
@@ -126,6 +127,39 @@ class ChildProfileResultsPresenter
     (traits.presence || fallback_profile_traits).first(5)
   end
 
+  def plain_language_summary
+    return ai_guidance_panel.summary_plain if ai_guidance_panel&.summary_plain.present?
+    return current_profile.narrative if profile_ready? && current_profile.narrative.present?
+    return "We saved the assessment, but the profile update needs attention before these results can be refreshed." if processing_status == "failed"
+
+    "We saved what has been shared so far and are building this profile. For now, Anchor is offering gentle starting points that may help while it learns more."
+  end
+
+  def child_snapshot_updated_at
+    [
+      persisted_current_profile&.generated_at,
+      latest_assessment_response&.submitted_at,
+      child_profile.updated_at
+    ].compact.max
+  end
+
+  def profile_state_label
+    return "Early profile" unless profile_ready?
+
+    dimension_count = profile_dimensions.size
+    if dimension_count >= 8 && latest_assessment_response.present?
+      "Well-established"
+    elsif dimension_count >= 3
+      "Growing confidence"
+    else
+      "Early profile"
+    end
+  end
+
+  def anchor_observations
+    profile_traits.first(5)
+  end
+
   def driving_explanations
     explanations = profile_domain_groups.first(MVP_LIMIT).filter_map do |group|
       detail = group.dimensions.values.first
@@ -146,7 +180,8 @@ class ChildProfileResultsPresenter
     priorities = active_recommendations.first(MVP_LIMIT).map do |recommendation|
       SupportPriority.new(
         title: priority_title_for(recommendation),
-        body: "Focus on one repeatable support before adding more."
+        body: "Focus on one repeatable support before adding more.",
+        why_now: "This matters now because consistent support can make daily moments easier to read and respond to."
       )
     end
 
@@ -164,6 +199,15 @@ class ChildProfileResultsPresenter
     end
 
     fill_to_limit(ideas, fallback_weekly_ideas)
+  end
+
+  def learning_areas
+    [
+      "What usually happens right before the behavior?",
+      "What helps #{child_profile.first_name} recover or reconnect?",
+      "Do patterns change with fatigue, transitions, sensory input, or task difficulty?",
+      "Does a support make the moment easier, shorter, or less intense?"
+    ].map { |body| LearningArea.new(body:) }
   end
 
   def latest_assessment_response
@@ -187,7 +231,7 @@ class ChildProfileResultsPresenter
   def latest_completed_analysis_run
     @latest_completed_analysis_run ||= child_profile.analysis_runs
       .completed
-      .includes(:analysis_findings, :ai_synthesis_runs)
+      .includes(:ai_synthesis_runs)
       .order(completed_at: :desc, id: :desc)
       .first
   end
@@ -222,6 +266,10 @@ class ChildProfileResultsPresenter
   end
 
   private
+
+  def persisted_current_profile
+    current_profile.persisted? ? current_profile : nil
+  end
 
   def latest_parent_ai_synthesis_for(analysis_run)
     Array(analysis_run.ai_synthesis_runs)
@@ -381,15 +429,18 @@ class ChildProfileResultsPresenter
     [
       SupportPriority.new(
         title: "Make uncertain moments more predictable",
-        body: "Use a short preview before transitions or new expectations."
+        body: "Use a short preview before transitions or new expectations.",
+        why_now: "Predictability can lower pressure before stress has time to build."
       ),
       SupportPriority.new(
         title: "Support recovery after mistakes",
-        body: "Give space to reset before explaining, correcting, or trying again."
+        body: "Give space to reset before explaining, correcting, or trying again.",
+        why_now: "Recovery support often works best before more instruction is added."
       ),
       SupportPriority.new(
         title: "Practice flexibility in low-pressure situations",
-        body: "Try tiny changes during calm moments so flexibility feels safer."
+        body: "Try tiny changes during calm moments so flexibility feels safer.",
+        why_now: "Small practice can make change feel less sudden when real life shifts."
       )
     ]
   end
