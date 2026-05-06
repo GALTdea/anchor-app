@@ -363,7 +363,7 @@ RSpec.describe "Onboarding flow", type: :request do
       onboarding_session = OnboardingSession.last
       expect(response).to redirect_to(space_child_profile_path(onboarding_session.space, onboarding_session.child_profile))
       follow_redirect!
-      expect(response.body).to include("Maya Rivera Profile")
+      expect(response.body).to include("Maya&#39;s Support Guide")
 
       expect(onboarding_session).to be_completed
       expect(onboarding_session.assessment_response.processing_status).to eq("completed")

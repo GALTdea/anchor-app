@@ -33,7 +33,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response).to be_successful
     end
 
-    it "renders the child profile as the MVP parent guidance page" do
+    it "renders the child profile as the Support Guide without raw narrative or internal analysis copy" do
       child_profile = create(:child_profile, space: space, first_name: "Maya", last_name: "Rivera")
       create(:current_profile, child_profile: child_profile, narrative: "Maya has a profile narrative.", summary: {
         "dimensions" => {
@@ -100,21 +100,31 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       get space_child_profile_url(space, child_profile)
 
       expect(response).to be_successful
-      expect(response.body).to include(ai_unique)
-      expect(response.body).to include("Plain-language Summary")
-      expect(response.body).to include("What Anchor Is Noticing")
-      expect(response.body).to include("Maya Rivera Profile")
+      expect(response.body).not_to include(ai_unique)
+      expect(response.body).not_to include("Stub certainty")
+      expect(response.body).not_to include("Maya has a profile narrative.")
+      expect(response.body).to include("Maya&#39;s Support Guide")
       expect(response.body).to include("Child Snapshot")
-      expect(response.body).to include("What to Focus on Right Now")
+      expect(response.body).to include("What Anchor Understands Right Now")
+      expect(response.body).to include("When Things Get Hard")
+      expect(response.body).to include("What to Plan Around")
+      expect(response.body).to include("Best Support Style")
+      expect(response.body).to include("Focus Right Now")
       expect(response.body).to include("Try This This Week")
       expect(response.body).to include("What We're Still Learning")
+      expect(response.body).to include("A simple guide to what Anchor understands right now")
       expect(response.body).to include("Dinosaurs")
       expect(response.body).to include("Uses short phrases")
+      expect(response.body).to include("Try one visual support during transitions.")
       expect(response.body).to include("Use visual supports")
       expect(response.body).to include("Why it may help")
       expect(response.body).to include("How to try it")
       expect(response.body).to include("Anchor Onboarding Profile")
-      expect(response.body).to include("Full profile")
+      expect(response.body).to include("Based on Anchor Onboarding Profile")
+      expect(response.body).to include("Recommendations")
+      expect(response.body).to include("Assessments")
+      expect(response.body).to include("Edit child details")
+      expect(response.body).to include("Full profile details")
       expect(response.body).to include("View all recommendations")
       expect(response.body).to include("may")
       expect(response.body).not_to include("Communication support signal")
@@ -127,19 +137,20 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).not_to include("profile version")
       expect(response.body).not_to include("Recommended next steps")
       expect(response.body).not_to include("Based on:")
+      expect(response.body).not_to include("Plain-language Summary")
     end
 
-    it "shows empty results-home placeholders when there is no current profile yet" do
+    it "shows empty Support Guide placeholders when there is no current profile yet" do
       child_profile = create(:child_profile, space: space, first_name: "Noah", last_name: "Lee")
 
       get space_child_profile_url(space, child_profile)
 
       expect(response).to be_successful
-      expect(response.body).to include("Noah Lee Profile")
+      expect(response.body).to include("Noah&#39;s Support Guide")
       expect(response.body).to include("Child Snapshot")
-      expect(response.body).to include("Plain-language Summary")
-      expect(response.body).to include("What Anchor Is Noticing")
-      expect(response.body).to include("May do best when the next step is clear.")
+      expect(response.body).to include("What Anchor Understands Right Now")
+      expect(response.body).to include("When Things Get Hard")
+      expect(response.body).to include("Noah may do best when expectations are clear before a task starts.")
       expect(response.body).to include("Make uncertain moments more predictable")
       expect(response.body).to include("Preview one tricky transition")
       expect(response.body).to include("Start onboarding assessment")
@@ -159,7 +170,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).not_to include("Start onboarding assessment")
     end
 
-    it "shows the profile narrative with fallback weekly ideas when there are no recommendations" do
+    it "does not dump CurrentProfile narrative on the Support Guide when recommendations fall back" do
       child_profile = create(:child_profile, space: space, first_name: "Riley", last_name: "Kim")
       create(:current_profile, child_profile: child_profile, narrative: "Riley narrative from the latest profile pass.", summary: {
         "dimensions" => {
@@ -179,8 +190,9 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       get space_child_profile_url(space, child_profile)
 
       expect(response).to be_successful
-      expect(response.body).to include("Riley Kim Profile")
-      expect(response.body).to include("Riley narrative from the latest profile pass.")
+      expect(response.body).to include("Riley&#39;s Support Guide")
+      expect(response.body).not_to include("Riley narrative from the latest profile pass.")
+      expect(response.body).to include("Mostly single words")
       expect(response.body).to include("Preview one tricky transition")
       expect(response.body).not_to include("Based on:")
     end
@@ -232,7 +244,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response).to be_successful
       expect(response.body).to include("Profile update queued")
       expect(response.body).to include("We saved what has been shared so far and are building this profile.")
-      expect(response.body).to include("gentle starting points")
+      expect(response.body).to include("Gentle starting points")
     end
 
     it "surfaces failed assessment processing on the results home" do

@@ -249,34 +249,34 @@ Frame this as gentle noticing, not homework or data collection pressure.
 
 ## Acceptance Criteria
 
-- [ ] The page title is "`[Child First Name]`'s Support Guide."
-- [ ] The page subtitle is "A simple guide to what Anchor understands right now,
+- [x] The page title is "`[Child First Name]`'s Support Guide."
+- [x] The page subtitle is "A simple guide to what Anchor understands right now,
       what may help, and what to watch next."
-- [ ] Header actions include Recommendations, Assessments, and Edit child
+- [x] Header actions include Recommendations, Assessments, and Edit child
       details when authorized.
-- [ ] The child snapshot remains compact and includes name, age, last updated,
+- [x] The child snapshot remains compact and includes name, age, last updated,
       freshness, and a parent-safe onboarding provenance note when available.
-- [ ] The page renders the sections: Child Snapshot, What Anchor Understands
+- [x] The page renders the sections: Child Snapshot, What Anchor Understands
       Right Now, When Things Get Hard, What to Plan Around, Best Support Style,
       Focus Right Now, Try This This Week, and What We're Still Learning.
-- [ ] "What Anchor Understands Right Now" shows 3-5 parent-readable insight
+- [x] "What Anchor Understands Right Now" shows 3-5 parent-readable insight
       cards.
-- [ ] "When Things Get Hard" shows exactly 3 cards: Possible triggers or what
+- [x] "When Things Get Hard" shows exactly 3 cards: Possible triggers or what
       may make things harder, early signs to watch for, and what may help.
-- [ ] "Focus Right Now" shows no more than 3 priorities.
-- [ ] "Try This This Week" shows no more than 3 small experiments.
-- [ ] No raw current-profile narrative dump appears on the page.
-- [ ] The page does not expose standalone raw numeric values like "2" as
+- [x] "Focus Right Now" shows no more than 3 priorities.
+- [x] "Try This This Week" shows no more than 3 small experiments.
+- [x] No raw current-profile narrative dump appears on the page.
+- [x] The page does not expose standalone raw numeric values like "2" as
       guidance cards.
-- [ ] The page does not expose evidence counts, dimension counts, dimension
+- [x] The page does not expose evidence counts, dimension counts, dimension
       keys, concept keys, confidence, scores, severity, rubric metadata, profile
       version, AI audit copy, or debug/provider language.
-- [ ] Recommendation copy shown on the main page is parent-friendly and does not
+- [x] Recommendation copy shown on the main page is parent-friendly and does not
       include mechanical dimension names.
-- [ ] Empty/early-profile states are calm, short, and parent-facing.
-- [ ] Existing current profile, recommendations, and assessments routes remain
+- [x] Empty/early-profile states are calm, short, and parent-facing.
+- [x] Existing current profile, recommendations, and assessments routes remain
       reachable.
-- [ ] Request specs cover the new section labels and verify hidden internal/raw
+- [x] Request specs cover the new section labels and verify hidden internal/raw
       language.
 
 ## Out of scope
@@ -361,14 +361,12 @@ the session.
 
 ## Status
 
-- [ ] Step 1
-- [ ] Step 2
-- [ ] Step 3
-- [ ] Step 4
-- [ ] Step 5
-- [ ] Step 6
+- [x] Step 1 — Audit (keep snapshot/recommendations/assessments links + badges; translate dimensions/recs into guide sections; hide narrative/AI blob/analysis rows/raw scales on show; move Full profile to quiet footer link)
+- [x] Step 2 — Presenter: `support_guide_insights`, `hard_moment_guide_cards`, `planning_focus_areas`, `best_support_style_lines`, `support_priorities` (`FocusPriority`), `weekly_ideas`, `snapshot_provenance_phrase`, `support_guide_context_note`, `page_subtitle`
+- [x] Step 3 — Show view rebuilt to nine Support Guide sections + header actions order
+- [x] Step 4 — No `CurrentProfile.narrative`, deterministic/analysis/audit phrases, or raw lone numeric guidance on show (request spec asserts)
+- [x] Step 5 — Empty / queued / failed processing paths covered via context note + fallbacks
+- [x] Step 6 — `bundle exec rspec` (525 examples), `bundle exec rubocop` clean
 
 **Last updated:** 2026-05-04
-**Handoff note:** Brief created. Next session should start with Phase 2 design
-review against `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, and existing
-child profile/current profile/recommendation/assessment code before building.
+**Handoff note:** Stage implemented; follow-up ideas only if product wants browser `<title>` / SEO meta aligned with Support Guide wording.

@@ -6,10 +6,41 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
   let(:child_profile) { create(:child_profile, first_name: "Maya", last_name: "Rivera") }
 
   describe "#page_title" do
-    it "uses the child name profile wording" do
+    it "uses the child's first name support guide wording" do
       presenter = described_class.new(child_profile)
 
-      expect(presenter.page_title).to eq("Maya Rivera Profile")
+      expect(presenter.page_title).to eq("Maya's Support Guide")
+    end
+  end
+
+  describe "#page_subtitle" do
+    it "matches the Support Guide subtitle copy" do
+      presenter = described_class.new(child_profile)
+
+      expect(presenter.page_subtitle).to include("what Anchor understands right now")
+    end
+  end
+
+  describe "#support_guide_insights" do
+    it "returns between three and five parent-facing insight cards" do
+      create(:current_profile, child_profile: child_profile, summary: profile_summary)
+
+      cards = described_class.new(child_profile).support_guide_insights
+
+      expect(cards.size).to be_between(3, 5)
+      expect(cards.map(&:body).join).not_to match(/\A\d+\z/)
+    end
+  end
+
+  describe "#hard_moment_guide_cards" do
+    it "returns exactly three cards with stable section titles" do
+      create(:current_profile, child_profile: child_profile, summary: profile_summary)
+
+      cards = described_class.new(child_profile).hard_moment_guide_cards
+
+      expect(cards.size).to eq(3)
+      expect(cards.map(&:title)).to include("Early signs to watch for", "What may help")
+      expect(cards.map(&:title).first).to match(/Possible triggers|What may make things harder/)
     end
   end
 
@@ -105,7 +136,7 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
       priorities = described_class.new(child_profile).support_priorities
 
       expect(priorities.length).to eq(3)
-      expect(priorities.map(&:title)).to all(eq("Support recovery after hard moments"))
+      expect(priorities.map(&:focus)).to all(eq("Support recovery after hard moments"))
     end
   end
 
