@@ -273,7 +273,7 @@ in the session.
 - [x] Step 1
 - [x] Step 2
 - [x] Step 3
-- [ ] Step 4
+- [x] Step 4
 - [ ] Step 5
 - [ ] Step 6
 
@@ -281,8 +281,7 @@ in the session.
 **Handoff note:** Steps 1-3 complete. The five uploaded PNGs were copied into
 `app/assets/images/support_domains/` with stable domain names and standard asset
 file permissions. `ChildProfileResultsPresenter` owns the single Support Guide
-domain asset mapping, support-guide insight objects expose domain metadata plus
-image asset names, and the "What Anchor Understands Right Now" cards now render
-mapped illustrations with stable sizing. The next implementation step is to
-replace one-card-per-insight rendering with one aggregated card per parent-facing
-domain/lens before visual QA.
+domain asset mapping and now returns one aggregated "What Anchor Understands
+Right Now" card per parent-facing domain/lens. Each rendered domain card includes
+an illustration, concise summary, supporting patterns, and practical support
+direction. Next step: visual QA at desktop and mobile widths.

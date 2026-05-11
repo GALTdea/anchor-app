@@ -22,16 +22,25 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
   end
 
   describe "#support_guide_insights" do
-    it "returns between three and five parent-facing insight cards" do
+    it "returns one parent-facing card per support domain" do
       create(:current_profile, child_profile: child_profile, summary: profile_summary)
 
       cards = described_class.new(child_profile).support_guide_insights
 
-      expect(cards.size).to be_between(3, 5)
-      expect(cards.map(&:body).join).not_to match(/\A\d+\z/)
+      expect(cards.size).to eq(5)
+      expect(cards.map(&:domain_key)).to eq(
+        %w[
+          communication_expression
+          sensory_experience
+          social_connection_style
+          flexibility_predictability
+          body_signals_daily_life
+        ]
+      )
+      expect(cards.map(&:summary).join).not_to match(/\A\d+\z/)
     end
 
-    it "attaches parent-facing domain metadata and image assets to insight cards" do
+    it "attaches parent-facing domain metadata and image assets to domain cards" do
       create(:current_profile, child_profile: child_profile, summary: profile_summary)
 
       cards = described_class.new(child_profile).support_guide_insights
@@ -54,6 +63,24 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
         "support_domains/sensory_experience.png",
         "support_domains/flexibility_predictability.png"
       )
+    end
+
+    it "aggregates multiple insights for the same domain into one card" do
+      create(:current_profile, child_profile: child_profile, summary: {
+        "dimensions" => {
+          "communication.expressive" => dimension_details("Uses short phrases"),
+          "communication.receptive" => dimension_details("Needs simple directions"),
+          "communication.pragmatic" => dimension_details("Needs extra response time")
+        }
+      })
+
+      cards = described_class.new(child_profile).support_guide_insights
+      communication_cards = cards.select { |card| card.domain_key == "communication_expression" }
+
+      expect(communication_cards.size).to eq(1)
+      expect(communication_cards.first.summary).to include("communication")
+      expect(communication_cards.first.patterns.size).to be_between(1, 3)
+      expect(communication_cards.first.support_direction).to include("Use fewer words")
     end
   end
 

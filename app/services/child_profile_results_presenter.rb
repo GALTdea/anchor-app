@@ -7,6 +7,9 @@ class ChildProfileResultsPresenter
   WeeklyIdea = Struct.new(:title, :why_it_may_help, :how_to_try_it, :estimated_time, keyword_init: true)
   LearningArea = Struct.new(:body, keyword_init: true)
   SupportGuideInsight = Struct.new(:body, :domain_key, :domain_title, :image_asset, keyword_init: true)
+  SupportGuideDomainCard = Struct.new(
+    :domain_key, :domain_title, :image_asset, :summary, :patterns, :support_direction, keyword_init: true
+  )
   HardMomentGuideCard = Struct.new(:title, :body, keyword_init: true)
   PlanningFocus = Struct.new(:label, keyword_init: true)
   BestSupportLine = Struct.new(:label, :detail, keyword_init: true)
@@ -206,9 +209,14 @@ class ChildProfileResultsPresenter
 
   def support_guide_insights
     insights = collect_support_insights
-    merged = merge_support_insights(insights, fallback_support_insights)
-    cards = merged.first(INSIGHT_MAX)
-    pad_insight_cards(cards)
+    fallback = fallback_support_insights
+
+    SUPPORT_DOMAIN_ASSETS.keys.map do |domain_key|
+      build_support_guide_domain_card(
+        domain_key,
+        merge_support_insights(insights_for_domain(insights, domain_key), insights_for_domain(fallback, domain_key))
+      )
+    end
   end
 
   def hard_moment_guide_cards
@@ -680,7 +688,6 @@ class ChildProfileResultsPresenter
       next unless v
 
       insights << build_support_guide_insight(builder.call(v), domain_key)
-      break
     end
   end
 
@@ -708,17 +715,67 @@ class ChildProfileResultsPresenter
     (primary + fallback).uniq(&:body)
   end
 
-  def pad_insight_cards(cards)
-    fallback_cards = fallback_support_insights
-    idx = 0
-    while cards.size < INSIGHT_MIN
-      card = fallback_cards[idx % fallback_cards.size]
-      idx += 1
-      next if cards.any? { |c| c.body == card.body }
+  def insights_for_domain(insights, domain_key)
+    insights.select { |insight| insight.domain_key == domain_key.to_s }
+  end
 
-      cards << card
+  def build_support_guide_domain_card(domain_key, insights)
+    SupportGuideDomainCard.new(
+      domain_key: domain_key.to_s,
+      domain_title: support_domain_title(domain_key),
+      image_asset: support_domain_asset(domain_key),
+      summary: domain_summary_for(domain_key, insights),
+      patterns: domain_patterns_for(domain_key, insights),
+      support_direction: domain_support_direction_for(domain_key)
+    )
+  end
+
+  def domain_summary_for(domain_key, insights)
+    body = insights.first&.body.to_s.strip
+    return body if body.present?
+
+    "#{child_profile.first_name}'s #{support_domain_title(domain_key).to_s.downcase} profile is still taking shape."
+  end
+
+  def domain_patterns_for(domain_key, insights)
+    patterns = insights.drop(1).map(&:body)
+    patterns = fallback_domain_patterns_for(domain_key) if patterns.empty?
+
+    patterns.first(3)
+  end
+
+  def fallback_domain_patterns_for(domain_key)
+    case domain_key.to_s
+    when "communication_expression"
+      [ "Concrete language and extra response time may make communication easier." ]
+    when "sensory_experience"
+      [ "Notice whether sound, movement, texture, hunger, or fatigue changes the moment." ]
+    when "social_connection_style"
+      [ "Shared interests may be useful entry points for connection." ]
+    when "flexibility_predictability"
+      [ "Previewing what comes next may lower pressure around change." ]
+    when "body_signals_daily_life"
+      [ "Daily routines may work best when steps are small and predictable." ]
+    else
+      [ "Anchor is still learning which patterns matter most here." ]
     end
-    cards.first(INSIGHT_MAX)
+  end
+
+  def domain_support_direction_for(domain_key)
+    case domain_key.to_s
+    when "communication_expression"
+      "Use fewer words, give extra time, and offer a simple cue when pressure rises."
+    when "sensory_experience"
+      "Adjust one part of the environment and watch whether the moment gets easier."
+    when "social_connection_style"
+      "Begin with connection through interests before asking for more effort."
+    when "flexibility_predictability"
+      "Preview changes early and keep the next step visible."
+    when "body_signals_daily_life"
+      "Build routines around energy, recovery, and small repeatable steps."
+    else
+      "Keep support small, concrete, and easy to repeat."
+    end
   end
 
   def hard_moment_triggers_title
