@@ -30,6 +30,48 @@ RSpec.describe ChildProfileResultsPresenter, type: :model do
       expect(cards.size).to be_between(3, 5)
       expect(cards.map(&:body).join).not_to match(/\A\d+\z/)
     end
+
+    it "attaches parent-facing domain metadata and image assets to insight cards" do
+      create(:current_profile, child_profile: child_profile, summary: profile_summary)
+
+      cards = described_class.new(child_profile).support_guide_insights
+
+      expect(cards.map(&:domain_key)).to include(
+        "social_connection_style",
+        "communication_expression",
+        "sensory_experience",
+        "flexibility_predictability"
+      )
+      expect(cards.map(&:domain_title)).to include(
+        "Social Connection Style",
+        "Communication & Expression",
+        "Sensory Experience",
+        "Flexibility & Predictability"
+      )
+      expect(cards.map(&:image_asset)).to include(
+        "support_domains/social_connection_style.png",
+        "support_domains/communication_expression.png",
+        "support_domains/sensory_experience.png",
+        "support_domains/flexibility_predictability.png"
+      )
+    end
+  end
+
+  describe "#support domain asset mapping" do
+    it "returns mapped asset names for known domains" do
+      presenter = described_class.new(child_profile)
+
+      expect(presenter.support_domain_asset("communication_expression")).to eq("support_domains/communication_expression.png")
+      expect(presenter.support_domain_asset("body_signals_daily_life")).to eq("support_domains/body_signals_daily_life.png")
+      expect(presenter.support_domain_title("sensory_experience")).to eq("Sensory Experience")
+    end
+
+    it "returns nil for unknown domains" do
+      presenter = described_class.new(child_profile)
+
+      expect(presenter.support_domain_asset("unknown_domain")).to be_nil
+      expect(presenter.support_domain_title("unknown_domain")).to be_nil
+    end
   end
 
   describe "#hard_moment_guide_cards" do

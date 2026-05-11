@@ -6,7 +6,7 @@ class ChildProfileResultsPresenter
   FocusPriority = Struct.new(:focus, :why_it_matters, :what_to_try_first, keyword_init: true)
   WeeklyIdea = Struct.new(:title, :why_it_may_help, :how_to_try_it, :estimated_time, keyword_init: true)
   LearningArea = Struct.new(:body, keyword_init: true)
-  SupportGuideInsight = Struct.new(:body, keyword_init: true)
+  SupportGuideInsight = Struct.new(:body, :domain_key, :domain_title, :image_asset, keyword_init: true)
   HardMomentGuideCard = Struct.new(:title, :body, keyword_init: true)
   PlanningFocus = Struct.new(:label, keyword_init: true)
   BestSupportLine = Struct.new(:label, :detail, keyword_init: true)
@@ -21,6 +21,28 @@ class ChildProfileResultsPresenter
   AI_SYNTHESIS_PURPOSE_PARENT = "parent_guidance_v1".freeze
   STRENGTHS_DOMAIN_KEYS = [ "strengths_and_motivators" ].freeze
   STRENGTH_PREFIXES = [ "strengths." ].freeze
+  SUPPORT_DOMAIN_ASSETS = {
+    "communication_expression" => {
+      title: "Communication & Expression",
+      asset: "support_domains/communication_expression.png"
+    },
+    "sensory_experience" => {
+      title: "Sensory Experience",
+      asset: "support_domains/sensory_experience.png"
+    },
+    "social_connection_style" => {
+      title: "Social Connection Style",
+      asset: "support_domains/social_connection_style.png"
+    },
+    "flexibility_predictability" => {
+      title: "Flexibility & Predictability",
+      asset: "support_domains/flexibility_predictability.png"
+    },
+    "body_signals_daily_life" => {
+      title: "Body Signals & Daily Life",
+      asset: "support_domains/body_signals_daily_life.png"
+    }
+  }.freeze
   DOMAIN_GROUPS = [
     {
       key: "communication",
@@ -183,9 +205,9 @@ class ChildProfileResultsPresenter
   end
 
   def support_guide_insights
-    bodies = collect_support_insight_sentences.uniq
-    merged = (bodies + fallback_support_insight_bodies).uniq
-    cards = merged.first(INSIGHT_MAX).map { |body| SupportGuideInsight.new(body:) }
+    insights = collect_support_insights
+    merged = merge_support_insights(insights, fallback_support_insights)
+    cards = merged.first(INSIGHT_MAX)
     pad_insight_cards(cards)
   end
 
@@ -363,6 +385,14 @@ class ChildProfileResultsPresenter
 
   def display_value(details)
     details.to_h["metadata"].to_h["selected_option_label"].presence || details.to_h["latest_value"]
+  end
+
+  def support_domain_asset(domain_key)
+    SUPPORT_DOMAIN_ASSETS.dig(domain_key.to_s, :asset)
+  end
+
+  def support_domain_title(domain_key)
+    SUPPORT_DOMAIN_ASSETS.dig(domain_key.to_s, :title)
   end
 
   private
@@ -582,93 +612,111 @@ class ChildProfileResultsPresenter
     ]
   end
 
-  def collect_support_insight_sentences
+  def collect_support_insights
     fn = child_profile.first_name
-    sentences = []
+    insights = []
     dims = profile_dimensions
-    add = ->(s) { sentences << s if s.present? }
+    add = ->(body, domain_key) { insights << build_support_guide_insight(body, domain_key) if body.present? }
 
     if (v = parent_safe_display(dims["strengths.interests"]))
-      add.call("#{fn} may connect more easily when interests like #{v} are welcomed into everyday moments.")
+      add.call("#{fn} may connect more easily when interests like #{v} are welcomed into everyday moments.", "social_connection_style")
     end
     if (v = parent_safe_display(dims["strengths.profile"]))
-      add.call("You shared qualities that may shine when #{v}.")
+      add.call("You shared qualities that may shine when #{v}.", "social_connection_style")
     end
     if (v = parent_safe_display(dims["strengths.support_fit"]))
-      add.call("Support may land better when adults #{v}.")
+      add.call("Support may land better when adults #{v}.", "flexibility_predictability")
     end
     if (v = parent_safe_display(dims["strengths.support_history"]))
-      add.call("What already helps often includes #{v}.")
+      add.call("What already helps often includes #{v}.", "flexibility_predictability")
     end
 
     add_first_matching_dimension_sentence(
-      sentences,
+      insights,
       /\Acommunication\./,
+      "communication_expression",
       ->(v) { "#{fn} may do best when communication stays patient, concrete, and matched to how #{fn} connects (#{v})." }
     )
     add_first_matching_dimension_sentence(
-      sentences,
+      insights,
       /\Abehavior\.(flexibility|rigidity|cognitive_flexibility)/,
+      "flexibility_predictability",
       ->(v) { "Changes may feel harder for #{fn} when expectations shift suddenly (#{v})." }
     )
     add_first_matching_dimension_sentence(
-      sentences,
+      insights,
       /\Asensory\./,
+      "sensory_experience",
       ->(v) { "Sensory load may shape how full the day feels (#{v})." }
     )
     add_first_matching_dimension_sentence(
-      sentences,
+      insights,
       /\Aregulation\./,
+      "flexibility_predictability",
       ->(v) { "Regulation may depend on pacing and recovery (#{v})." }
     )
     add_first_matching_dimension_sentence(
-      sentences,
+      insights,
       /\Aadaptive\./,
+      "body_signals_daily_life",
       ->(v) { "Daily life flows more smoothly when demands fit what #{fn} can manage (#{v})." }
     )
 
     if (v = parent_safe_display(dims["context.supports"]))
-      add.call("Existing supports such as #{v} may be anchors to lean on.")
+      add.call("Existing supports such as #{v} may be anchors to lean on.", "flexibility_predictability")
     end
     if (v = parent_safe_display(dims["context.school"]))
-      add.call("School context (#{v}) may be worth planning around on heavier days.")
+      add.call("School context (#{v}) may be worth planning around on heavier days.", "body_signals_daily_life")
     end
 
-    sentences
+    insights
   end
 
-  def add_first_matching_dimension_sentence(sentences, key_pattern, builder)
+  def add_first_matching_dimension_sentence(insights, key_pattern, domain_key, builder)
     profile_dimensions.each do |key, details|
       next unless key.to_s.match?(key_pattern)
 
       v = parent_safe_display(details)
       next unless v
 
-      sentences << builder.call(v)
+      insights << build_support_guide_insight(builder.call(v), domain_key)
       break
     end
   end
 
-  def fallback_support_insight_bodies
+  def fallback_support_insights
     fn = child_profile.first_name
     [
-      "#{fn} may do best when expectations are clear before a task starts.",
-      "Changes may feel harder when the next step is uncertain.",
-      "Support may work best when adults lower pressure before giving more instruction.",
-      "Small previews before transitions can make shifts feel safer.",
-      "Recovery time after a hard moment may matter as much as the moment itself."
+      build_support_guide_insight("#{fn} may do best when expectations are clear before a task starts.", "communication_expression"),
+      build_support_guide_insight("Changes may feel harder when the next step is uncertain.", "flexibility_predictability"),
+      build_support_guide_insight("Support may work best when adults lower pressure before giving more instruction.", "communication_expression"),
+      build_support_guide_insight("Small previews before transitions can make shifts feel safer.", "flexibility_predictability"),
+      build_support_guide_insight("Recovery time after a hard moment may matter as much as the moment itself.", "body_signals_daily_life")
     ]
   end
 
+  def build_support_guide_insight(body, domain_key)
+    SupportGuideInsight.new(
+      body:,
+      domain_key: domain_key.to_s,
+      domain_title: support_domain_title(domain_key),
+      image_asset: support_domain_asset(domain_key)
+    )
+  end
+
+  def merge_support_insights(primary, fallback)
+    (primary + fallback).uniq(&:body)
+  end
+
   def pad_insight_cards(cards)
-    fallback_bodies = fallback_support_insight_bodies
+    fallback_cards = fallback_support_insights
     idx = 0
     while cards.size < INSIGHT_MIN
-      body = fallback_bodies[idx % fallback_bodies.size]
+      card = fallback_cards[idx % fallback_cards.size]
       idx += 1
-      next if cards.any? { |c| c.body == body }
+      next if cards.any? { |c| c.body == card.body }
 
-      cards << SupportGuideInsight.new(body:)
+      cards << card
     end
     cards.first(INSIGHT_MAX)
   end
