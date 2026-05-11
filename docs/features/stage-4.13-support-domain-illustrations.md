@@ -11,6 +11,11 @@ Use five calm domain illustrations to make the child profile Support Guide feel
 more parent-friendly, scannable, and emotionally supportive without making the
 page decorative or less useful.
 
+The "What Anchor Understands Right Now" section should read as a calm child
+understanding overview, not a feed of extracted observations. It should render
+one card per parent-facing autism support domain/lens and aggregate the available
+signals into concise, practical guidance.
+
 ## Changes
 
 Add the generated PNG illustrations as first-class Rails image assets and wire
@@ -47,6 +52,15 @@ decoration.
 
 Domain-to-image mapping should live in presenter/helper code rather than being
 hardcoded repeatedly in ERB.
+
+In "What Anchor Understands Right Now", do not render one card per insight,
+observation, finding, or dimension. Render only one card per domain/lens. Each
+domain card should aggregate the child-specific data available for that domain
+into:
+
+- one concise parent-readable summary
+- a small set of supporting patterns
+- one short practical support direction
 
 ## Visual Style
 
@@ -115,7 +129,44 @@ Suggested mapping:
 | Body Signals & Daily Life | `body_signals_daily_life.png` | `daily_living.interoception`, `daily_living.motor`, `internal_awareness`, `coordination` |
 
 The presenter should expose a domain key and image asset name for each rendered
-insight. The view should not need to know internal dimensions or concepts.
+domain card. The view should not need to know internal dimensions or concepts.
+
+## Domain Card Aggregation
+
+The Support Guide should treat the five parent-facing domains as the primary UI
+unit for "What Anchor Understands Right Now":
+
+1. Communication & Expression
+2. Sensory Experience
+3. Social Connection Style
+4. Flexibility & Predictability
+5. Body Signals & Daily Life
+
+Each domain should appear at most once in the section. The card may be omitted
+or shown with a gentle empty state if there is not enough useful data yet, but
+the UI must not create multiple cards for the same domain because several
+underlying dimensions, concepts, recommendations, or observations exist.
+
+Suggested card content:
+
+- **Domain title:** parent-facing domain name
+- **Illustration:** mapped domain image, decorative unless it carries unique
+  meaning
+- **Summary:** one short sentence about what Anchor currently understands
+- **Supporting patterns:** 2-3 short bullets or chips grounded in available
+  profile data
+- **Support direction:** one practical sentence describing what may help
+
+Copy rules:
+
+- Use parent-facing wording.
+- Avoid raw values such as `1`, `2`, `n/a`, dimension keys, concept keys,
+  confidence scores, evidence counts, scoring language, and deterministic/audit
+  copy.
+- Prefer "may", "seems", "often", and "right now" language when the signal is
+  inferred from limited onboarding data.
+- If a domain has sparse data, say what Anchor is still learning instead of
+  forcing a mechanical insight.
 
 ## Acceptance Criteria
 
@@ -125,6 +176,10 @@ insight. The view should not need to know internal dimensions or concepts.
       code.
 - [ ] "What Anchor Understands Right Now" cards can render the relevant domain
       illustration when an insight has a mapped domain.
+- [ ] "What Anchor Understands Right Now" renders only one card per
+      parent-facing domain/lens, not one card per insight or observation.
+- [ ] Each rendered domain card aggregates multiple signals into one concise
+      summary, supporting patterns, and a practical support direction.
 - [ ] Images render with stable dimensions and do not cause layout shifts.
 - [ ] Images remain secondary to parent-facing guidance copy.
 - [ ] The page still works when an image is missing or an insight has no mapped
@@ -181,7 +236,19 @@ Keep image sizes stable and responsive.
 domains and that section copy still renders.
 **Revert:** Revert view and request spec changes.
 
-### Step 4 — Visual QA
+### Step 4 — Aggregate Insight Cards by Domain
+
+Replace the current one-card-per-insight rendering in "What Anchor Understands
+Right Now" with one card per parent-facing domain/lens. Update presenter output
+so each domain card contains a concise summary, supporting patterns, practical
+support direction, domain title, and image asset.
+
+**Verify:** Presenter specs confirm duplicate insights for the same domain
+collapse into one domain card, request specs confirm the section renders one
+card per domain/lens, and no raw internal values or keys appear.
+**Revert:** Revert presenter, view, and spec changes for domain aggregation.
+
+### Step 5 — Visual QA
 
 Inspect the page at desktop and mobile widths. Confirm images are visible,
 properly sized, not cropped, not overpowering the text, and not creating layout
@@ -191,7 +258,7 @@ shifts or overlapping content.
 viewports.
 **Revert:** Revert image rendering styles if the assets hurt readability.
 
-### Step 5 — Final Verification
+### Step 6 — Final Verification
 
 Run targeted specs, then full RSpec and RuboCop.
 
@@ -208,12 +275,14 @@ in the session.
 - [x] Step 3
 - [ ] Step 4
 - [ ] Step 5
+- [ ] Step 6
 
-**Last updated:** 2026-05-08
+**Last updated:** 2026-05-11
 **Handoff note:** Steps 1-3 complete. The five uploaded PNGs were copied into
 `app/assets/images/support_domains/` with stable domain names and standard asset
 file permissions. `ChildProfileResultsPresenter` owns the single Support Guide
 domain asset mapping, support-guide insight objects expose domain metadata plus
 image asset names, and the "What Anchor Understands Right Now" cards now render
-mapped illustrations with stable sizing. Next step: visual QA at desktop and
-mobile widths.
+mapped illustrations with stable sizing. The next implementation step is to
+replace one-card-per-insight rendering with one aggregated card per parent-facing
+domain/lens before visual QA.
