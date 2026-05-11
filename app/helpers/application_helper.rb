@@ -53,4 +53,15 @@ module ApplicationHelper
 
     doc.to_html.html_safe
   end
+
+  def safe_asset_path(path)
+    return if path.blank?
+
+    asset_path(path)
+  rescue Propshaft::MissingAssetError
+    asset = Rails.application.assets.load_path.find(path)
+    return if asset.blank?
+
+    File.join(Rails.application.config.assets.prefix, asset.digested_path.to_s)
+  end
 end

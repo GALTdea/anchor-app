@@ -105,7 +105,21 @@
       <div class="grid gap-3 md:grid-cols-2">
         <% insight_cards.each do |card| %>
           <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-            <p class="text-sm leading-6 text-base-content/75"><%= card.body %></p>
+            <div class="flex items-start gap-4">
+              <% if (image_src = safe_asset_path(card.image_asset)).present? %>
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-box bg-base-200/50">
+                  <%= image_tag image_src, alt: "", class: "h-14 w-14 object-contain" %>
+                </div>
+              <% end %>
+              <div class="min-w-0">
+                <% if card.domain_title.present? %>
+                  <p class="text-xs font-semibold uppercase tracking-wide text-base-content/50">
+                    <%= card.domain_title %>
+                  </p>
+                <% end %>
+                <p class="mt-2 text-sm leading-6 text-base-content/75"><%= card.body %></p>
+              </div>
+            </div>
           </div>
         <% end %>
       </div>

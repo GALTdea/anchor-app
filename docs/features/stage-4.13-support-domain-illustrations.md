@@ -205,14 +205,15 @@ in the session.
 
 - [x] Step 1
 - [x] Step 2
-- [ ] Step 3
+- [x] Step 3
 - [ ] Step 4
 - [ ] Step 5
 
 **Last updated:** 2026-05-08
-**Handoff note:** Steps 1-2 complete. The five uploaded PNGs were copied into
+**Handoff note:** Steps 1-3 complete. The five uploaded PNGs were copied into
 `app/assets/images/support_domains/` with stable domain names and standard asset
-file permissions. `ChildProfileResultsPresenter` now owns the single Support
-Guide domain asset mapping, and support-guide insight objects expose domain
-metadata plus image asset names. Next step: render the mapped illustrations in
-the Support Guide cards.
+file permissions. `ChildProfileResultsPresenter` owns the single Support Guide
+domain asset mapping, support-guide insight objects expose domain metadata plus
+image asset names, and the "What Anchor Understands Right Now" cards now render
+mapped illustrations with stable sizing. Next step: visual QA at desktop and
+mobile widths.
