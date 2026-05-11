@@ -203,13 +203,14 @@ in the session.
 
 ## Status
 
-- [ ] Step 1
+- [x] Step 1
 - [ ] Step 2
 - [ ] Step 3
 - [ ] Step 4
 - [ ] Step 5
 
 **Last updated:** 2026-05-08
-**Handoff note:** Brief created. Next implementation session should place the
-uploaded PNGs in `app/assets/images/support_domains/`, then wire them through a
-single Support Guide domain asset mapping.
+**Handoff note:** Step 1 complete. The five uploaded PNGs were copied into
+`app/assets/images/support_domains/` with stable domain names and standard asset
+file permissions. Next step: wire them through a single Support Guide domain
+asset mapping.
