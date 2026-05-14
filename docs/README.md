@@ -56,6 +56,10 @@ at the start of every AI coding session.
 | [features/stage-4.7-guided-assessment-runner.md](features/stage-4.7-guided-assessment-runner.md) | Stage 4.7 — Guided assessment runner *(draft proposal)* |
 | [features/stage-4.9-child-profile-results-home.md](features/stage-4.9-child-profile-results-home.md) | Stage 4.9 — Child profile results home *(draft proposal)* |
 | [features/stage-6-internal-analysis-engine.md](features/stage-6-internal-analysis-engine.md) | Stage 6 — Internal analysis engine (deterministic rubric) |
+| [features/stage-7-ai-synthesis-layer.md](features/stage-7-ai-synthesis-layer.md) | Stage 7 — AI synthesis layer |
+| [features/stage-7.1-live-ai-provider-adapter.md](features/stage-7.1-live-ai-provider-adapter.md) | Stage 7.1 — Live AI provider adapter |
+| [features/stage-7.2-tiered-ai-model-routing.md](features/stage-7.2-tiered-ai-model-routing.md) | Stage 7.2 — Tiered AI model routing |
+| [features/stage-7.3-child-profile-knowledge-layer.md](features/stage-7.3-child-profile-knowledge-layer.md) | Stage 7.3 — Child profile knowledge layer *(post-MVP proposal)* |
 
 ## Optional modules
 
