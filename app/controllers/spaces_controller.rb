@@ -2,7 +2,7 @@
 
 class SpacesController < ApplicationController
   before_action :set_space, only: %i[ show edit update destroy ]
-  before_action :check_multi_tenant_mode, only: %i[new index]
+  before_action :redirect_single_family_parents, only: %i[index show new create]
 
   def index
     collection = current_user.spaces.includes(user_roles: :role, subscriptions: :plan)
@@ -63,9 +63,9 @@ class SpacesController < ApplicationController
       params.expect(space: [ :name, :status ])
     end
 
-    def check_multi_tenant_mode
-      return if multi_tenant_mode? || current_user&.admin?
+    def redirect_single_family_parents
+      return if multi_tenant_mode? || current_user.admin?
 
-      redirect_back fallback_location: root_path
+      redirect_to home_path
     end
 end

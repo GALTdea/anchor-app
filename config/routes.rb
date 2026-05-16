@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   devise_for :users
 
+  get "home", to: "home#index", as: :home
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :users, only: %i[edit update destroy]
   namespace :admin do

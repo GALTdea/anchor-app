@@ -84,18 +84,20 @@ Typical **authenticated** request flow:
 
 1. **ApplicationController before_actions**
    - `authenticate_user!` (Devise) — except on `:landing`; redirects to sign-in if not signed in.
-   - `set_main_space` — only for `:landing`; sets `@main_space` to current user’s first space.
-   - `redirect_signed_in_user` — only for `:landing`; if signed in, redirects to main space or spaces index.
+   - `redirect_signed_in_user` — only for `:landing`; if signed in, redirects to `home_path` (parent-facing children dashboard).
 
-2. **Layout selection**
+2. **Default internal space**
+   - `User#default_space` delegates to `DefaultSpaceProvisioner`, which returns the user’s first `Space` or provisions one with an **Owner** `UserRole` (same semantics as onboarding finalization).
+
+3. **Layout selection**
    - `layout :determine_layout` — sets the layout (devise / dashboard / application) as above.
 
-3. **Controller action**
+4. **Controller action**
    - Subclass controllers add their own `before_action`s (e.g. `set_space`, Pundit `authorize`).
    - **Pagination** (if used): `@pagy, @records = pagy(collection)` in the action; view renders `shared/pagination` with `@pagy`.
    - **Pundit**: each action should call `authorize` (or use a `before_action` that does) so the policy is checked before rendering.
 
-4. **Response**
+5. **Response**
    - View renders with the chosen layout; layout includes shared partials (e.g. flash, user menu) as needed.
 
 So for an authenticated request: authenticate → determine layout → run action (authorize, optionally pagy) → render with layout.

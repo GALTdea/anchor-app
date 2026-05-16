@@ -69,6 +69,10 @@ class User < ApplicationRecord
     user_roles.find_by(space: space)&.role
   end
 
+  def default_space
+    DefaultSpaceProvisioner.call(user: self)
+  end
+
   def send_devise_notification(notification, *args)
     devise_mailer.send(notification, self, *args).deliver_later
   end

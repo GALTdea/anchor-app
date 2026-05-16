@@ -6,7 +6,6 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   before_action :authenticate_user!, except: [ :landing ]
-  before_action :set_main_space, only: [ :landing ]
   before_action :redirect_signed_in_user, only: [ :landing ]
 
   layout :determine_layout
@@ -28,10 +27,6 @@ class ApplicationController < ActionController::Base
   def redirect_signed_in_user
     return unless user_signed_in?
 
-    redirect_to @main_space ? space_path(@main_space) : spaces_path
-  end
-
-  def set_main_space
-    @main_space = current_user&.spaces&.first
+    redirect_to home_path
   end
 end

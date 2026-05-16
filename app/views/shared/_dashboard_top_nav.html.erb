@@ -13,7 +13,7 @@
 
   <% if local_assigns.fetch(:show_primary_navigation, false) %>
     <div class="flex-none">
-      <%= link_to root_path, class: "text-xl font-bold text-primary" do %>
+      <%= link_to home_path, class: "text-xl font-bold text-primary" do %>
         My Rails Starter
       <% end %>
     </div>
@@ -21,16 +21,29 @@
     <div class="flex-1 px-4">
       <ul class="menu menu-horizontal menu-sm gap-1">
         <li>
-          <%= link_to spaces_path,
-            class: "flex items-center gap-2 #{current_page?(spaces_path) ? 'active' : ''}" do %>
+          <%= link_to home_path,
+            class: "flex items-center gap-2 #{current_page?(home_path) ? 'active' : ''}" do %>
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
-            Spaces
+            Home
           <% end %>
         </li>
+        <% if multi_tenant_mode? %>
+          <li>
+            <%= link_to spaces_path,
+              class: "flex items-center gap-2 #{current_page?(spaces_path) ? 'active' : ''}" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              Families
+            <% end %>
+          </li>
+        <% end %>
       </ul>
     </div>
   <% else %>

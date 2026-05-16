@@ -2,13 +2,24 @@
   <label for="drawer-toggle" class="drawer-overlay"></label>
   <aside class="bg-base-100 border-r border-base-300 w-64 min-h-screen flex flex-col">
     <div class="px-6 py-4 border-b border-base-300">
-      <%= link_to root_path, class: "text-xl font-bold text-primary" do %>
+      <%= link_to home_path, class: "text-xl font-bold text-primary" do %>
         My Rails Starter
       <% end %>
     </div>
 
     <nav class="flex-1 px-3 py-4">
       <ul class="menu menu-sm w-full gap-1">
+        <li>
+          <%= link_to home_path,
+            class: "flex items-center gap-3 #{current_page?(home_path) ? 'active' : ''}" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+            Home
+          <% end %>
+        </li>
         <li>
           <%= link_to spaces_path,
             class: "flex items-center gap-3 #{current_page?(spaces_path) ? 'active' : ''}" do %>
