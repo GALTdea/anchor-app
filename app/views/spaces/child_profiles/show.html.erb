@@ -78,8 +78,8 @@
             Answer a few guided questions so Anchor can build a clearer first profile for <%= @child_profile.first_name %>.
           </p>
           <div class="mt-4">
-            <%= link_to "Start onboarding assessment",
-              new_space_child_profile_assessment_path(@space, @child_profile),
+            <%= button_to "Start onboarding assessment",
+              start_onboarding_space_child_profile_assessments_path(@space, @child_profile),
               class: "btn btn-primary" %>
           </div>
         </div>

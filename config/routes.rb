@@ -30,6 +30,8 @@ Rails.application.routes.draw do
     resources :subscriptions, controller: "spaces/subscriptions"
     resources :child_profiles, controller: "spaces/child_profiles" do
       resources :assessments, only: %i[index new create show destroy], controller: "child_profiles/assessments" do
+        post :start_onboarding, on: :collection
+
         resource :response, only: %i[show edit update],
           controller: "child_profiles/assessment_responses",
           as: :assessment_response

@@ -42,6 +42,23 @@ class ChildProfiles::AssessmentsController < ApplicationController
     end
   end
 
+  def start_onboarding
+    authorize Assessment.new(child_profile: @child_profile), :create?
+
+    assessment = resumable_onboarding_assessment || build_onboarding_assessment(onboarding_template)
+    authorize AssessmentTemplatePolicy::Context.new(assessment.assessment_template, @space), :show?, policy_class: AssessmentTemplatePolicy
+
+    if assessment.save
+      redirect_to edit_space_child_profile_assessment_assessment_response_path(@space, @child_profile, assessment),
+        notice: onboarding_start_notice(assessment)
+    else
+      redirect_to space_child_profile_path(@space, @child_profile),
+        alert: assessment.errors.full_messages.to_sentence.presence || "Unable to start onboarding assessment."
+    end
+  rescue OnboardingAssessmentTemplateResolver::TemplateNotConfiguredError => error
+    redirect_to space_child_profile_path(@space, @child_profile), alert: error.message
+  end
+
   def destroy
     authorize @assessment
     @assessment.update!(status: :archived)
@@ -65,5 +82,40 @@ class ChildProfiles::AssessmentsController < ApplicationController
 
   def assessment_params
     params.require(:assessment).permit(:assessment_template_id)
+  end
+
+  def resumable_onboarding_assessment
+    @child_profile.assessments
+      .draft
+      .joins(:assessment_response, :assessment_template)
+      .includes(:assessment_response, :assessment_template)
+      .order(updated_at: :desc, id: :desc)
+      .detect { |assessment| onboarding_template_resolver.onboarding_template?(assessment.assessment_template) }
+  end
+
+  def build_onboarding_assessment(template)
+    @child_profile.assessments.build(assessment_template: template).tap do |assessment|
+      assessment.build_assessment_response(
+        actor: current_user,
+        respondent_kind: Array(template.respondent_types).first.to_s,
+        answers: {}
+      )
+    end
+  end
+
+  def onboarding_template_resolver
+    @onboarding_template_resolver ||= OnboardingAssessmentTemplateResolver.new
+  end
+
+  def onboarding_template
+    @onboarding_template ||= onboarding_template_resolver.call
+  end
+
+  def onboarding_start_notice(assessment)
+    if assessment.previously_new_record?
+      "Assessment started. Complete the questions below."
+    else
+      "Assessment resumed. Continue the questions below."
+    end
   end
 end

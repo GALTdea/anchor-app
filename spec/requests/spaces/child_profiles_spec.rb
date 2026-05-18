@@ -161,7 +161,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).to include("Make uncertain moments more predictable")
       expect(response.body).to include("Preview one tricky transition")
       expect(response.body).to include("Start onboarding assessment")
-      expect(response.body).to include(new_space_child_profile_assessment_path(space, child_profile))
+      expect(response.body).to include(start_onboarding_space_child_profile_assessments_path(space, child_profile))
       expect(response.body).not_to include("Profile signals")
     end
 
@@ -286,6 +286,45 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       child_profile = create(:child_profile, space: space)
       get edit_space_child_profile_url(space, child_profile)
       expect(response).to be_successful
+    end
+  end
+
+  describe "POST /assessments/start_onboarding" do
+    let!(:onboarding_template) do
+      create(
+        :assessment_template,
+        title: "Child onboarding",
+        template_key: "child-onboarding",
+        category: "onboarding"
+      )
+    end
+    let(:child_profile) { create(:child_profile, space: space) }
+
+    it "starts the configured onboarding assessment directly" do
+      expect {
+        post start_onboarding_space_child_profile_assessments_url(space, child_profile)
+      }.to change(Assessment, :count).by(1)
+        .and change(AssessmentResponse, :count).by(1)
+
+      assessment = child_profile.assessments.last
+      expect(assessment.assessment_template).to eq(onboarding_template)
+      expect(assessment.assessment_response).to be_draft
+      expect(response).to redirect_to(
+        edit_space_child_profile_assessment_assessment_response_url(space, child_profile, assessment)
+      )
+    end
+
+    it "resumes an existing draft onboarding assessment" do
+      assessment = create(:assessment, child_profile: child_profile, assessment_template: onboarding_template)
+      create(:assessment_response, assessment: assessment, actor: user, answers: {})
+
+      expect {
+        post start_onboarding_space_child_profile_assessments_url(space, child_profile)
+      }.not_to change(Assessment, :count)
+
+      expect(response).to redirect_to(
+        edit_space_child_profile_assessment_assessment_response_url(space, child_profile, assessment)
+      )
     end
   end
 
