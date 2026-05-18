@@ -6,7 +6,7 @@
 #  id            :bigint           not null, primary key
 #  date_of_birth :date             not null
 #  first_name    :string           not null
-#  last_name     :string           not null
+#  last_name     :string
 #  notes         :text
 #  slug          :string
 #  status        :integer          default("active"), not null
@@ -41,10 +41,9 @@ RSpec.describe ChildProfile, type: :model do
       expect(profile.errors[:first_name]).to include("can't be blank")
     end
 
-    it 'requires last_name' do
+    it 'allows last_name to be blank' do
       profile.last_name = nil
-      expect(profile).not_to be_valid
-      expect(profile.errors[:last_name]).to include("can't be blank")
+      expect(profile).to be_valid
     end
 
     it 'requires date_of_birth' do
@@ -105,6 +104,11 @@ RSpec.describe ChildProfile, type: :model do
     it 'combines first_name and last_name' do
       profile = build(:child_profile, first_name: "Sam", last_name: "Smith")
       expect(profile.name).to eq("Sam Smith")
+    end
+
+    it 'uses first_name only when last_name is blank' do
+      profile = build(:child_profile, first_name: "Sam", last_name: nil)
+      expect(profile.name).to eq("Sam")
     end
   end
 

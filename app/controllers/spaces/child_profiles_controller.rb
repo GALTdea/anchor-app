@@ -79,6 +79,6 @@ class Spaces::ChildProfilesController < ApplicationController
   end
 
   def child_profile_params
-    params.require(:child_profile).permit(:first_name, :last_name, :date_of_birth, :notes)
+    params.require(:child_profile).permit(:first_name, :last_name, :date_of_birth)
   end
 end

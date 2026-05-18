@@ -310,6 +310,16 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
         post space_child_profiles_url(space), params: { child_profile: valid_attributes }
         expect(response).to redirect_to(space_child_profile_url(space, ChildProfile.last))
       end
+
+      it "creates a child profile without a last name" do
+        expect {
+          post space_child_profiles_url(space), params: {
+            child_profile: valid_attributes.merge(last_name: "")
+          }
+        }.to change(ChildProfile, :count).by(1)
+
+        expect(ChildProfile.last.last_name).to eq("")
+      end
     end
 
     context "with invalid parameters" do
@@ -341,8 +351,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       let(:new_attributes) do
         {
           first_name: "Updated",
-          last_name: "Name",
-          notes: "Updated notes"
+          last_name: "Name"
         }
       end
 
@@ -351,7 +360,6 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
         child_profile.reload
         expect(child_profile.first_name).to eq("Updated")
         expect(child_profile.last_name).to eq("Name")
-        expect(child_profile.notes).to eq("Updated notes")
       end
 
       it "redirects to the child_profile" do

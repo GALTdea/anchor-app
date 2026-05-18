@@ -6,7 +6,7 @@
 #  id            :bigint           not null, primary key
 #  date_of_birth :date             not null
 #  first_name    :string           not null
-#  last_name     :string           not null
+#  last_name     :string
 #  notes         :text
 #  slug          :string
 #  status        :integer          default("active"), not null
@@ -39,7 +39,7 @@ class ChildProfile < ApplicationRecord
   enum :status, { active: 0, archived: 1 }, default: :active
 
   validates :first_name, presence: true, length: { maximum: 100 }
-  validates :last_name, presence: true, length: { maximum: 100 }
+  validates :last_name, length: { maximum: 100 }, allow_blank: true
   validates :date_of_birth, presence: true
 
   validate :date_of_birth_not_in_future
@@ -48,7 +48,7 @@ class ChildProfile < ApplicationRecord
   scope :archived, -> { where(status: :archived) }
 
   def name
-    "#{first_name} #{last_name}"
+    [ first_name, last_name ].compact_blank.join(" ")
   end
 
   def age

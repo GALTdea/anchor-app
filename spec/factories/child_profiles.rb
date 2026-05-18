@@ -6,7 +6,7 @@
 #  id            :bigint           not null, primary key
 #  date_of_birth :date             not null
 #  first_name    :string           not null
-#  last_name     :string           not null
+#  last_name     :string
 #  notes         :text
 #  slug          :string
 #  status        :integer          default("active"), not null
