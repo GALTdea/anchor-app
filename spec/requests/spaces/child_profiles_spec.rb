@@ -348,6 +348,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       it "redirects to the created child_profile" do
         post space_child_profiles_url(space), params: { child_profile: valid_attributes }
         expect(response).to redirect_to(space_child_profile_url(space, ChildProfile.last))
+        expect(flash[:notice]).to eq("Child profile was successfully created.")
       end
 
       it "creates a child profile without a last name" do

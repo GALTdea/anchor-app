@@ -26,7 +26,9 @@
           <%= render "shared/dashboard_top_nav", drawer: true, show_primary_navigation: false %>
 
           <main class="flex-1 p-4 lg:p-6">
-            <%= render "shared/flash" %>
+            <div id="flash">
+              <%= render "shared/flash" %>
+            </div>
             <%= yield %>
           </main>
         </div>
@@ -38,7 +40,9 @@
         <%= render "shared/dashboard_top_nav", drawer: false, show_primary_navigation: true %>
 
         <main class="flex-1 p-4 lg:p-6">
-          <%= render "shared/flash" %>
+          <div id="flash">
+            <%= render "shared/flash" %>
+          </div>
           <%= yield %>
         </main>
       </div>

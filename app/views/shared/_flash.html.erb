@@ -1,22 +1,48 @@
 <% if notice.present? %>
-  <div class="alert alert-success mb-4" role="alert">
+  <div class="alert alert-success mb-4 shadow-sm"
+       role="status"
+       aria-live="polite"
+       data-controller="flash"
+       data-flash-auto-dismiss-value="true"
+       data-flash-timeout-value="4000">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0"
          fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
-    <span><%= notice %></span>
+    <span class="flex-1"><%= notice %></span>
+    <button type="button"
+            class="btn btn-ghost btn-sm btn-circle"
+            aria-label="Dismiss notification"
+            data-action="flash#dismiss">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
 <% end %>
 
 <% if alert.present? %>
-  <div class="alert alert-error mb-4" role="alert">
+  <div class="alert alert-error mb-4 shadow-sm"
+       role="alert"
+       data-controller="flash">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0"
          fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
-    <span><%= alert %></span>
+    <span class="flex-1"><%= alert %></span>
+    <button type="button"
+            class="btn btn-ghost btn-sm btn-circle"
+            aria-label="Dismiss notification"
+            data-action="flash#dismiss">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
 <% end %>
-

@@ -5,7 +5,7 @@ module ApplicationHelper
   include Pagy::Frontend
 
   def render_flash_stream
-    turbo_stream.update "flash", partial: "common/flash"
+    turbo_stream.update "flash", partial: "shared/flash"
   end
 
   def nav_bar(&)

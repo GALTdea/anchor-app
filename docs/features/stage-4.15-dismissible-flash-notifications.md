@@ -136,13 +136,17 @@ and `bundle exec rubocop app/helpers/application_helper.rb`.
 
 ## Status
 
-- [ ] Step 1
-- [ ] Step 2
-- [ ] Step 3
-- [ ] Step 4
-- [ ] Step 5
+- [x] Step 1
+- [x] Step 2
+- [x] Step 3
+- [x] Step 4
+- [x] Step 5
 
 **Last updated:** 2026-05-19
-**Handoff note:** Brief created only. Recommended behavior is success notices
-auto-dismiss after about 4 seconds, all flash messages have an explicit close
-button, and alerts remain until dismissed.
+**Handoff note:** Implemented shared flash targets, Turbo stream flash cleanup,
+dismissible flash markup, and a small Stimulus controller. Success notices
+auto-dismiss after about 4 seconds; notices and alerts both have close buttons;
+alerts remain until dismissed. Verified with focused specs, full RSpec, and
+RuboCop. Browser verification was attempted against the local app, but the
+in-app browser became unreliable after local asset rebuilds and timed out on
+basic page actions, so the final proof is automated Rails/RuboCop coverage.
