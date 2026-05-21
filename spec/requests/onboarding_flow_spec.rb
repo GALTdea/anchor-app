@@ -59,8 +59,11 @@ RSpec.describe "Onboarding flow", type: :request do
       follow_redirect!
       expect(response.body).to include("Answer a few questions to build a clearer picture.")
       expect(response.body).to include("Onboarding assessment")
+      expect(response.body).to include("Maya Rivera's Profile")
       expect(response.body).to include("0 of 2 answered")
       expect(response.body).to include("Regulation")
+      expect(response.body).to include('role="progressbar"')
+      expect(response.body).to include('aria-valuenow="0"')
       expect(response.body).not_to match(/Question \d+ of \d+/)
       expect(response.body).to include("Continue")
     end
@@ -104,6 +107,8 @@ RSpec.describe "Onboarding flow", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Notes")
       expect(response.body).to include("1 of 2 answered")
+      expect(response.body).to include('role="progressbar"')
+      expect(response.body).to include('aria-valuenow="50"')
       expect(response.body).not_to include("What to expect")
       expect(response.body).not_to include("Onboarding assessment")
       expect(OnboardingSession.last.draft_answers).to include(

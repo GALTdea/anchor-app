@@ -367,8 +367,11 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(response).to be_successful
       expect(response.body).to include(template.title)
       expect(response.body).to include(child_profile.name)
+      expect(response.body).to include("#{child_profile.name}'s Profile")
       expect(response.body).to include("0 of 2 answered")
       expect(response.body).to include("Regulation")
+      expect(response.body).to include('role="progressbar"')
+      expect(response.body).to include('aria-valuenow="0"')
       expect(response.body).not_to match(/Question \d+ of \d+/)
       expect(response.body).to include("Continue")
       expect(response.body).not_to include("What to expect")
