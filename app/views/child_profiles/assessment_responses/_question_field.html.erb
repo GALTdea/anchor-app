@@ -1,20 +1,16 @@
 <% question = question.stringify_keys %>
 <% question_id = question["id"].to_s %>
 <% answer_id = "answer_#{question_id}" %>
+<% question_error = Array(local_assigns[:question_errors]).map(&:to_s).include?(question_id) %>
 
 <fieldset class="fieldset rounded-box border border-base-300/70 bg-base-100 p-5">
   <legend class="fieldset-legend text-base font-semibold text-base-content">
     <%= question["label"] %>
   </legend>
 
-  <% if question["help_text"].present? || question["required"] %>
-    <div class="mb-3 flex flex-wrap items-center gap-2 text-sm text-base-content/70">
-      <% if question["help_text"].present? %>
-        <span><%= question["help_text"] %></span>
-      <% end %>
-      <% if question["required"] %>
-        <span class="badge badge-error badge-outline">Required</span>
-      <% end %>
+  <% if question["help_text"].present? %>
+    <div class="mb-3 text-sm text-base-content/70">
+      <%= question["help_text"] %>
     </div>
   <% end %>
 
@@ -49,21 +45,26 @@
       placeholder: question["placeholder"].presence || "Type your answer" %>
   <% when "select" %>
     <p class="label">Choose the best fit</p>
-    <div class="space-y-2">
-      <% assessment_question_options(question).each_with_index do |(label, value), index| %>
-        <% option_id = "#{answer_id}_#{index}" %>
-        <label for="<%= option_id %>"
-               class="assessment-choice-card">
-          <%= radio_button_tag "assessment_response[answers][#{question_id}]",
-            value,
-            answers[question_id].to_s == value.to_s,
-            id: option_id,
-            class: "sr-only",
-            data: { action: "change->assessment-autosave#queueImmediate blur->assessment-autosave#queueImmediate" } %>
-          <span class="block text-sm font-medium leading-6">
-            <%= label %>
-          </span>
-        </label>
+    <div class="assessment-choice-group <%= 'assessment-choice-group--error' if question_error %>">
+      <div class="space-y-2">
+        <% assessment_question_options(question).each_with_index do |(label, value), index| %>
+          <% option_id = "#{answer_id}_#{index}" %>
+          <label for="<%= option_id %>"
+                 class="assessment-choice-card">
+            <%= radio_button_tag "assessment_response[answers][#{question_id}]",
+              value,
+              answers[question_id].to_s == value.to_s,
+              id: option_id,
+              class: "sr-only",
+              data: { action: "change->assessment-autosave#queueImmediate blur->assessment-autosave#queueImmediate" } %>
+            <span class="block text-sm font-medium leading-6">
+              <%= label %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+      <% if question_error %>
+        <p class="assessment-choice-error">Choose an answer to continue.</p>
       <% end %>
     </div>
   <% else %>

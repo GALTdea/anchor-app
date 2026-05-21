@@ -14,12 +14,20 @@ class Onboarding::AssessmentsController < ApplicationController
     authorize_onboarding_session(@onboarding_session)
 
     validation_context = params[:submit_action] == "continue" ? :assessment : nil
-
-    if OnboardingProgressUpdater.new(
+    updater = OnboardingProgressUpdater.new(
       onboarding_session: @onboarding_session,
       assessment_attributes: assessment_params,
       validation_context: validation_context
-    ).call
+    )
+
+    if updater.call
+      if forward_action? && current_step_missing_required_question_ids.any?
+        @question_errors = current_step_missing_required_question_ids
+        set_runner_context_from_current_session(step_id: params[:current_step_id].presence || params[:step])
+        render :show, status: :unprocessable_content
+        return
+      end
+
       if params[:submit_action] == "continue"
         redirect_to onboarding_account_path, notice: "Assessment progress saved."
       else
@@ -69,6 +77,7 @@ class Onboarding::AssessmentsController < ApplicationController
     @previous_step = @runner.previous_step_for(@current_step)
     @section_progress = @runner.section_progress_for(@current_step)
     @progress = view_context.assessment_progress(@assessment_template, @answers)
+    @question_errors ||= []
   end
 
   def render_runner_step
@@ -93,6 +102,23 @@ class Onboarding::AssessmentsController < ApplicationController
       refreshed_runner.previous_step_for(current_step)&.dig("id") || current_step["id"]
     else
       refreshed_runner.next_step_for(current_step)&.dig("id") || current_step["id"]
+    end
+  end
+
+  def forward_action?
+    params[:submit_action].in?(%w[next continue])
+  end
+
+  def current_step_missing_required_question_ids
+    current_step = @runner.current_step(params[:current_step_id].presence || params[:step])
+    answers = @onboarding_session.assessment_answers
+
+    Array(current_step["questions"]).filter_map do |question|
+      normalized = question.stringify_keys
+      next unless ActiveModel::Type::Boolean.new.cast(normalized["required"])
+
+      question_id = normalized["id"].to_s
+      question_id if answers[question_id].blank?
     end
   end
 end

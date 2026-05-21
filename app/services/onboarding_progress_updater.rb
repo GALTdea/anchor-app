@@ -38,6 +38,16 @@ class OnboardingProgressUpdater
   end
 
   def normalized_answers
-    assessment_attributes.fetch(:answers, {}).to_h.transform_keys(&:to_s)
+    answer_params = assessment_attributes[:answers]
+    return {} if answer_params.blank?
+
+    answers =
+      if answer_params.respond_to?(:to_unsafe_h)
+        answer_params.to_unsafe_h
+      else
+        answer_params.to_h
+      end
+
+    answers.transform_keys(&:to_s)
   end
 end

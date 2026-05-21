@@ -22,6 +22,12 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
 
     submitting = params[:submit_action] == "submit"
     @assessment_response.submitting = submitting
+    if forward_action? && current_step_missing_required_question_ids.any?
+      @question_errors = current_step_missing_required_question_ids
+      set_runner_context_from_current_response(step_id: params[:current_step_id].presence || params[:step])
+      render :edit, status: :unprocessable_content
+      return
+    end
 
     if submitting
       runner_with_final_answers = AssessmentRunner.new(
@@ -98,6 +104,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     @previous_step = @runner.previous_step_for(@current_step)
     @section_progress = @runner.section_progress_for(@current_step)
     @progress = view_context.assessment_progress(@template, @answers)
+    @question_errors ||= []
   end
 
   def render_runner_step
@@ -112,13 +119,24 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
   def merge_assessment_response_attributes
     permitted = assessment_response_params
     merged_answers = @assessment_response.answers.deep_stringify_keys.merge(
-      permitted.fetch(:answers, {}).to_h.transform_keys(&:to_s)
+      normalized_answer_params(permitted).transform_keys(&:to_s)
     )
 
     @assessment_response.assign_attributes(
       respondent_kind: permitted[:respondent_kind].presence || @assessment_response.respondent_kind,
       answers: merged_answers
     )
+  end
+
+  def normalized_answer_params(permitted)
+    answer_params = permitted[:answers]
+    return {} if answer_params.blank?
+
+    if answer_params.respond_to?(:to_unsafe_h)
+      answer_params.to_unsafe_h
+    else
+      answer_params.to_h
+    end
   end
 
   def next_step_id
@@ -134,6 +152,21 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
       refreshed_runner.previous_step_for(current_step)&.dig("id") || current_step["id"]
     else
       refreshed_runner.next_step_for(current_step)&.dig("id") || current_step["id"]
+    end
+  end
+
+  def forward_action?
+    params[:submit_action].in?(%w[next submit])
+  end
+
+  def current_step_missing_required_question_ids
+    current_step = @runner.current_step(params[:current_step_id].presence || params[:step])
+    Array(current_step["questions"]).filter_map do |question|
+      normalized = question.stringify_keys
+      next unless ActiveModel::Type::Boolean.new.cast(normalized["required"])
+
+      question_id = normalized["id"].to_s
+      question_id if @assessment_response.answers.to_h[question_id].blank?
     end
   end
 end

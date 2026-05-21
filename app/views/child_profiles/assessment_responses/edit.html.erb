@@ -47,9 +47,9 @@
             </div>
           <% end %>
 
-          <div class="space-y-4">
+          <div class="space-y-4 pt-2">
             <% @current_step["questions"].each do |question| %>
-              <%= render "question_field", question: question, answers: @answers %>
+              <%= render "question_field", question: question, answers: @answers, question_errors: @question_errors %>
             <% end %>
           </div>
 

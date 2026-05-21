@@ -52,4 +52,25 @@
     outline: 2px solid var(--color-indigo-600);
     outline-offset: 2px;
   }
+
+  .assessment-choice-group {
+    border: 1px solid transparent;
+    border-radius: var(--radius-box);
+    padding: calc(var(--spacing) * 1);
+    transition:
+      border-color var(--default-transition-duration) var(--default-transition-timing-function),
+      background-color var(--default-transition-duration) var(--default-transition-timing-function);
+  }
+
+  .assessment-choice-group--error {
+    border-color: color-mix(in oklab, var(--color-error) 35%, transparent);
+    background-color: color-mix(in oklab, var(--color-error) 6%, transparent);
+  }
+
+  .assessment-choice-error {
+    margin-top: calc(var(--spacing) * 2);
+    color: var(--color-error);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+  }
 }

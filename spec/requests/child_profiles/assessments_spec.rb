@@ -396,6 +396,26 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(response.body).not_to include("radio radio-primary")
     end
 
+    it "shows a soft choice warning after continuing without a required selection" do
+      select_assessment = create(:assessment, child_profile: child_profile, assessment_template: select_template)
+      create(:assessment_response, assessment: select_assessment, actor: user, answers: {})
+
+      patch space_child_profile_assessment_assessment_response_path(space, child_profile, select_assessment),
+        params: {
+          current_step_id: "q-choice",
+          submit_action: "next",
+          assessment_response: {
+            respondent_kind: "parent_proxy"
+          }
+        }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("assessment-choice-group--error")
+      expect(response.body).to include("Choose an answer to continue.")
+      expect(response.body).not_to include("badge badge-error badge-outline")
+      expect(response.body).not_to include(">Required<")
+    end
+
     it "targets the final submit outside the runner frame" do
       assessment_response.update!(answers: { "concern_level" => "3", "notes" => "Done" })
 
