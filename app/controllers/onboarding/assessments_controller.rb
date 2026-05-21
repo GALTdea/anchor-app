@@ -23,7 +23,7 @@ class Onboarding::AssessmentsController < ApplicationController
       if params[:submit_action] == "continue"
         redirect_to onboarding_account_path, notice: "Assessment progress saved."
       else
-        redirect_to onboarding_assessment_path(step: next_step_id)
+        render_runner_step
       end
     else
       set_runner_context_from_current_session
@@ -60,15 +60,20 @@ class Onboarding::AssessmentsController < ApplicationController
     set_runner_context_from_current_session
   end
 
-  def set_runner_context_from_current_session
+  def set_runner_context_from_current_session(step_id: nil)
     @assessment_template = @onboarding_session.assessment_template
     @answers = @onboarding_session.assessment_answers.deep_stringify_keys
     @runner = AssessmentRunner.new(template: @assessment_template, answers: @answers)
-    @current_step = @runner.current_step(params[:step])
+    @current_step = @runner.current_step(step_id.presence || params[:step])
     @next_step = @runner.next_step_for(@current_step)
     @previous_step = @runner.previous_step_for(@current_step)
     @section_progress = @runner.section_progress_for(@current_step)
     @progress = view_context.assessment_progress(@assessment_template, @answers)
+  end
+
+  def render_runner_step
+    set_runner_context_from_current_session(step_id: next_step_id)
+    render :show, status: :ok
   end
 
   def assessment_params

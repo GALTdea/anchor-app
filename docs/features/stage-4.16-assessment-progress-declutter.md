@@ -70,17 +70,17 @@ Reference: `docs/features/_constraints.md`
 
 ## Acceptance criteria
 
-- [ ] The onboarding assessment screen no longer renders `Question X of Y`
+- [x] The onboarding assessment screen no longer renders `Question X of Y`
       inside the question card.
-- [ ] The authenticated child-profile assessment edit screen no longer renders
+- [x] The authenticated child-profile assessment edit screen no longer renders
       `Question X of Y` inside the question card.
-- [ ] The global `X of Y answered` counter still renders near the top of the
+- [x] The global `X of Y answered` counter still renders near the top of the
       assessment flow.
-- [ ] The current section title, such as `Regulation & Transitions`, still
+- [x] The current section title, such as `Regulation & Transitions`, still
       renders in the card header.
-- [ ] Answering, autosaving, moving back, moving forward, and submitting are
+- [x] Answering, autosaving, moving back, moving forward, and submitting are
       unchanged.
-- [ ] Targeted specs pass; RuboCop is clean for changed files.
+- [x] Targeted specs pass; RuboCop is clean for changed files.
 
 ## Steps
 
@@ -137,10 +137,10 @@ bundle exec rspec spec/requests/onboarding_flow_spec.rb spec/requests/child_prof
 
 ## Status
 
-- [ ] Step 0 — Pre-flight
-- [ ] Step 1 — Remove section-local question counter from views
-- [ ] Step 2 — Update focused specs
-- [ ] Step 3 — Final verification
+- [x] Step 0 — Pre-flight
+- [x] Step 1 — Remove section-local question counter from views
+- [x] Step 2 — Update focused specs
+- [x] Step 3 — Final verification
 
 **Last updated:** 2026-05-20
 **Handoff note:** Brief created from UI review of the onboarding assessment

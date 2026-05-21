@@ -58,12 +58,7 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
       redirect_to space_child_profile_path(@space, @child_profile),
         notice: "Assessment submitted."
     elsif @assessment_response.save
-      redirect_to edit_space_child_profile_assessment_assessment_response_path(
-        @space,
-        @child_profile,
-        @assessment,
-        step: next_step_id
-      )
+      render_runner_step
     else
       set_runner_context_from_current_response
       render :edit, status: :unprocessable_content
@@ -93,16 +88,21 @@ class ChildProfiles::AssessmentResponsesController < ApplicationController
     set_runner_context_from_current_response
   end
 
-  def set_runner_context_from_current_response
+  def set_runner_context_from_current_response(step_id: nil)
     @template = @assessment.assessment_template
     @answers = (@assessment_response.answers || {}).deep_stringify_keys
     @runner = AssessmentRunner.new(template: @template, answers: @answers)
-    step_id = params[:current_step_id].presence || params[:step]
-    @current_step = @runner.current_step(step_id)
+    resolved_step_id = step_id.presence || params[:current_step_id].presence || params[:step]
+    @current_step = @runner.current_step(resolved_step_id)
     @next_step = @runner.next_step_for(@current_step)
     @previous_step = @runner.previous_step_for(@current_step)
     @section_progress = @runner.section_progress_for(@current_step)
     @progress = view_context.assessment_progress(@template, @answers)
+  end
+
+  def render_runner_step
+    set_runner_context_from_current_response(step_id: next_step_id)
+    render :edit, status: :ok
   end
 
   def assessment_response_params

@@ -66,11 +66,8 @@
 
       <section class="card border border-base-200 bg-base-100 shadow-sm">
         <div class="card-body gap-6">
-          <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/60">
+          <div class="text-sm text-base-content/60">
             <span><%= @current_step["section_title"] %></span>
-            <% if @section_progress.present? && @section_progress[:total] > 1 %>
-              <span>Question <%= @section_progress[:index] %> of <%= @section_progress[:total] %></span>
-            <% end %>
           </div>
 
           <% if @current_step["position"] == 1 && @current_step["section_description"].present? %>

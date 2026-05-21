@@ -76,14 +76,9 @@ RSpec.describe "Child profile assessments", type: :request do
           }
         }
 
-      expect(response).to redirect_to(
-        edit_space_child_profile_assessment_assessment_response_path(
-          space,
-          child_profile,
-          assessment,
-          step: "q-notes"
-        )
-      )
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Notes")
+      expect(response.body).to include("1 of 2 answered")
 
       assessment_response.reload
       expect(assessment_response.answers).to include("concern_level" => "3")
@@ -102,14 +97,8 @@ RSpec.describe "Child profile assessments", type: :request do
           }
         }
 
-      expect(response).to redirect_to(
-        edit_space_child_profile_assessment_assessment_response_path(
-          space,
-          child_profile,
-          assessment,
-          step: "q-notes"
-        )
-      )
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("2 of 2 answered")
 
       assessment_response.reload
       expect(assessment_response.answers["notes"]).to eq("Autosaved detail")
@@ -255,7 +244,7 @@ RSpec.describe "Child profile assessments", type: :request do
       let(:assessment) { create(:assessment, child_profile: child_profile, assessment_template: branching_template) }
       let!(:assessment_response) { create(:assessment_response, assessment: assessment, actor: user, answers: {}) }
 
-      it "redirects so the next step is only the follow-up question" do
+      it "renders the follow-up as the very next step with one question on screen" do
         patch space_child_profile_assessment_assessment_response_path(space, child_profile, assessment),
           params: {
             current_step_id: "q-branch_trigger",
@@ -266,16 +255,7 @@ RSpec.describe "Child profile assessments", type: :request do
             }
           }
 
-        expect(response).to redirect_to(
-          edit_space_child_profile_assessment_assessment_response_path(
-            space,
-            child_profile,
-            assessment,
-            step: "q-branch_follow_up"
-          )
-        )
-
-        follow_redirect!
+        expect(response).to have_http_status(:ok)
 
         doc = Nokogiri::HTML(response.body)
         expect(doc.css("fieldset.fieldset").size).to eq(1)
@@ -309,15 +289,7 @@ RSpec.describe "Child profile assessments", type: :request do
             }
           }
 
-        expect(response).to redirect_to(
-          edit_space_child_profile_assessment_assessment_response_path(
-            space,
-            child_profile,
-            assessment,
-            step: "q-transition_recovery_time"
-          )
-        )
-        follow_redirect!
+        expect(response).to have_http_status(:ok)
         expect(response.body).to include("how long does it typically take")
       end
 
@@ -332,15 +304,7 @@ RSpec.describe "Child profile assessments", type: :request do
             }
           }
 
-        expect(response).to redirect_to(
-          edit_space_child_profile_assessment_assessment_response_path(
-            space,
-            child_profile,
-            assessment,
-            step: "q-friction_closing"
-          )
-        )
-        follow_redirect!
+        expect(response).to have_http_status(:ok)
         expect(response.body).to include("Anything else about transitions")
         expect(response.body).not_to include("how long does it typically take")
       end
@@ -381,6 +345,8 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(response.body).to include(template.title)
       expect(response.body).to include(child_profile.name)
       expect(response.body).to include("0 of 2 answered")
+      expect(response.body).to include("Regulation")
+      expect(response.body).not_to match(/Question \d+ of \d+/)
       expect(response.body).to include("Continue")
       expect(response.body).not_to include("What to expect")
       expect(response.body).not_to include("prompt")

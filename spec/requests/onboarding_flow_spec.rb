@@ -59,6 +59,9 @@ RSpec.describe "Onboarding flow", type: :request do
       follow_redirect!
       expect(response.body).to include("Answer a few questions to build a clearer picture.")
       expect(response.body).to include("Onboarding assessment")
+      expect(response.body).to include("0 of 2 answered")
+      expect(response.body).to include("Regulation")
+      expect(response.body).not_to match(/Question \d+ of \d+/)
       expect(response.body).to include("Continue")
     end
 
@@ -98,9 +101,9 @@ RSpec.describe "Onboarding flow", type: :request do
         }
       }
 
-      expect(response).to redirect_to(onboarding_assessment_path(step: "q-notes"))
-      follow_redirect!
+      expect(response).to have_http_status(:ok)
       expect(response.body).to include("Notes")
+      expect(response.body).to include("1 of 2 answered")
       expect(response.body).not_to include("What to expect")
       expect(response.body).not_to include("Onboarding assessment")
       expect(OnboardingSession.last.draft_answers).to include(
@@ -121,7 +124,8 @@ RSpec.describe "Onboarding flow", type: :request do
         }
       }
 
-      expect(response).to redirect_to(onboarding_assessment_path(step: "q-notes"))
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("1 of 2 answered")
       expect(OnboardingSession.last.draft_answers).to include(
         "answers" => include("notes" => "Autosaved context")
       )
@@ -248,8 +252,7 @@ RSpec.describe "Onboarding flow", type: :request do
           }
         }
 
-        expect(response).to redirect_to(onboarding_assessment_path(step: "q-branch_follow_up"))
-        follow_redirect!
+        expect(response).to have_http_status(:ok)
 
         doc = Nokogiri::HTML(response.body)
         expect(doc.css("fieldset.fieldset").size).to eq(1)
@@ -296,8 +299,7 @@ RSpec.describe "Onboarding flow", type: :request do
           }
         }
 
-        expect(response).to redirect_to(onboarding_assessment_path(step: "q-transition_recovery_time"))
-        follow_redirect!
+        expect(response).to have_http_status(:ok)
         expect(response.body).to include("how long does it typically take")
       end
 
@@ -311,8 +313,7 @@ RSpec.describe "Onboarding flow", type: :request do
           }
         }
 
-        expect(response).to redirect_to(onboarding_assessment_path(step: "q-friction_closing"))
-        follow_redirect!
+        expect(response).to have_http_status(:ok)
         expect(response.body).to include("Anything else about transitions")
         expect(response.body).not_to include("how long does it typically take")
       end

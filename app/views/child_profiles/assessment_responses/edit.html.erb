@@ -3,10 +3,7 @@
     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/50">
       <%= @template.title %>
     </p>
-    <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/60">
-      <span><%= @child_profile.name %></span>
-      <span><%= @progress[:answered] %> of <%= @progress[:total] %> answered</span>
-    </div>
+    <p class="text-sm text-base-content/60"><%= @child_profile.name %></p>
   </div>
 
   <% if @assessment_response.errors.any? %>
@@ -33,13 +30,14 @@
       <%= hidden_field_tag :current_step_id, @current_step["id"] %>
       <%= button_tag "Autosave", type: "submit", name: "submit_action", value: "stay", class: "hidden", data: { assessment_autosave_target: "submitter" } %>
 
+      <div class="flex flex-wrap items-center justify-end gap-2 text-sm text-base-content/60">
+        <span><%= @progress[:answered] %> of <%= @progress[:total] %> answered</span>
+      </div>
+
       <section class="card bg-base-100 shadow-sm">
         <div class="card-body gap-6">
-          <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/60">
+          <div class="text-sm text-base-content/60">
             <span><%= @current_step["section_title"] %></span>
-            <% if @section_progress.present? && @section_progress[:total] > 1 %>
-              <span>Question <%= @section_progress[:index] %> of <%= @section_progress[:total] %></span>
-            <% end %>
           </div>
 
           <% if @current_step["position"] == 1 && @current_step["section_description"].present? %>
