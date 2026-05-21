@@ -337,6 +337,29 @@ RSpec.describe "Child profile assessments", type: :request do
   describe "GET /response/edit" do
     let(:assessment) { create(:assessment, child_profile: child_profile, assessment_template: template) }
     let!(:assessment_response) { create(:assessment_response, assessment: assessment, actor: user) }
+    let(:select_template) do
+      create(:assessment_template, schema: {
+        "version" => 1,
+        "sections" => [ { "id" => "s1", "title" => "Section" } ],
+        "questions" => [
+          {
+            "id" => "choice",
+            "label" => "Pick one",
+            "type" => "select",
+            "section" => "s1",
+            "dimension_key" => "test.dimension",
+            "concept_key" => "test_concept",
+            "time_window" => "current_pattern",
+            "evidence_weight" => 0.8,
+            "required" => true,
+            "options" => [
+              { "label" => "First", "value" => "first" },
+              { "label" => "Second", "value" => "second" }
+            ]
+          }
+        ]
+      })
+    end
 
     it "renders the progressive runner with a single focused step" do
       get edit_space_child_profile_assessment_assessment_response_path(space, child_profile, assessment)
@@ -350,6 +373,22 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(response.body).to include("Continue")
       expect(response.body).not_to include("What to expect")
       expect(response.body).not_to include("prompt")
+    end
+
+    it "renders select questions as stacked radio choice cards" do
+      select_assessment = create(:assessment, child_profile: child_profile, assessment_template: select_template)
+      create(:assessment_response, assessment: select_assessment, actor: user, answers: { "choice" => "second" })
+
+      get edit_space_child_profile_assessment_assessment_response_path(space, child_profile, select_assessment)
+
+      expect(response).to be_successful
+
+      doc = Nokogiri::HTML(response.body)
+      expect(doc.at_css("select[name='assessment_response[answers][choice]']")).to be_nil
+      expect(doc.css("input[type='radio'][name='assessment_response[answers][choice]']").map { |input| input["value"] })
+        .to contain_exactly("first", "second")
+      expect(doc.at_css("input[type='radio'][value='second']")["checked"]).to eq("checked")
+      expect(response.body).to include("has-[:checked]:border-primary")
     end
 
     it "targets the final submit outside the runner frame" do
