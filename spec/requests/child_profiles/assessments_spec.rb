@@ -391,7 +391,9 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(doc.css("input[type='radio'][name='assessment_response[answers][choice]']").map { |input| input["value"] })
         .to contain_exactly("first", "second")
       expect(doc.at_css("input[type='radio'][value='second']")["checked"]).to eq("checked")
-      expect(response.body).to include("has-[:checked]:border-primary")
+      expect(response.body).to include("assessment-choice-card")
+      expect(response.body).to include('class="sr-only"')
+      expect(response.body).not_to include("radio radio-primary")
     end
 
     it "targets the final submit outside the runner frame" do
