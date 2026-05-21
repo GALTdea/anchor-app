@@ -6,33 +6,40 @@ export default class extends Controller {
 
   connect() {
     this.timeout = null
+    this.statusTimeout = null
+
+    if (this.hasStatusTarget && this.statusTarget.textContent.trim().length > 0) {
+      this.statusTarget.classList.add("is-visible")
+      this.scheduleStatusFade()
+    }
   }
 
   disconnect() {
     this.clearTimeout()
+    this.clearStatusTimeout()
   }
 
   queue() {
-    this.setStatus("Saving...")
+    this.setStatus("Saving...", { persist: true })
     this.clearTimeout()
     this.timeout = setTimeout(() => this.submit(), this.delayValue)
   }
 
   queueImmediate() {
-    this.setStatus("Saving...")
+    this.setStatus("Saving...", { persist: true })
     this.clearTimeout()
     this.timeout = setTimeout(() => this.submit(), 75)
   }
 
   submitting() {
-    this.setStatus("Saving...")
+    this.setStatus("Saving...", { persist: true })
   }
 
   submitted(event) {
     if (event.detail.success) {
       this.setStatus("Saved")
     } else {
-      this.setStatus("Could not save")
+      this.setStatus("Could not save", { persist: true })
     }
   }
 
@@ -49,9 +56,29 @@ export default class extends Controller {
     }
   }
 
-  setStatus(message) {
+  clearStatusTimeout() {
+    if (this.statusTimeout) {
+      clearTimeout(this.statusTimeout)
+      this.statusTimeout = null
+    }
+  }
+
+  setStatus(message, { persist = false } = {}) {
     if (!this.hasStatusTarget) return
 
+    this.clearStatusTimeout()
     this.statusTarget.textContent = message
+    this.statusTarget.classList.toggle("is-visible", message.length > 0)
+
+    if (!persist) {
+      this.scheduleStatusFade()
+    }
+  }
+
+  scheduleStatusFade() {
+    this.clearStatusTimeout()
+    this.statusTimeout = setTimeout(() => {
+      this.statusTarget.classList.remove("is-visible")
+    }, 1800)
   }
 }

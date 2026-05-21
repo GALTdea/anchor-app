@@ -73,4 +73,37 @@
     font-size: var(--text-sm);
     line-height: var(--text-sm--line-height);
   }
+
+  .assessment-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--spacing) * 3);
+  }
+
+  .assessment-back-button {
+    border: 0;
+    background: transparent;
+    padding-inline: 0;
+    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .assessment-back-button:hover,
+  .assessment-back-button:focus-visible {
+    color: var(--color-slate-800);
+    background: transparent;
+  }
+
+  .assessment-save-status {
+    color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    opacity: 0;
+    transition: opacity 250ms ease;
+  }
+
+  .assessment-save-status.is-visible {
+    opacity: 1;
+  }
 }

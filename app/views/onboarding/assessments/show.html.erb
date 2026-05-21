@@ -96,16 +96,16 @@
             <% end %>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="assessment-nav">
             <% if @previous_step.present? %>
-              <%= button_tag "Back", type: "submit", name: "submit_action", value: "back", class: "btn btn-ghost" %>
+              <%= button_tag "Back", type: "submit", name: "submit_action", value: "back", class: "assessment-back-button" %>
             <% end %>
             <% if @next_step.present? %>
               <%= button_tag "Continue", type: "submit", name: "submit_action", value: "next", class: "btn btn-primary" %>
             <% else %>
               <%= button_tag "Continue to save your profile", type: "submit", name: "submit_action", value: "continue", class: "btn btn-primary" %>
             <% end %>
-            <p class="text-sm text-base-content/60" data-assessment-autosave-target="status">Saved</p>
+            <p class="assessment-save-status <%= 'is-visible' if @save_status.present? %>" aria-live="polite" data-assessment-autosave-target="status"><%= @save_status %></p>
           </div>
         </div>
       </section>

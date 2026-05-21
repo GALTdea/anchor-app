@@ -82,6 +82,7 @@ class Onboarding::AssessmentsController < ApplicationController
 
   def render_runner_step
     set_runner_context_from_current_session(step_id: next_step_id)
+    @save_status = "Saved" if params[:submit_action] == "stay"
     render :show, status: :ok
   end
 
