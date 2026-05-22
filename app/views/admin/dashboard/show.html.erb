@@ -1,0 +1,29 @@
+<%= render "shared/page_header",
+  title: "Admin",
+  subtitle: "Operational tools for assessment templates and app setup." %>
+
+<div class="grid gap-4 md:grid-cols-2 max-w-3xl">
+  <div class="card bg-base-100 border border-base-300">
+    <div class="card-body">
+      <h2 class="card-title">Assessment templates</h2>
+      <p class="text-sm text-base-content/70">
+        Create, publish, and version assessment templates used for onboarding and child assessments.
+      </p>
+      <div class="card-actions justify-end">
+        <%= link_to "Manage templates", admin_assessment_templates_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 border border-base-300">
+    <div class="card-body">
+      <h2 class="card-title">Setup</h2>
+      <p class="text-sm text-base-content/70">
+        Configure app-wide settings such as multi-tenant mode and the onboarding assessment template.
+      </p>
+      <div class="card-actions justify-end">
+        <%= link_to "Open setup", edit_setup_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  </div>
+</div>

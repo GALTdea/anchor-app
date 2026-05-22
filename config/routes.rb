@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :users, only: %i[edit update destroy]
   namespace :admin do
+    root "dashboard#show"
+
     resources :assessment_templates, only: %i[index show new create edit update] do
       member do
         get :preview

@@ -16,7 +16,7 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
   <body class="min-h-screen bg-base-200">
-    <% admin_sidebar = current_user&.admin? %>
+    <% admin_sidebar = current_user&.admin? && controller_path.start_with?("admin/") %>
 
     <% if admin_sidebar %>
       <div class="drawer lg:drawer-open">

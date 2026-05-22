@@ -26,18 +26,18 @@ experience feel different or harder to navigate for admin accounts.
 
 Reference: `docs/features/_constraints.md`
 
-- [ ] Every controller action calls `authorize` (Pundit)
-- [ ] Admin-only features gate on `user.admin?`
-- [ ] Keep controllers thin
-- [ ] Use RESTful routes where practical
-- [ ] Use Tailwind CSS 4 + daisyUI 5 for all new views
-- [ ] Keep views DRY with partials
-- [ ] Use `render "shared/page_header"` for page titles where it fits the
+- [x] Every controller action calls `authorize` (Pundit)
+- [x] Admin-only features gate on `user.admin?`
+- [x] Keep controllers thin
+- [x] Use RESTful routes where practical
+- [x] Use Tailwind CSS 4 + daisyUI 5 for all new views
+- [x] Keep views DRY with partials
+- [x] Use `render "shared/page_header"` for page titles where it fits the
       existing page pattern
-- [ ] Existing assessment template management routes and behavior must continue
+- [x] Existing assessment template management routes and behavior must continue
       to work
-- [ ] Existing specs must stay green
-- [ ] RuboCop must stay clean
+- [x] Existing specs must stay green
+- [x] RuboCop must stay clean
 
 ## Reference implementation
 
@@ -163,16 +163,16 @@ The exact helper or predicate can differ, but the behavior should be:
 
 ## Acceptance criteria
 
-- [ ] Admin users can visit `/admin`
-- [ ] `/admin` renders a simple admin home page
-- [ ] `/admin` links to assessment template management
-- [ ] `/admin` links to setup
-- [ ] Admin sidebar renders on `/admin`
-- [ ] Admin sidebar renders on `/admin/assessment_templates`
-- [ ] Admin sidebar does not render on `/home` for admin users
-- [ ] Admin sidebar does not render on `/spaces` for admin users
-- [ ] Non-admin authenticated users cannot access `/admin`
-- [ ] Existing assessment template admin routes still work
+- [x] Admin users can visit `/admin`
+- [x] `/admin` renders a simple admin home page
+- [x] `/admin` links to assessment template management
+- [x] `/admin` links to setup
+- [x] Admin sidebar renders on `/admin`
+- [x] Admin sidebar renders on `/admin/assessment_templates`
+- [x] Admin sidebar does not render on `/home` for admin users
+- [x] Admin sidebar does not render on `/spaces` for admin users
+- [x] Non-admin authenticated users cannot access `/admin`
+- [x] Existing assessment template admin routes still work
 
 ## Out of scope
 
@@ -247,13 +247,12 @@ bin/rails db:migrate:status
 
 ## Status
 
-- [ ] Step 1
-- [ ] Step 2
-- [ ] Step 3
-- [ ] Step 4
-- [ ] Step 5
+- [x] Step 1
+- [x] Step 2
+- [x] Step 3
+- [x] Step 4
+- [x] Step 5
 
 **Last updated:** 2026-05-22
-**Handoff note:** Brief created. Next step is Phase 2 design review against
-`docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, and the existing admin
-assessment template implementation before building.
+**Handoff note:** Stage complete. Admin home at `/admin`, sidebar scoped to admin
+namespace pages, and request specs cover layout behavior for admin users.
