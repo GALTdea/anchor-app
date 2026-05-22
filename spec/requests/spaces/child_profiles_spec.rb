@@ -128,6 +128,9 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).to include("How to try it")
       expect(response.body).to include("Anchor Onboarding Profile")
       expect(response.body).to include("Based on Anchor Onboarding Profile")
+      expect(response.body).to include("System Calibrated")
+      expect(response.body).to include("Profile Calibration Looks Current")
+      expect(response.body).to include("Choose an Activity for Today")
       expect(response.body).to include("Recommendations")
       expect(response.body).to include("Assessments")
       expect(response.body).to include("Edit child details")
@@ -142,9 +145,41 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).not_to include("evidence count")
       expect(response.body).not_to include("dimension key")
       expect(response.body).not_to include("profile version")
+      expect(response.body).not_to include("Last updated")
+      expect(response.body).not_to include("Freshness")
       expect(response.body).not_to include("Recommended next steps")
       expect(response.body).not_to include("Based on:")
       expect(response.body).not_to include("Plain-language Summary")
+    end
+
+    it "turns a stale child snapshot into a feedback loop health prompt" do
+      stale_time = 25.days.ago
+      child_profile = nil
+
+      travel_to stale_time do
+        child_profile = create(:child_profile, space: space, first_name: "John", last_name: "Smith")
+        create(:current_profile, child_profile: child_profile, generated_at: Time.current, summary: {
+          "dimensions" => {
+            "communication.expressive" => dimension_details("Uses short phrases")
+          }
+        })
+        template = create(:assessment_template, title: "Anchor Onboarding Profile")
+        assessment = create(:assessment, child_profile: child_profile, assessment_template: template, status: :submitted)
+        create(:assessment_response, assessment: assessment, submitted_at: Time.current, processing_status: "completed")
+      end
+
+      get space_child_profile_url(space, child_profile)
+
+      expect(response).to be_successful
+      expect(response.body).to include("John Smith")
+      expect(response.body).to include("Anchor Onboarding Profile completed 25 days ago")
+      expect(response.body).to include("Needs Calibration / Quiet Period")
+      expect(response.body).to include("Time for a Profile Calibration")
+      expect(response.body).to include("It&#39;s been 25 days since John&#39;s last profile update.")
+      expect(response.body).to include("Choose an Activity for Today")
+      expect(response.body).to include(space_child_profile_recommendations_path(space, child_profile))
+      expect(response.body).to include("Chat with Anchor Support AI")
+      expect(response.body).not_to include("Freshness")
     end
 
     it "shows empty Support Guide placeholders when there is no current profile yet" do

@@ -13,6 +13,15 @@ class ChildProfileResultsPresenter
   HardMomentGuideCard = Struct.new(:title, :body, keyword_init: true)
   PlanningFocus = Struct.new(:label, keyword_init: true)
   BestSupportLine = Struct.new(:label, :detail, keyword_init: true)
+  FeedbackLoopHealth = Struct.new(
+    :status_label,
+    :status_icon,
+    :status_classes,
+    :card_classes,
+    :title,
+    :body,
+    keyword_init: true
+  )
   ParentAnalysisRow = Struct.new(
     :title, :summary, :confidence_phrase, :evidence_note, :low_confidence, keyword_init: true
   )
@@ -188,6 +197,54 @@ class ChildProfileResultsPresenter
       latest_assessment_response&.submitted_at,
       child_profile.updated_at
     ].compact.max || Time.current
+  end
+
+  def child_snapshot_source_label
+    latest_assessment_response&.assessment&.assessment_template&.title.presence || "Profile"
+  end
+
+  def child_snapshot_age_phrase
+    updated_at = child_snapshot_updated_at
+    return "today" if updated_at.to_date == Date.current
+
+    "#{helpers.time_ago_in_words(updated_at)} ago"
+  end
+
+  def feedback_loop_health
+    updated_at = child_snapshot_updated_at
+    days_since_update = (Date.current - updated_at.to_date).to_i
+
+    if days_since_update <= 3
+      FeedbackLoopHealth.new(
+        status_label: "System Calibrated",
+        status_icon: "🟢",
+        status_classes: "border-success/20 bg-success/10 text-success",
+        card_classes: "border-success/20 bg-success/5",
+        title: "Profile Calibration Looks Current",
+        body: "Anchor has a recent read on what is helping #{child_profile.first_name}. " \
+          "Choose one small activity to keep the feedback loop moving."
+      )
+    elsif days_since_update <= 14
+      FeedbackLoopHealth.new(
+        status_label: "Evolving Profile",
+        status_icon: "🟡",
+        status_classes: "border-warning/30 bg-warning/10 text-warning",
+        card_classes: "border-warning/30 bg-warning/5",
+        title: "Keep the Profile Learning",
+        body: "It's been #{helpers.time_ago_in_words(updated_at)} since #{child_profile.first_name}'s last " \
+          "profile update. A quick support activity can help Anchor notice what is changing."
+      )
+    else
+      FeedbackLoopHealth.new(
+        status_label: "Needs Calibration / Quiet Period",
+        status_icon: "⏰",
+        status_classes: "border-indigo-200 bg-indigo-50 text-indigo-700",
+        card_classes: "border-indigo-200 bg-indigo-50/80",
+        title: "Time for a Profile Calibration",
+        body: "It's been #{helpers.time_ago_in_words(updated_at)} since #{child_profile.first_name}'s last " \
+          "profile update. The best way to keep recommendations precise is to try a quick support activity."
+      )
+    end
   end
 
   def profile_state_label
