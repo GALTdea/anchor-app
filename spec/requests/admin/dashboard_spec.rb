@@ -55,6 +55,13 @@ RSpec.describe "Admin dashboard", type: :request do
       expect(response.body).to match(/>\s*Home\s*</)
     end
 
+    it "includes an admin link in the top navigation on home" do
+      get home_path
+
+      expect(response.body).to include(admin_root_path)
+      expect(response.body).to match(/>\s*Admin\s*</)
+    end
+
     it "does not render the admin sidebar on spaces" do
       get spaces_path
 
