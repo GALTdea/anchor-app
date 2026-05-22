@@ -12,19 +12,24 @@
     title: @results_presenter.page_title,
     subtitle: @results_presenter.page_subtitle %>
 
-  <div class="flex flex-wrap gap-2">
-    <%= link_to "Recommendations",
-      space_child_profile_recommendations_path(@space, @child_profile),
-      class: "btn btn-outline btn-sm" %>
-    <%= link_to "Assessments",
-      space_child_profile_assessments_path(@space, @child_profile),
-      class: "btn btn-outline btn-sm" %>
-    <% if policy(@child_profile).update? %>
-      <%= link_to "Edit child details",
-        edit_space_child_profile_path(@space, @child_profile),
-        class: "btn btn-ghost btn-sm" %>
-    <% end %>
-  </div>
+  <nav aria-label="Profile sections" class="inline-flex max-w-full rounded-full bg-base-300/60 p-1">
+    <div class="flex flex-wrap gap-1">
+      <%= link_to "Overview",
+        space_child_profile_path(@space, @child_profile),
+        class: "rounded-full bg-base-100 px-4 py-2 text-sm font-medium text-base-content shadow-sm" %>
+      <%= link_to "Recommendations",
+        space_child_profile_recommendations_path(@space, @child_profile),
+        class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
+      <%= link_to "Assessments",
+        space_child_profile_assessments_path(@space, @child_profile),
+        class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
+      <% if policy(@child_profile).update? %>
+        <%= link_to "Edit child details",
+          edit_space_child_profile_path(@space, @child_profile),
+          class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
+      <% end %>
+    </div>
+  </nav>
 
   <section class="card bg-base-100 shadow-sm">
     <div class="card-body gap-5">
