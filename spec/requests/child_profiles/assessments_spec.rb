@@ -372,6 +372,7 @@ RSpec.describe "Child profile assessments", type: :request do
       expect(response.body).to include("Regulation")
       expect(response.body).to include('role="progressbar"')
       expect(response.body).to include('aria-valuenow="0"')
+      expect(response.body).to include('style="width: 2%"')
       expect(response.body).not_to match(/Question \d+ of \d+/)
       expect(response.body).to include("Continue")
       expect(response.body).not_to include("What to expect")
