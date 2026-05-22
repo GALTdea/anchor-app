@@ -33,6 +33,8 @@ RSpec.describe "Admin dashboard", type: :request do
 
       expect(response.body).to include('id="drawer-toggle"')
       expect(response.body).to include("Admin Home")
+      expect(response.body).to include(home_path)
+      expect(response.body).to match(/navbar[\s\S]*>\s*Home\s*</)
       expect(response.body).not_to match(/drawer-side[\s\S]*>\s*Home\s*</)
       expect(response.body).not_to match(/drawer-side[\s\S]*>\s*Spaces\s*</)
     end
