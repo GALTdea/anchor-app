@@ -112,9 +112,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).to include("Support direction")
       expect(response.body).to include("support_domains/communication_expression")
       expect(response.body).to include("support_domains/social_connection_style")
-      expect(response.body).to include("Focus Right Now")
       expect(response.body).to include("Try This This Week")
-      expect(response.body).to include("What We're Still Learning")
       expect(response.body).to include("A simple guide to what Anchor understands right now")
       expect(response.body).to include("Dinosaurs")
       expect(response.body).to include("Uses short phrases")
@@ -150,6 +148,8 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).not_to include("When Things Get Hard")
       expect(response.body).not_to include("What to Plan Around")
       expect(response.body).not_to include("Best Support Style")
+      expect(response.body).not_to include("Focus Right Now")
+      expect(response.body).not_to include("What We&#39;re Still Learning")
       expect(response.body).not_to include("Recommended next steps")
       expect(response.body).not_to include("Based on:")
       expect(response.body).not_to include("Plain-language Summary")
@@ -195,12 +195,13 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).to include("System Calibrated")
       expect(response.body).to include("What Anchor Understands Right Now")
       expect(response.body).to include("Noah may do best when expectations are clear before a task starts.")
-      expect(response.body).to include("Make uncertain moments more predictable")
       expect(response.body).to include("Preview one tricky transition")
       expect(response.body).to include("Start onboarding assessment")
       expect(response.body).to include(start_onboarding_space_child_profile_assessments_path(space, child_profile))
       expect(response.body).to include(space_child_profile_support_plan_path(space, child_profile))
       expect(response.body).not_to include("When Things Get Hard")
+      expect(response.body).not_to include("Focus Right Now")
+      expect(response.body).not_to include("What We&#39;re Still Learning")
       expect(response.body).not_to include("Profile signals")
     end
 
@@ -243,7 +244,7 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       expect(response.body).not_to include("Based on:")
     end
 
-    it "shows no more than three support priorities and three weekly ideas" do
+    it "shows no more than three weekly ideas on the overview" do
       child_profile = create(:child_profile, space: space, first_name: "Ari", last_name: "Stone")
       create(:current_profile, child_profile: child_profile, narrative: "Ari profile narrative.", summary: {
         "dimensions" => {
@@ -269,8 +270,8 @@ RSpec.describe "/spaces/:space_id/child_profiles", type: :request do
       get space_child_profile_url(space, child_profile)
 
       expect(response).to be_successful
-      expect(response.body.scan("Make communication easier to use").length).to eq(3)
       expect(response.body.scan("Weekly idea").length).to eq(3)
+      expect(response.body).not_to include("Focus Right Now")
     end
 
     it "surfaces queued assessment processing on the results home" do

@@ -1,9 +1,7 @@
 <% processing_status = @results_presenter.processing_status %>
 <% loop_health = @results_presenter.feedback_loop_health %>
 <% insight_cards = @results_presenter.support_guide_insights %>
-<% focus_priorities = @results_presenter.support_priorities %>
 <% weekly_ideas = @results_presenter.weekly_ideas %>
-<% learning_areas = @results_presenter.learning_areas %>
 <div class="mx-auto max-w-6xl space-y-6">
   <%= render "shared/page_header",
     title: @results_presenter.page_title,
@@ -124,29 +122,6 @@
       </div>
     </div>
   </section>
-  <%# focus right now section %>
-  <section class="card bg-base-100 shadow-sm">
-    <div class="card-body gap-5">
-      <div>
-        <h2 class="text-lg font-semibold text-base-content">Focus Right Now</h2>
-        <p class="mt-1 text-sm leading-6 text-base-content/70">
-          Choose one focus at a time—steady beats sprawling.
-        </p>
-      </div>
-
-      <div class="grid gap-3 md:grid-cols-3">
-        <% focus_priorities.each do |priority| %>
-          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-            <h3 class="text-sm font-semibold text-base-content"><%= priority.focus %></h3>
-            <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-base-content/50">Why it matters</p>
-            <p class="mt-1 text-sm leading-6 text-base-content/75"><%= priority.why_it_matters %></p>
-            <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-base-content/50">What to try first</p>
-            <p class="mt-1 text-sm leading-6 text-base-content/75"><%= priority.what_to_try_first %></p>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </section>
   <%# try this this week section %>
   <section class="card bg-base-100 shadow-sm">
     <div class="card-body gap-5">
@@ -178,26 +153,6 @@
       </div>
     </div>
   </section>
-  <%# what we're still learning section %>
-  <section class="card bg-base-100 shadow-sm">
-    <div class="card-body gap-5">
-      <div>
-        <h2 class="text-lg font-semibold text-base-content">What We're Still Learning</h2>
-        <p class="mt-1 text-sm leading-6 text-base-content/70">
-          Gentle noticing—not homework or pressure to collect data.
-        </p>
-      </div>
-
-      <div class="grid gap-3 md:grid-cols-2">
-        <% learning_areas.each do |area| %>
-          <div class="rounded-box border border-base-300/70 bg-base-100 p-4 text-sm leading-6 text-base-content/75">
-            <%= area.body %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </section>
-
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex flex-wrap items-center gap-3">
       <%= link_to "Back to profiles", space_child_profiles_path(@space), class: "btn btn-ghost btn-sm" %>

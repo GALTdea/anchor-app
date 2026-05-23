@@ -33,8 +33,12 @@ RSpec.describe "Child profile support plans", type: :request do
       expect(response.body).to include("When Things Get Hard")
       expect(response.body).to include("What to Plan Around")
       expect(response.body).to include("Best Support Style")
+      expect(response.body).to include("Focus Right Now")
+      expect(response.body).to include("What We're Still Learning")
       expect(response.body).to include("Dinosaurs")
       expect(response.body).to include("Recovery after big feelings")
+      expect(response.body).to include("Make uncertain moments more predictable")
+      expect(response.body).to include("What helps Maya recover?")
       expect(response.body).not_to include("Profile Calibration Looks Current")
     end
 
@@ -48,6 +52,8 @@ RSpec.describe "Child profile support plans", type: :request do
       expect(response.body).to include("What may make things harder")
       expect(response.body).to include("Transitions between activities")
       expect(response.body).to include("Lead with warmth and curiosity")
+      expect(response.body).to include("Make uncertain moments more predictable")
+      expect(response.body).to include("What helps Noah recover?")
     end
 
     it "denies access without a role in the space" do
