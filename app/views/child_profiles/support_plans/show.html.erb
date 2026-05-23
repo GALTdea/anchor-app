@@ -1,0 +1,71 @@
+<% hard_moment_cards = @results_presenter.hard_moment_guide_cards %>
+<% planning_areas = @results_presenter.planning_focus_areas %>
+<% support_style_lines = @results_presenter.best_support_style_lines %>
+
+<div class="mx-auto max-w-6xl space-y-6">
+  <%= render "shared/page_header",
+    title: "#{@child_profile.first_name}'s Support Plan",
+    subtitle: "A practical playbook for preparing, supporting, and adjusting when the day gets harder." %>
+
+  <%= render "child_profiles/shared/profile_subnav",
+    space: @space,
+    child_profile: @child_profile,
+    current: :support_plan %>
+
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">When Things Get Hard</h2>
+        <p class="mt-1 text-sm leading-6 text-base-content/70">
+          Gentle guesses to help you prepare, not fixed triggers Anchor knows for certain.
+        </p>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-3">
+        <% hard_moment_cards.each do |card| %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <h3 class="text-sm font-semibold text-base-content"><%= card.title %></h3>
+            <p class="mt-3 text-sm leading-6 text-base-content/75"><%= card.body %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">What to Plan Around</h2>
+        <p class="mt-1 text-sm leading-6 text-base-content/70">
+          Prevention-minded reminders you can keep nearby. They are prompts for preparation, not homework.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <% planning_areas.each do |area| %>
+          <span class="badge badge-outline badge-lg font-normal"><%= area.label %></span>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="card bg-base-100 shadow-sm">
+    <div class="card-body gap-5">
+      <div>
+        <h2 class="text-lg font-semibold text-base-content">Best Support Style</h2>
+        <p class="mt-1 text-sm leading-6 text-base-content/70">
+          Strengths-first guidance for supporting <%= @child_profile.first_name %> in everyday moments.
+        </p>
+      </div>
+
+      <dl class="space-y-4">
+        <% support_style_lines.each do |line| %>
+          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-base-content/50"><%= line.label %></dt>
+            <dd class="mt-2 text-sm leading-6 text-base-content/80"><%= line.detail %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </div>
+  </section>
+</div>

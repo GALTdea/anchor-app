@@ -1,0 +1,27 @@
+<nav aria-label="Profile sections" class="inline-flex max-w-full rounded-full bg-base-300/60 p-1">
+  <div class="flex flex-wrap gap-1">
+    <%= link_to "Overview",
+      space_child_profile_path(space, child_profile),
+      class: [
+        "rounded-full px-4 py-2 text-sm font-medium transition",
+        current == :overview ? "bg-base-100 text-base-content shadow-sm" : "text-base-content/70 hover:bg-base-100 hover:text-base-content"
+      ] %>
+    <%= link_to "Support Plan",
+      space_child_profile_support_plan_path(space, child_profile),
+      class: [
+        "rounded-full px-4 py-2 text-sm font-medium transition",
+        current == :support_plan ? "bg-base-100 text-base-content shadow-sm" : "text-base-content/70 hover:bg-base-100 hover:text-base-content"
+      ] %>
+    <%= link_to "Recommendations",
+      space_child_profile_recommendations_path(space, child_profile),
+      class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
+    <%= link_to "Assessments",
+      space_child_profile_assessments_path(space, child_profile),
+      class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
+    <% if policy(child_profile).update? %>
+      <%= link_to "Edit child details",
+        edit_space_child_profile_path(space, child_profile),
+        class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
+    <% end %>
+  </div>
+</nav>

@@ -39,6 +39,7 @@ Rails.application.routes.draw do
           as: :assessment_response
       end
 
+      resource :support_plan, only: %i[show], controller: "child_profiles/support_plans"
       resource :current_profile, only: %i[show], controller: "child_profiles/current_profiles"
       resources :recommendations, only: %i[index show], controller: "child_profiles/recommendations"
     end

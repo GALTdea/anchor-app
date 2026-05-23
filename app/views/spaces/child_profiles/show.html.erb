@@ -1,9 +1,6 @@
 <% processing_status = @results_presenter.processing_status %>
 <% loop_health = @results_presenter.feedback_loop_health %>
 <% insight_cards = @results_presenter.support_guide_insights %>
-<% hard_moment_cards = @results_presenter.hard_moment_guide_cards %>
-<% planning_areas = @results_presenter.planning_focus_areas %>
-<% support_style_lines = @results_presenter.best_support_style_lines %>
 <% focus_priorities = @results_presenter.support_priorities %>
 <% weekly_ideas = @results_presenter.weekly_ideas %>
 <% learning_areas = @results_presenter.learning_areas %>
@@ -12,24 +9,10 @@
     title: @results_presenter.page_title,
     subtitle: @results_presenter.page_subtitle %>
 
-  <nav aria-label="Profile sections" class="inline-flex max-w-full rounded-full bg-base-300/60 p-1">
-    <div class="flex flex-wrap gap-1">
-      <%= link_to "Overview",
-        space_child_profile_path(@space, @child_profile),
-        class: "rounded-full bg-base-100 px-4 py-2 text-sm font-medium text-base-content shadow-sm" %>
-      <%= link_to "Recommendations",
-        space_child_profile_recommendations_path(@space, @child_profile),
-        class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
-      <%= link_to "Assessments",
-        space_child_profile_assessments_path(@space, @child_profile),
-        class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
-      <% if policy(@child_profile).update? %>
-        <%= link_to "Edit child details",
-          edit_space_child_profile_path(@space, @child_profile),
-          class: "rounded-full px-4 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-100 hover:text-base-content" %>
-      <% end %>
-    </div>
-  </nav>
+  <%= render "child_profiles/shared/profile_subnav",
+    space: @space,
+    child_profile: @child_profile,
+    current: :overview %>
 
   <section class="card bg-base-100 shadow-sm">
     <div class="card-body gap-5">
@@ -141,64 +124,7 @@
       </div>
     </div>
   </section>
-
-  <section class="card bg-base-100 shadow-sm">
-    <div class="card-body gap-5">
-      <div>
-        <h2 class="text-lg font-semibold text-base-content">When Things Get Hard</h2>
-        <p class="mt-1 text-sm leading-6 text-base-content/70">
-          Gentle guesses to help you prepare—not fixed triggers Anchor knows for certain.
-        </p>
-      </div>
-
-      <div class="grid gap-3 md:grid-cols-3">
-        <% hard_moment_cards.each do |card| %>
-          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-            <h3 class="text-sm font-semibold text-base-content"><%= card.title %></h3>
-            <p class="mt-3 text-sm leading-6 text-base-content/75"><%= card.body %></p>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </section>
-
-  <section class="card bg-base-100 shadow-sm">
-    <div class="card-body gap-5">
-      <div>
-        <h2 class="text-lg font-semibold text-base-content">What to Plan Around</h2>
-        <p class="mt-1 text-sm leading-6 text-base-content/70">
-          Prevention-minded reminders you can keep in your back pocket.
-        </p>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <% planning_areas.each do |area| %>
-          <span class="badge badge-outline badge-lg font-normal"><%= area.label %></span>
-        <% end %>
-      </div>
-    </div>
-  </section>
-
-  <section class="card bg-base-100 shadow-sm">
-    <div class="card-body gap-5">
-      <div>
-        <h2 class="text-lg font-semibold text-base-content">Best Support Style</h2>
-        <p class="mt-1 text-sm leading-6 text-base-content/70">
-          Strengths and context you already named—so this page feels personal, not like a deficit list.
-        </p>
-      </div>
-
-      <dl class="space-y-4">
-        <% support_style_lines.each do |line| %>
-          <div class="rounded-box border border-base-300/70 bg-base-100 p-4">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-base-content/50"><%= line.label %></dt>
-            <dd class="mt-2 text-sm leading-6 text-base-content/80"><%= line.detail %></dd>
-          </div>
-        <% end %>
-      </dl>
-    </div>
-  </section>
-
+  <%# focus right now section %>
   <section class="card bg-base-100 shadow-sm">
     <div class="card-body gap-5">
       <div>
@@ -221,7 +147,7 @@
       </div>
     </div>
   </section>
-
+  <%# try this this week section %>
   <section class="card bg-base-100 shadow-sm">
     <div class="card-body gap-5">
       <div class="flex flex-wrap items-start justify-between gap-3">
@@ -252,7 +178,7 @@
       </div>
     </div>
   </section>
-
+  <%# what we're still learning section %>
   <section class="card bg-base-100 shadow-sm">
     <div class="card-body gap-5">
       <div>
