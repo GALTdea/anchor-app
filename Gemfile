@@ -50,7 +50,7 @@ gem "pundit", "~> 2.2"
 gem "pagy", "~> 9.0"
 
 # SEO meta tags
-gem "meta-tags", "~> 2.2"
+gem "meta-tags", "~> 2.23"
 
 # Slug-based URLs
 gem "friendly_id", "~> 5.5"
